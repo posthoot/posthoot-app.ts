@@ -1,0 +1,288 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model EmailTemplate {
+  id            String          @id @default(cuid())
+  name          String
+  subject       String
+  content       String          @db.Text
+  variables     String[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  teamId        String
+  team          Team            @relation(fields: [teamId], references: [id])
+  campaigns     Campaign[]
+  sentEmails    SentEmail[]
+  category      EmailCategory   @relation(fields: [categoryId], references: [id])
+  categoryId    String
+  html          String          @db.Text
+
+  @@index([teamId])
+  @@index([categoryId])
+}
+
+model User {
+  id            String          @id @default(cuid())
+  name          String?
+  email         String          @unique
+  password      String
+  campaigns     Campaign[]
+  sentEmails    SentEmail[]
+  lists         MailingList[]
+  role          UserRole        @default(USER)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  status        UserStatus      @default(ACTIVE)
+  teamId        String?
+  team          Team?           @relation(fields: [teamId], references: [id])
+  invitesSent   TeamInvite[]    @relation("Inviter")
+  invitesReceived TeamInvite[]  @relation("Invitee")
+
+  @@index([teamId])
+}
+
+model Team {
+  id            String          @id @default(cuid())
+  name          String
+  users         User[]
+  invites       TeamInvite[]
+  templates     EmailTemplate[]
+  lists         MailingList[]
+  campaigns     Campaign[]
+  apiKeys       ApiKey[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([id])
+}
+
+model TeamInvite {
+  id            String          @id @default(cuid())
+  teamId        String
+  team          Team            @relation(fields: [teamId], references: [id])
+  inviterId     String
+  inviter       User            @relation("Inviter", fields: [inviterId], references: [id])
+  inviteeId     String
+  invitee       User            @relation("Invitee", fields: [inviteeId], references: [id])
+  status        InviteStatus    @default(PENDING)
+  expiresAt     DateTime
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([teamId])
+  @@index([inviterId])
+  @@index([inviteeId])
+}
+
+model ApiKey {
+  id            String          @id @default(cuid())
+  name          String
+  key           String          @unique
+  teamId        String
+  team          Team            @relation(fields: [teamId], references: [id])
+  lastUsedAt    DateTime?
+  expiresAt     DateTime?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([teamId])
+}
+
+model Campaign {
+  id            String          @id @default(cuid())
+  name          String
+  description   String?         @db.Text
+  templateId    String
+  template      EmailTemplate   @relation(fields: [templateId], references: [id])
+  userId        String
+  user          User            @relation(fields: [userId], references: [id])
+  teamId        String
+  team          Team            @relation(fields: [teamId], references: [id])
+  status        CampaignStatus  @default(DRAFT)
+  scheduledFor  DateTime?
+  listId        String
+  mailingList   MailingList     @relation(fields: [listId], references: [id])
+  sentEmails    SentEmail[]
+  analytics     CampaignAnalytics?
+  emailJobs     EmailJob[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([templateId])
+  @@index([userId])
+  @@index([teamId])
+  @@index([listId])
+}
+
+model MailingList {
+  id            String          @id @default(cuid())
+  name          String
+  description   String?         @db.Text
+  userId        String
+  user          User            @relation(fields: [userId], references: [id])
+  teamId        String
+  team          Team            @relation(fields: [teamId], references: [id])
+  subscribers   Subscriber[]
+  campaigns     Campaign[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([userId])
+  @@index([teamId])
+}
+
+model Subscriber {
+  id            String          @id @default(cuid())
+  email         String
+  firstName     String?
+  lastName      String?
+  metadata      Json?
+  listId        String
+  mailingList   MailingList     @relation(fields: [listId], references: [id])
+  status        SubscriberStatus @default(ACTIVE)
+  unsubscribedAt DateTime?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([listId])
+  @@unique([email, listId])
+}
+
+model SentEmail {
+  id            String        @id @default(cuid())
+  templateId    String
+  template      EmailTemplate @relation(fields: [templateId], references: [id])
+  campaignId    String?
+  campaign      Campaign?     @relation(fields: [campaignId], references: [id])
+  userId        String  
+  user          User         @relation(fields: [userId], references: [id])
+  recipient     String
+  subject       String
+  content       String       @db.Text
+  status        EmailStatus  @default(PENDING)
+  sentAt        DateTime     @default(now())
+  openedAt      DateTime?
+  clickedAt     DateTime?
+  error         String?      @db.Text
+  metadata      Json?
+  jobId         String?
+  emailJob      EmailJob?    @relation(fields: [jobId], references: [id])
+
+  @@index([templateId])
+  @@index([campaignId])
+  @@index([userId])
+  @@index([jobId])
+}
+
+model EmailJob {
+  id            String        @id @default(cuid())
+  campaignId    String
+  campaign      Campaign      @relation(fields: [campaignId], references: [id])
+  status        JobStatus     @default(QUEUED)
+  totalEmails   Int
+  processedEmails Int         @default(0)
+  startedAt     DateTime?
+  completedAt   DateTime?
+  error         String?       @db.Text
+  sentEmails    SentEmail[]
+  logs          EmailJobLog[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([campaignId])
+}
+
+model EmailJobLog {
+  id            String        @id @default(cuid())
+  jobId         String
+  emailJob      EmailJob      @relation(fields: [jobId], references: [id])
+  level         LogLevel
+  message       String        @db.Text
+  metadata      Json?
+  createdAt     DateTime      @default(now())
+
+  @@index([jobId])
+}
+
+model CampaignAnalytics {
+  id            String    @id @default(cuid())
+  campaignId    String    @unique
+  campaign      Campaign  @relation(fields: [campaignId], references: [id])
+  sentCount     Int       @default(0)
+  openCount     Int       @default(0)
+  clickCount    Int       @default(0)
+  bounceCount   Int       @default(0)
+  unsubscribeCount Int    @default(0)
+  lastUpdated   DateTime  @updatedAt
+}
+
+model EmailCategory {
+  id            String         @id @default(cuid())
+  name          String         @unique
+  description   String?        @db.Text
+  templates     EmailTemplate[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+enum UserRole {
+  ADMIN
+  USER
+}
+
+enum EmailStatus {
+  PENDING
+  SENT
+  FAILED
+  BOUNCED
+  OPENED
+  CLICKED
+}
+
+enum CampaignStatus {
+  DRAFT
+  SCHEDULED
+  SENDING
+  COMPLETED
+  FAILED
+  PAUSED
+}
+
+enum SubscriberStatus {
+  ACTIVE
+  UNSUBSCRIBED
+  BOUNCED
+  COMPLAINED
+}
+
+enum JobStatus {
+  QUEUED
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum LogLevel {
+  INFO
+  WARNING
+  ERROR
+}
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
