@@ -1,13 +1,15 @@
 # SailMail - Enterprise Email Orchestration Platform
 
 <div align="center">
-  <img src="public/logo.jpeg" alt="SailMail Logo" />
-  <p><em>Advanced Email Orchestration for Modern Enterprises</em></p>
+  <img src="public/sailer.svg" alt="SailMail Logo" />
+  <p><em>First-class email automation for modern enterprises</em></p>
 </div>
+
+![SailMail Demo](public/preview.png)
 
 ## Overview
 
-SailMail is an enterprise-grade email orchestration platform built with cutting-edge technologies. It provides a robust foundation for managing complex email workflows, team collaboration, and automated dispatch systems.
+🚢 SailMail is your first-class ticket to modern email automation! Whether you need workflows, team tools, or automation - we've got you covered. No more manual emails! ✨
 
 ## Core Features
 
