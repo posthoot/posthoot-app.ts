@@ -13,14 +13,14 @@ export async function POST(req: Request) {
     // Validate request body
     const validatedData = LoginSchema.safeParse(body);
     if (!validatedData.success) {
-      logger.error(
-        FILE_NAME,
-        15,
-        'POST',
-        'validationError',
-        validatedData.error,
-        '❌ Invalid input data'
-      );
+      logger.error({
+        fileName: FILE_NAME,
+        emoji: "❌",
+        action: "POST",
+        label: "validationError",
+        value: JSON.stringify(validatedData.error),
+        message: "Invalid input data",
+      });
       return NextResponse.json(
         { error: "Invalid input data" },
         { status: 400 }
@@ -35,14 +35,14 @@ export async function POST(req: Request) {
     });
 
     if (!user) {
-      logger.error(
-        FILE_NAME,
-        30,
-        'POST',
-        'user',
-        email,
-        '❌ User not found'
-      );
+      logger.error({
+        fileName: FILE_NAME,
+        emoji: "❌",
+        action: "POST",
+        label: "user",
+        value: email,
+        message: "User not found",
+      });
       return NextResponse.json(
         { error: "Invalid credentials" },
         { status: 401 }
@@ -52,41 +52,41 @@ export async function POST(req: Request) {
     // Verify password
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
-      logger.error(
-        FILE_NAME,
-        39,
-        'POST',
-        'password',
-        email,
-        '❌ Invalid password'
-      );
+      logger.error({
+        fileName: FILE_NAME,
+        emoji: "❌",
+        action: "POST",
+        label: "password",
+        value: email,
+        message: "Invalid password",
+      });
       return NextResponse.json(
         { error: "Invalid credentials" },
         { status: 401 }
       );
     }
 
-    logger.info(
-      FILE_NAME,
-      55,
-      'POST',
-      'user',
-      user.id,
-      '✅ User logged in successfully'
-    );
+    logger.info({
+      fileName: FILE_NAME,
+      emoji: "✅",
+      action: "POST",
+      label: "user",
+      value: user.id,
+      message: "User logged in successfully",
+    });
 
     return NextResponse.json({
       user,
     });
   } catch (error) {
-    logger.error(
-      FILE_NAME,
-      66,
-      'POST',
-      'error',
-      error,
-      '❌ Server error'
-    );
+    logger.error({
+      fileName: FILE_NAME,
+      emoji: "❌",
+      action: "POST",
+      label: "error",
+      value: error,
+      message: "Server error",
+    });
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

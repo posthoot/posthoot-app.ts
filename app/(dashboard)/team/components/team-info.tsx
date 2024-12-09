@@ -1,10 +1,24 @@
 "use client";
 
 import { useTeam } from "@/app/providers/team-provider";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
-import { logger } from "@/app/lib/logger";
-import { useSession } from "next-auth/react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { MoreHorizontal, Shield, User } from "lucide-react";
 
 interface TeamMember {
   id: string;
@@ -14,72 +28,89 @@ interface TeamMember {
 }
 
 export function TeamInfo() {
-  const { team, refreshTeam } = useTeam();
-  const { data: session } = useSession();
-
-  const handleRemoveMember = async (memberId: string) => {
-    try {
-      logger.info(
-        "team-info.tsx",
-        23,
-        "handleRemoveMember",
-        "memberId",
-        memberId,
-        "team"
-      );
-
-      const response = await fetch(`/api/team/member/${memberId}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) throw new Error("Failed to remove team member");
-
-      toast.success("Team member removed successfully");
-      refreshTeam();
-    } catch (error) {
-      logger.error(
-        "team-info.tsx",
-        39,
-        "handleRemoveMember",
-        "error",
-        error,
-        "team"
-      );
-      toast.error("Failed to remove team member");
-    }
-  };
+  const { team } = useTeam();
 
   if (!team?.users?.length) {
-    return <p className="text-muted-foreground">No team members found</p>;
+    return (
+      <div className="flex flex-col items-center justify-center p-8 text-center">
+        <User className="h-10 w-10 text-muted-foreground mb-4" />
+        <p className="text-lg font-medium">No team members found</p>
+        <p className="text-sm text-muted-foreground">
+          Start by inviting team members to collaborate
+        </p>
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-4">
-      {team.users.map((member: TeamMember) => (
-        <div
-          key={member.id}
-          className="flex items-center justify-between p-4 border rounded-lg"
-          data-testid={`team-member-${member.id}`}
-        >
-          <div>
-            <p className="font-medium">{member.name || member.email}</p>
-            <p className="text-sm text-muted-foreground">{member.email}</p>
-            <p className="text-sm text-muted-foreground">Role: {member.role}</p>
-          </div>
-          {team.users.find((user) => user.id === session?.user.id)?.role ===
-            "ADMIN" &&
-            member.id !== team.id && (
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => handleRemoveMember(member.id)}
-                data-testid={`remove-member-${member.id}`}
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Member</TableHead>
+          <TableHead>Role</TableHead>
+          <TableHead>Email</TableHead>
+          <TableHead className="w-[100px]">Actions</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {team.users.map((member: TeamMember) => (
+          <TableRow key={member.id}>
+            <TableCell>
+              <div className="flex items-center gap-3">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage
+                    src={`https://avatar.vercel.sh/${member.email}`}
+                    alt={member.name || member.email}
+                  />
+                  <AvatarFallback>
+                    {(member.name || member.email).charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="font-medium">{member.name || "Unnamed"}</p>
+                  <p className="text-sm text-muted-foreground">{member.email}</p>
+                </div>
+              </div>
+            </TableCell>
+            <TableCell>
+              <Badge
+                variant={member.role === "ADMIN" ? "default" : "secondary"}
+                className="flex w-fit items-center gap-1"
               >
-                Remove
-              </Button>
-            )}
-        </div>
-      ))}
-    </div>
+                {member.role === "ADMIN" && <Shield className="h-3 w-3" />}
+                {member.role}
+              </Badge>
+            </TableCell>
+            <TableCell className="font-mono text-sm">{member.email}</TableCell>
+            <TableCell>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onClick={() => {
+                      // Handle role change
+                    }}
+                  >
+                    Change Role
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="text-red-600"
+                    onClick={() => {
+                      // Handle member removal
+                    }}
+                  >
+                    Remove Member
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
   );
 }

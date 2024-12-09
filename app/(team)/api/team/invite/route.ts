@@ -10,6 +10,8 @@ const InviteSchema = z.object({
   name: z.string().min(2)
 });
 
+const FILE_NAME = 'app/(team)/api/team/invite/route.ts';
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -17,14 +19,14 @@ export async function POST(req: Request) {
     // Validate request body
     const validatedData = InviteSchema.safeParse(body);
     if (!validatedData.success) {
-      logger.error(
-        "route.ts",
-        20,
-        "POST",
-        "validatedData.error",
-        validatedData.error,
-        "Validation failed"
-      );
+      logger.error({
+        fileName: FILE_NAME,
+        emoji: "❌",
+        action: "POST",
+        label: "validatedData.error",
+        value: validatedData.error,
+        message: "Validation failed",
+      });
       return NextResponse.json(
         { error: 'Invalid input data' },
         { status: 400 }
@@ -35,14 +37,14 @@ export async function POST(req: Request) {
     const session = await auth();
 
     if (!session?.user) {
-      logger.error(
-        "route.ts",
-        32,
-        "POST", 
-        "session",
-        session,
-        "User not authenticated"
-      );
+      logger.error({
+        fileName: FILE_NAME,
+        emoji: "🔒",
+        action: "POST",
+        label: "session",
+        value: session,
+        message: "User not authenticated",
+      });
       return NextResponse.json(
         { error: 'User not authenticated' },
         { status: 401 }
@@ -55,14 +57,14 @@ export async function POST(req: Request) {
     });
 
     if (!team) {
-      logger.error(
-        "route.ts",
-        42,
-        "POST",
-        "team",
-        team,
-        "User not in a team"
-      );
+      logger.error({
+        fileName: FILE_NAME,
+        emoji: "🔒",
+        action: "POST",
+        label: "team",
+        value: team,
+        message: "User not in a team",
+      });
       return NextResponse.json(
         { error: 'User not in a team' },
         { status: 403 }
@@ -77,14 +79,14 @@ export async function POST(req: Request) {
     });
 
     if (existingUser) {
-      logger.error(
-        "route.ts",
-        32,
-        "POST",
-        "existingUser",
-        { email, existingUser },
-        "User already exists"
-      );
+      logger.error({
+        fileName: FILE_NAME,
+        emoji: "👥",
+        action: "POST",
+        label: "existingUser",
+        value: { email, existingUser },
+        message: "User already exists",
+      });
       return NextResponse.json(
         { error: 'User already exists' },
         { status: 409 }
@@ -92,14 +94,14 @@ export async function POST(req: Request) {
     }
 
     if (session.user.role !== 'ADMIN') {
-      logger.error(
-        "route.ts",
-        65,
-        "POST",
-        "userRole",
-        { role: session.user.role, email },
-        "User is not an admin"
-      );
+      logger.error({
+        fileName: FILE_NAME,
+        emoji: "🔒",
+        action: "POST",
+        label: "userRole",
+        value: { role: session.user.role, email },
+        message: "User is not an admin",
+      });
       return NextResponse.json(
         { error: 'User is not an admin' },
         { status: 403 }
@@ -119,14 +121,14 @@ export async function POST(req: Request) {
 
     // TODO: Send invitation email
     
-    logger.info(
-      "route.ts",
-      49,
-      "POST",
-      "invitation",
-      { invitationId: invitation.id, email, name },
-      "Invitation created successfully"
-    );
+    logger.info({
+      fileName: FILE_NAME,
+      emoji: "✨",
+      action: "POST",
+      label: "invitation",
+      value: { invitationId: invitation.id, email, name },
+      message: "Invitation created successfully",
+    });
 
     return NextResponse.json({
       message: 'Invitation sent successfully',
@@ -137,14 +139,14 @@ export async function POST(req: Request) {
     });
 
   } catch (error) {
-    logger.error(
-      "route.ts",
-      65,
-      "POST",
-      "error",
-      error,
-      "Server error"
-    );
+    logger.error({
+      fileName: FILE_NAME,
+      emoji: "💥",
+      action: "POST",
+      label: "error",
+      value: error,
+      message: "Server error",
+    });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

@@ -1,15 +1,18 @@
-import type { NextAuthConfig, Session, User } from "next-auth";
+import type { NextAuthConfig, Session } from "next-auth";
 import type { JWT } from "next-auth/jwt";
+import { CustomAuthUser } from "./types/next-auth";
+import { logger } from "./app/lib/logger";
 
 export const authConfig = {
   callbacks: {
+    // @ts-ignore
     session({
       session,
       user,
       token,
     }: {
       session: Session;
-      user: User;
+      user: CustomAuthUser;
       token: JWT;
     }) {
       return {
@@ -17,10 +20,15 @@ export const authConfig = {
         user: {
           ...session.user,
           id: token.sub,
+          teamId: token.teamId || session.user.teamId,
         },
       };
     },
-    jwt({ token, user }: { token: JWT; user: User }) {
+    // @ts-ignore
+    jwt({ token, user }: { token: JWT; user: CustomAuthUser }) {
+      if (user) {
+        token.teamId = user.teamId;
+      }
       return token;
     },
     authorized({ auth, request: { nextUrl } }) {

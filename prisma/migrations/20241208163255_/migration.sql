@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "EmailTemplate" ALTER COLUMN "content" DROP NOT NULL,
+ALTER COLUMN "variables" SET DEFAULT ARRAY[]::TEXT[],
+ALTER COLUMN "html" DROP NOT NULL;

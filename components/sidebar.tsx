@@ -8,57 +8,126 @@ import {
   Settings,
   FileText,
   LogOut,
+  Key,
+  ChevronLeft,
+  ChevronRight,
+  Mail,
+  Ship,
+  ShipWheel,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 import { signOut } from "next-auth/react";
+import { useState } from "react";
 import { Logo } from "./logo";
 
-const menuItems = [
-  { name: "Home", icon: Home, href: "/" },
-  { name: "Contacts", icon: Users, href: "/contacts" },
-  { name: "Campaigns", icon: Send, href: "/campaigns" },
-  { name: "Templates", icon: FileText, href: "/templates" },
-  { name: "Automations", icon: Zap, href: "/automations" },
-  { name: "Team", icon: Users, href: "/team" },
-  { name: "Settings", icon: Settings, href: "/settings" },
+const routes = [
+  {
+    label: "Home",
+    icon: Home,
+    href: "/",
+  },
+  {
+    label: "Contacts",
+    icon: Users,
+    href: "/contacts/lists",
+  },
+  {
+    label: "Campaigns",
+    icon: Send,
+    href: "/campaigns",
+  },
+  {
+    label: "Templates",
+    icon: FileText,
+    href: "/templates",
+  },
+  {
+    label: "Automations",
+    icon: Zap,
+    href: "/automations",
+  },
+  {
+    label: "Team",
+    icon: Users,
+    href: "/team",
+  },
+  {
+    label: "Settings",
+    icon: Settings,
+    href: "/settings",
+  },
+  {
+    label: "SMTP",
+    icon: Mail,
+    href: "/settings/smtp",
+  },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
-    <div className="flex flex-col bg-white h-screen justify-between">
-      <div className="w-64 border-r">
-        <div className="p-4 border-b">
-          <Logo />
+    <div
+      className={cn(
+        "flex flex-col h-screen justify-between border-r transition-all duration-300",
+        isCollapsed ? "w-20" : "w-64"
+      )}
+    >
+      <div>
+        <div className="p-4 border-b flex items-center justify-between">
+          <div
+            className={cn(
+              "transition-all duration-300",
+            )}
+          >
+            {!isCollapsed && <Logo />}
+            {isCollapsed && <ShipWheel className="h-6 w-6" />}
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="h-8 w-8"
+          >
+            {isCollapsed ? (
+              <ChevronRight className="h-4 w-4" />
+            ) : (
+              <ChevronLeft className="h-4 w-4" />
+            )}
+          </Button>
         </div>
-        <nav className="p-2">
-          {menuItems.map((item) => (
+        <nav className="p-2 space-y-1">
+          {routes.map((route) => (
             <Link
-              key={item.href}
-              href={item.href}
+              key={route.href}
+              href={route.href}
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
-                pathname === item.href
+                isCollapsed && "justify-center px-2",
+                pathname === route.href
                   ? "bg-primary text-primary-foreground"
                   : "hover:bg-accent"
               )}
             >
-              <item.icon className="h-4 w-4" />
-              {item.name}
+              <route.icon className="h-4 w-4 flex-shrink-0" />
+              {!isCollapsed && <span>{route.label}</span>}
             </Link>
           ))}
         </nav>
       </div>
       <Button
-        className="m-3 flex border bg-red-100 text-red-500 items-center gap-2"
-        variant="secondary"
+        className={cn(
+          "m-3 flex items-center gap-2",
+          isCollapsed ? "px-2 justify-center" : "px-4"
+        )}
+        variant="outline"
         onClick={() => signOut()}
       >
-        <span>Logout</span>
+        {!isCollapsed && <span>Logout</span>}
         <LogOut className="h-4 w-4" />
       </Button>
     </div>

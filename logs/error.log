@@ -1,0 +1,1 @@
+2024-12-09T07:28:15.428Z [ERROR]: ❌ Worker: Task processing failed {"file":"worker/index.ts","line":65,"function":"processor","jobId":"2","error":{}}

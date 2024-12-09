@@ -1,4 +1,4 @@
-import NextAuth, { NextAuthConfig, User } from "next-auth";
+import NextAuth, { NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import prisma from "@/app/lib/prisma";
@@ -26,14 +26,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       async authorize(credentials, req) {
         try {
           if (!credentials?.email || !credentials?.password) {
-            logger.info(
-              "auth.ts",
-              25,
-              "authorize",
-              "Missing credentials",
-              { email: credentials?.email },
-              "Missing credentials"
-            );
+            logger.info({
+              fileName: "auth.ts",
+              action: "authorize",
+              label: "credentials",
+              value: credentials,
+              emoji: "❌",
+              message: "Missing credentials",
+            });
             return null;
           }
 
@@ -48,14 +48,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           );
 
           if (!user || !user?.hasOwnProperty("email") || !passwordsMatch) {
-            logger.info(
-              "auth.ts",
-              50,
-              "authorize",
-              "User not found",
-              { email: credentials.email },
-              "User not found"
-            );
+            logger.info({
+              fileName: "auth.ts",
+              action: "authorize",
+              label: "user",
+              value: user,
+              emoji: "❌",
+              message: "User not found",
+            });
             return null;
           }
 
@@ -64,9 +64,25 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             teamId: user.team.id,
           } as CustomAuthUser;
 
+          logger.info({
+            fileName: "auth.ts",
+            action: "authorize",
+            label: "user",
+            value: finalUser,
+            emoji: "✅",
+            message: "User authorized",
+          });
+
           return finalUser;
         } catch (error) {
-          logger.error("auth.ts", 49, "authorize", "Error", { error }, "Error");
+          logger.error({
+            fileName: "auth.ts",
+            action: "authorize",
+            label: "error",
+            value: error,
+            emoji: "❌",
+            message: "Error",
+          });
           return null;
         }
       },

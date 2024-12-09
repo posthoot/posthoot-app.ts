@@ -1,0 +1,189 @@
+import { Cleo } from "@cleotasks/core";
+import { Attachment } from "nodemailer/lib/mailer";
+import { sendMail } from "nodemailer-mail-tracking";
+import nodemailer from "nodemailer";
+import { MailTrackOptions } from "nodemailer-mail-tracking/dist/types";
+import { prisma } from "@/app/lib/prisma";
+import { TrackingType } from "@prisma/client";
+import { createJwtFromSecret, removeUndefined } from "../utils";
+import { logger } from "@/app/lib/logger";
+const cleo = Cleo.getInstance();
+
+cleo.configure({
+  redis: {
+    host: process.env.REDIS_HOST,
+    port: parseInt(process.env.REDIS_PORT),
+    password: process.env.REDIS_PASSWORD,
+    db: parseInt(process.env.REDIS_DB),
+  },
+  worker: {
+    concurrency: 3,
+  },
+});
+
+class EmailService {
+  @cleo.task({
+    id: "sendEmail",
+    retries: 3,
+    backoff: {
+      type: "exponential",
+      delay: 1000,
+    },
+  })
+  async sendEmail(
+    email: string,
+    html: string,
+    subject: string,
+    smtpHost: string,
+    smtpPort: number,
+    smtpUser: string,
+    smtpPass: string,
+    smtpFrom: string,
+    attachments?: Attachment[],
+    teamId?: string,
+    subscriberId?: string,
+    campaignId?: string,
+    templateId?: string
+  ) {
+    const transporter = nodemailer.createTransport({
+      host: smtpHost,
+      port: smtpPort,
+      secure: smtpPort === 465, // true for 465, false for other ports
+      auth: {
+        user: smtpUser,
+        pass: smtpPass,
+      },
+    });
+
+    const sentEmail = await prisma.sentEmail.create({
+      data: removeUndefined({
+        recipient: email,
+        subject: subject,
+        content: html,
+        team: teamId
+          ? {
+              connect: {
+                id: teamId,
+              },
+            }
+          : undefined,
+        subscriber: subscriberId
+          ? {
+              connect: {
+                id: subscriberId,
+              },
+            }
+          : undefined,
+        campaign: campaignId
+          ? {
+              connect: {
+                id: campaignId,
+              },
+            }
+          : undefined,
+        template: templateId
+          ? {
+              connect: {
+                id: templateId,
+              },
+            }
+          : undefined,
+      }),
+    });
+
+    logger.info({
+      fileName: "email.ts",
+      message: "Sent email to " + email + " with subject " + subject,
+      value: {
+        sentEmailId: sentEmail.id,
+        email: email,
+        subject: subject,
+      },
+      emoji: "📧",
+      action: "sendEmail",
+      label: "Sent email to " + email + " with subject " + subject,
+    });
+
+    const mailTrackingOptions: MailTrackOptions = {
+      baseUrl: `https://webhook.site/45010aa2-3b50-40b2-976d-3d993a4ad066`,
+      getData: async (data) => {
+        return {
+          ...data,
+          sentEmailId: sentEmail.id,
+        };
+      },
+      jwtSecret: createJwtFromSecret(
+        {
+          sentEmailId: sentEmail.id,
+        },
+        process.env.JWT_SECRET
+      ),
+      onLinkClick: async ({ sentEmailId }) => {
+        await prisma.sentEmail
+          .update({
+            where: { id: sentEmailId },
+            data: {
+              clickedAt: new Date(),
+            },
+          })
+          .then(async (sentEmail) => {
+            await prisma.emailTracking.create({
+              data: {
+                sentEmailId: sentEmail.id,
+                type: TrackingType.CLICKED,
+              },
+            });
+          });
+      },
+      onBlankImageView: async ({ sentEmailId }) => {
+        await prisma.sentEmail
+          .update({
+            where: { id: sentEmailId },
+            data: {
+              openedAt: new Date(),
+            },
+          })
+          .then(async (sentEmail) => {
+            await prisma.emailTracking.create({
+              data: {
+                sentEmailId: sentEmail.id,
+                type: TrackingType.OPENED,
+              },
+            });
+          });
+      },
+    };
+
+    const mailOptions = {
+      from: smtpFrom,
+      to: email,
+      subject: subject,
+      html: html,
+      attachments: attachments,
+    };
+
+    try {
+      const info = await sendMail(
+        mailTrackingOptions,
+        transporter,
+        mailOptions
+      );
+      console.log(
+        `File name: email.ts, 📧, line no: 20, function name: sendTestEmail, variable name: info, value: ${info}`
+      );
+    } catch (error) {
+      console.error(
+        `File name: email.ts, ❌, line no: 20, function name: sendTestEmail, variable name: error, value: ${error}`
+      );
+      throw new Error("Failed to send email");
+    }
+
+    return {
+      success: true,
+    };
+  }
+}
+
+const emailService = new EmailService();
+
+export default emailService;

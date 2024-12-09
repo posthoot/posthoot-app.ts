@@ -1,3 +1,5 @@
+import { JsonValue } from "@prisma/client/runtime/library";
+
 export enum SmtpProvider {
   GMAIL = "gmail",
   SENDGRID = "sendgrid",
@@ -23,8 +25,10 @@ export interface EmailTemplate {
   variables: string[];
   createdAt: Date;
   updatedAt: Date;
-  userId: string;
+  emailCategoryId: string;
   html?: string;
+  teamId: string;
+  design?: JsonValue;
 }
 
 export interface ApiKey {

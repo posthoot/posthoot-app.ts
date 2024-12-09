@@ -31,3 +31,48 @@
 2024-12-05T10:47:54.908Z [info] undefined 📍 Line:undefined 🔧 undefined 📝 undefined=undefined - undefined
 2024-12-05T10:48:15.392Z [info] undefined 📍 Line:undefined 🔧 undefined 📝 undefined=undefined - undefined
 2024-12-05T10:48:17.681Z [info] undefined 📍 Line:undefined 🔧 undefined 📝 undefined=undefined - undefined
+2024-12-08T19:10:05.943Z [INFO]: File: index.ts 🔄, Line: 22, Function: getInstance; Creating new Cleo instance {"instanceId":"default"}
+2024-12-08T19:10:05.944Z [INFO]: File: index.ts ⚙️, Line: 36, Function: configure; Configuring Cleo instance {"instanceId":"default","redisHost":"localhost","redisPort":6379}
+2024-12-08T19:10:05.944Z [INFO]: File: index.ts 🔌, Line: 43, Function: configure; Redis configuration {"redisConfig":{"REDIS_HOST":"localhost","REDIS_PORT":"6379","REDIS_PASSWORD":"password","REDIS_DB":"0","INSTANCE_ID":"default"}}
+2024-12-08T19:10:05.944Z [INFO]: File: redis.ts 🔌, Line: 15, Function: initializeInstance; Initializing Redis connection {"instanceId":"default"}
+2024-12-08T19:10:05.945Z [INFO]: File: redis.ts 🔌, Line: 39, Function: initializeInstance; Redis connection initialized {"instanceId":"default"}
+2024-12-08T19:10:05.947Z [INFO]: 🆕 QueueManager: Queue initialized {"file":"queueManager.ts","line":50,"function":"initializeQueue","queueName":"default"}
+2024-12-08T19:10:05.947Z [INFO]: File: index.ts ✅, Line: 56, Function: configure; Cleo configuration complete {"instanceId":"default"}
+2024-12-08T19:10:05.947Z [INFO]: 🎯 Task Decorator: Task registered {"file":"task.ts","line":46,"function":"sendTestEmail","taskState":"waiting"}
+2024-12-08T19:10:05.971Z [INFO]: ✅ Task Decorator: Non-grouped task completed {"file":"task.ts","line":210,"function":"sendTestEmail","taskId":"sendTestEmail-1733685005956","executionTime":15}
+2024-12-09T07:28:12.382Z [INFO]: File: index.ts 🔄, Line: 22, Function: getInstance; Creating new Cleo instance {"instanceId":"default"}
+2024-12-09T07:28:12.383Z [INFO]: File: index.ts ⚙️, Line: 36, Function: configure; Configuring Cleo instance {"instanceId":"default","redisHost":"localhost","redisPort":6379}
+2024-12-09T07:28:12.383Z [INFO]: File: index.ts 🔌, Line: 43, Function: configure; Redis configuration {"redisConfig":{"REDIS_HOST":"localhost","REDIS_PORT":"6379","REDIS_PASSWORD":"password","REDIS_DB":"0","INSTANCE_ID":"default"}}
+2024-12-09T07:28:12.383Z [INFO]: File: redis.ts 🔌, Line: 15, Function: initializeInstance; Initializing Redis connection {"instanceId":"default"}
+2024-12-09T07:28:12.384Z [INFO]: File: redis.ts 🔌, Line: 39, Function: initializeInstance; Redis connection initialized {"instanceId":"default"}
+2024-12-09T07:28:12.386Z [INFO]: 🆕 QueueManager: Queue initialized {"file":"queueManager.ts","line":50,"function":"initializeQueue","queueName":"default"}
+2024-12-09T07:28:12.386Z [INFO]: File: index.ts ✅, Line: 56, Function: configure; Cleo configuration complete {"instanceId":"default"}
+2024-12-09T07:28:12.386Z [INFO]: 🎯 Task Decorator: Task registered {"file":"task.ts","line":46,"function":"sendEmail","taskState":"waiting"}
+2024-12-09T07:28:12.404Z [INFO]: ✅ Task Decorator: Non-grouped task completed {"file":"task.ts","line":210,"function":"sendEmail","taskId":"sendEmail-1733729292397","executionTime":7}
+2024-12-09T07:28:15.428Z [ERROR]: ❌ Worker: Task processing failed {"file":"worker/index.ts","line":65,"function":"processor","jobId":"2","error":{}}
+2024-12-09T07:29:59.356Z [INFO]: File: index.ts 🔄, Line: 22, Function: getInstance; Creating new Cleo instance {"instanceId":"default"}
+2024-12-09T07:29:59.357Z [INFO]: File: index.ts ⚙️, Line: 36, Function: configure; Configuring Cleo instance {"instanceId":"default","redisHost":"localhost","redisPort":6379}
+2024-12-09T07:29:59.357Z [INFO]: File: index.ts 🔌, Line: 43, Function: configure; Redis configuration {"redisConfig":{"REDIS_HOST":"localhost","REDIS_PORT":"6379","REDIS_PASSWORD":"password","REDIS_DB":"0","INSTANCE_ID":"default"}}
+2024-12-09T07:29:59.357Z [INFO]: File: redis.ts 🔌, Line: 15, Function: initializeInstance; Initializing Redis connection {"instanceId":"default"}
+2024-12-09T07:29:59.358Z [INFO]: File: redis.ts 🔌, Line: 39, Function: initializeInstance; Redis connection initialized {"instanceId":"default"}
+2024-12-09T07:29:59.360Z [INFO]: 🆕 QueueManager: Queue initialized {"file":"queueManager.ts","line":50,"function":"initializeQueue","queueName":"default"}
+2024-12-09T07:29:59.360Z [INFO]: File: index.ts ✅, Line: 56, Function: configure; Cleo configuration complete {"instanceId":"default"}
+2024-12-09T07:29:59.360Z [INFO]: 🎯 Task Decorator: Task registered {"file":"task.ts","line":46,"function":"sendEmail","taskState":"waiting"}
+2024-12-09T07:29:59.381Z [INFO]: ✅ Task Decorator: Non-grouped task completed {"file":"task.ts","line":210,"function":"sendEmail","taskId":"sendEmail-1733729399369","executionTime":12}
+2024-12-09T11:39:01.909Z [INFO]: File: index.ts 🔄, Line: 22, Function: getInstance; Creating new Cleo instance {"instanceId":"default"}
+2024-12-09T11:39:01.910Z [INFO]: File: index.ts ⚙️, Line: 36, Function: configure; Configuring Cleo instance {"instanceId":"default","redisHost":"localhost","redisPort":6379}
+2024-12-09T11:39:01.910Z [INFO]: File: index.ts 🔌, Line: 43, Function: configure; Redis configuration {"redisConfig":{"REDIS_HOST":"localhost","REDIS_PORT":"6379","REDIS_PASSWORD":"password","REDIS_DB":"0","INSTANCE_ID":"default"}}
+2024-12-09T11:39:01.916Z [INFO]: File: redis.ts 🔌, Line: 15, Function: initializeInstance; Initializing Redis connection {"instanceId":"default"}
+2024-12-09T11:39:01.917Z [INFO]: File: redis.ts 🔌, Line: 39, Function: initializeInstance; Redis connection initialized {"instanceId":"default"}
+2024-12-09T11:39:01.919Z [INFO]: 🆕 QueueManager: Queue initialized {"file":"queueManager.ts","line":50,"function":"initializeQueue","queueName":"default"}
+2024-12-09T11:39:01.920Z [INFO]: File: index.ts ✅, Line: 56, Function: configure; Cleo configuration complete {"instanceId":"default"}
+2024-12-09T11:39:01.920Z [INFO]: 🎯 Task Decorator: Task registered {"file":"task.ts","line":46,"function":"sendEmail","taskState":"waiting"}
+2024-12-09T11:39:38.350Z [INFO]: File: index.ts 🔄, Line: 22, Function: getInstance; Creating new Cleo instance {"instanceId":"default"}
+2024-12-09T11:39:38.351Z [INFO]: File: index.ts ⚙️, Line: 36, Function: configure; Configuring Cleo instance {"instanceId":"default","redisHost":"localhost","redisPort":6379}
+2024-12-09T11:39:38.351Z [INFO]: File: index.ts 🔌, Line: 43, Function: configure; Redis configuration {"redisConfig":{"REDIS_HOST":"localhost","REDIS_PORT":"6379","REDIS_PASSWORD":"password","REDIS_DB":"0","INSTANCE_ID":"default"}}
+2024-12-09T11:39:38.352Z [INFO]: File: redis.ts 🔌, Line: 15, Function: initializeInstance; Initializing Redis connection {"instanceId":"default"}
+2024-12-09T11:39:38.352Z [INFO]: File: redis.ts 🔌, Line: 39, Function: initializeInstance; Redis connection initialized {"instanceId":"default"}
+2024-12-09T11:39:38.358Z [INFO]: 🆕 QueueManager: Queue initialized {"file":"queueManager.ts","line":50,"function":"initializeQueue","queueName":"default"}
+2024-12-09T11:39:38.358Z [INFO]: File: index.ts ✅, Line: 56, Function: configure; Cleo configuration complete {"instanceId":"default"}
+2024-12-09T11:39:38.358Z [INFO]: 🎯 Task Decorator: Task registered {"file":"task.ts","line":46,"function":"sendEmail","taskState":"waiting"}
+2024-12-09T11:39:38.407Z [INFO]: ✅ Task Decorator: Non-grouped task completed {"file":"task.ts","line":210,"function":"sendEmail","taskId":"sendEmail-1733744378387","executionTime":20}

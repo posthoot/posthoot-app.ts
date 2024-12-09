@@ -17,14 +17,14 @@ export async function POST(req: Request) {
     })
 
     if (exists) {
-      logger.warn(
-        FILE_NAME,
-        18,
-        'POST',
-        'email',
-        body.email,
-        '❌ Email already exists'
-      )
+      logger.warn({
+        fileName: FILE_NAME,
+        action: "POST",
+        label: "email",
+        value: body.email,
+        emoji: "❌",
+        message: "Email already exists",
+      });
       return NextResponse.json(
         { error: "Email already exists" },
         { status: 400 }
@@ -74,16 +74,16 @@ export async function POST(req: Request) {
       return { user, team };
     });
 
-    logger.info(
-      FILE_NAME,
-      24,
-      'POST',
-      'user',
-      user,
-      '✅ User created successfully'
-    )
+    logger.info({
+      fileName: FILE_NAME,
+      action: "POST",
+      label: "user",
+      value: user,
+      emoji: "✅",
+      message: "User created successfully",
+    });
 
-    return NextResponse.json({ user })
+    return NextResponse.json({ user });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -92,14 +92,14 @@ export async function POST(req: Request) {
       )
     }
 
-    logger.error(
-      FILE_NAME,
-      55,
-      'POST',
-      'error',
-      error,
-      '❌ Error creating user'
-    )
+    logger.error({
+      fileName: FILE_NAME,
+      action: "POST",
+      label: "error",
+      value: error,
+      emoji: "❌",
+      message: "Error creating user",
+    });
 
     return NextResponse.json(
       { error: "Internal server error" },

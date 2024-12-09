@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   app:
-    container_name: emailengine
+    container_name: sailmail
     build:
       context: .
       dockerfile: Dockerfile
@@ -23,7 +23,7 @@ services:
       - app_network
 
   postgres:
-    container_name: emailengine_db
+    container_name: sailmail_db
     image: postgres:16-alpine
     restart: always
     environment:
@@ -38,7 +38,7 @@ services:
       - app_network
 
   redis:
-    container_name: emailengine_redis
+    container_name: sailmail_redis
     image: redis:7-alpine
     restart: always
     ports:

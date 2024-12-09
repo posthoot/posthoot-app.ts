@@ -1,69 +1,35 @@
-export enum LogLevel {
-  INFO = "info",
-  WARNING = "warning", 
-  ERROR = "error",
+type LogLevel = 'info' | 'error' | 'warn' | 'debug';
+
+interface LoggerOptions {
+  fileName: string;
+  emoji: string;
+  action: string;
+  label: string;
+  value: any;
+  message: string;
 }
 
-interface LogMessage {
-  fileName: string
-  lineNumber: number
-  functionName: string
-  variableName: string
-  value: any
-  message: string
-  level: LogLevel
-}
-
-class EdgeLogger {
-  private formatMessage(logMessage: LogMessage): string {
-    const timestamp = new Date().toISOString()
-    return `${timestamp} [${logMessage.level}] ${logMessage.fileName} 📍 Line:${logMessage.lineNumber} 🔧 ${logMessage.functionName} 📝 ${logMessage.variableName}=${JSON.stringify(logMessage.value)} - ${logMessage.message}`
+class Logger {
+  private log(level: LogLevel, options: LoggerOptions) {
+    const { fileName, emoji, action, label, value, message } = options;
+    console[level](`${fileName}: ${emoji}, ${action}; ${label}=${JSON.stringify(value)} - ${message}`);
   }
 
-  info(fileName: string, lineNumber: number, functionName: string, variableName: string, value: any, message: string) {
-    const logMessage: LogMessage = {
-      fileName,
-      lineNumber,
-      functionName,
-      variableName,
-      value,
-      message,
-      level: LogLevel.INFO
-    }
-    if (process.env.NODE_ENV === "development") {
-      console.log(this.formatMessage(logMessage));
-    }
+  info(options: LoggerOptions) {
+    this.log('info', options);
   }
 
-  warn(fileName: string, lineNumber: number, functionName: string, variableName: string, value: any, message: string) {
-    const logMessage: LogMessage = {
-      fileName,
-      lineNumber, 
-      functionName,
-      variableName,
-      value,
-      message,
-      level: LogLevel.WARNING
-    }
-    if (process.env.NODE_ENV === "development") {
-      console.warn(this.formatMessage(logMessage));
-    }
+  error(options: LoggerOptions) {
+    this.log('error', options);
   }
 
-  error(fileName: string, lineNumber: number, functionName: string, variableName: string, value: any, message: string) {
-    const logMessage: LogMessage = {
-      fileName,
-      lineNumber,
-      functionName,
-      variableName,
-      value,
-      message,
-      level: LogLevel.ERROR
-    }
-    if (process.env.NODE_ENV === "development") {
-      console.error(this.formatMessage(logMessage));
-    }
+  warn(options: LoggerOptions) {
+    this.log('warn', options);
+  }
+
+  debug(options: LoggerOptions) {
+    this.log('debug', options);
   }
 }
 
-export const logger = new EdgeLogger()
+export const logger = new Logger();

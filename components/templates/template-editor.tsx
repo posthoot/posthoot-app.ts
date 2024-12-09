@@ -6,41 +6,81 @@ import EmailEditor, { EditorRef, EmailEditorProps } from "react-email-editor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { EmailTemplate } from "@/types";
+import { useTeam } from "@/app/providers/team-provider";
+import { EmailCategory } from "@prisma/client";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Settings, Mail, Send } from "lucide-react";
 
 interface TemplateEditorProps {
   templateId: string;
 }
 
+const testEmailSchema = z.object({
+  email: z.string().email(),
+});
+
 export function TemplateEditor({ templateId }: TemplateEditorProps) {
   const router = useRouter();
   const { toast } = useToast();
   const emailEditorRef = useRef<EditorRef | null>(null);
+  const { team } = useTeam();
+
   const [template, setTemplate] = useState<EmailTemplate>({
     id: "",
     name: "",
     subject: "",
     content: "",
     variables: [],
-    userId: "",
+    teamId: team?.id || "some-team-id",
+    html: "",
+    design: {},
     createdAt: new Date(),
     updatedAt: new Date(),
+    emailCategoryId: "Transactional",
   });
+  const [activeTab, setActiveTab] = useState("settings");
+  const [emailCategories, setEmailCategories] = useState<EmailCategory[]>([]);
+  const [isSendingTestEmail, setIsSendingTestEmail] = useState(false);
+  const [showTestEmailDialog, setShowTestEmailDialog] = useState(false);
+
+  const getEmailCategories = async () => {
+    try {
+      const response = await fetch("/api/email-category");
+      const data = await response.json();
+      setEmailCategories(data);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch email categories",
+        variant: "destructive",
+      });
+    }
+  };
 
   useEffect(() => {
+    getEmailCategories();
     if (templateId !== "new") {
       fetchTemplate();
     }
   }, [templateId]);
 
   const onReady: EmailEditorProps["onReady"] = (unlayer) => {
-    // Load saved design if editing existing template
-    if (templateId !== "new" && template.html) {
+    if (templateId !== "new" && template.design) {
       try {
-        const design = JSON.parse(template.html);
-        unlayer?.loadDesign(design);
+        unlayer?.loadDesign(template.design as any);
       } catch (error) {
         console.error("Failed to load template design:", error);
       }
@@ -61,17 +101,28 @@ export function TemplateEditor({ templateId }: TemplateEditorProps) {
     }
   };
 
+  const templateCategories = emailCategories.map((category) => ({
+    label: category.name,
+    value: category.id,
+  }));
+
+  const selectedCategory = templateCategories.find(
+    (category) => category.value === template.emailCategoryId
+  );
+
   const handleSave = async () => {
     try {
       const unlayer = emailEditorRef.current?.editor;
-      // Export the design from the editor
       unlayer?.exportHtml(async (data) => {
-        const { design, html } = data;
+        const { html, design } = data;
 
         const updatedTemplate = {
           ...template,
-          content: JSON.stringify(design), // Store the design JSON
-          html: html, // Store the rendered HTML
+          content: "This is a HTML ",
+          html: html,
+          teamId: team.id,
+          design: design,
+          emailCategoryId: selectedCategory?.value,
         };
 
         const response = await fetch(
@@ -100,38 +151,153 @@ export function TemplateEditor({ templateId }: TemplateEditorProps) {
     }
   };
 
+  const sendTestEmail = async (email: string) => {
+    setIsSendingTestEmail(true);
+    emailEditorRef.current?.editor?.exportHtml(async ({ html }) => {
+      const response = await fetch(`/api/email`, {
+        method: "POST",
+        body: JSON.stringify({
+          email,
+          html,
+          teamId: team.id,
+          subject: template.subject,
+          provider: "gmail",
+        }),
+      });
+
+      setIsSendingTestEmail(false);
+
+      if (!response.ok) {
+        throw new Error("Failed to send test email");
+      }
+
+      toast({
+        title: "Success",
+        description: "Test email sent successfully",
+      });
+    });
+  };
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(testEmailSchema),
+  });
+
+  const onSubmit = (data: { email: string }) => {
+    sendTestEmail(data.email);
+    setShowTestEmailDialog(false);
+  };
+
   return (
-    <div className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="name">Template Name</Label>
-        <Input
-          id="name"
-          className="bg-white"
-          value={template.name}
-          onChange={(e) => setTemplate({ ...template, name: e.target.value })}
-        />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="subject">Subject</Label>
-        <Input
-          id="subject"
-          className="bg-white"
-          value={template.subject}
-          onChange={(e) =>
-            setTemplate({ ...template, subject: e.target.value })
-          }
-        />
-      </div>
+    <div className="flex flex-col h-screen">
+      <div className="flex justify-between items-center p-4 border-b">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <div className="flex justify-between items-center">
+            <TabsList>
+              <TabsTrigger value="settings" className="flex items-center gap-2">
+                <Settings className="h-4 w-4" />
+                Settings
+              </TabsTrigger>
+              <TabsTrigger value="design" className="flex items-center gap-2">
+                <Mail className="h-4 w-4" />
+                Design
+              </TabsTrigger>
+            </TabsList>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="secondary"
+                onClick={() => setShowTestEmailDialog(true)}
+                className="flex items-center gap-2"
+              >
+                <Send className="h-4 w-4" />
+                {isSendingTestEmail ? "Sending..." : "Send Test"}
+              </Button>
+              <Button onClick={handleSave}>Save Template</Button>
+            </div>
+          </div>
 
-      <Card className="h-[700px] w-full">
-        <EmailEditor ref={emailEditorRef} onReady={onReady} minHeight="650px" />
-      </Card>
+          <Dialog open={showTestEmailDialog} onOpenChange={setShowTestEmailDialog}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Send Test Email</DialogTitle>
+              </DialogHeader>
+              <form className="flex flex-col space-y-4" onSubmit={handleSubmit(onSubmit)}>
+                <Input
+                  name="email"
+                  required
+                  type="email"
+                  placeholder="Email"
+                  {...register("email")}
+                />
+                {errors.email && (
+                  <span className="text-red-500">{errors.email.message as string}</span>
+                )}
+                {isSendingTestEmail ? (
+                  <Button type="submit" disabled>Sending...</Button>
+                ) : (
+                  <Button type="submit">Send</Button>
+                )}
+              </form>
+            </DialogContent>
+          </Dialog>
 
-      <div className="flex gap-2">
-        <Button onClick={handleSave}>Save Template</Button>
-        <Button variant="outline" onClick={() => router.push("/templates")}>
-          Cancel
-        </Button>
+          <div className="flex-1 overflow-hidden">
+            <TabsContent value="settings" className="h-full">
+              <div className="max-w-2xl mx-auto p-6 space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Template Name</Label>
+                  <Input
+                    id="name"
+                    value={template.name}
+                    onChange={(e) => setTemplate({ ...template, name: e.target.value })}
+                    placeholder="Enter template name"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="subject">Subject</Label>
+                  <Input
+                    id="subject"
+                    value={template.subject}
+                    onChange={(e) => setTemplate({ ...template, subject: e.target.value })}
+                    placeholder="Enter email subject"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="emailCategory">Email Category</Label>
+                  <Select
+                    value={selectedCategory?.value}
+                    onValueChange={(value) => setTemplate({ ...template, emailCategoryId: value })}
+                    defaultValue={selectedCategory?.value}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {templateCategories.map((category) => (
+                        <SelectItem key={category.value} value={category.value}>
+                          {category.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="design" className="h-full">
+              <div className="h-full">
+                <EmailEditor
+                  ref={emailEditorRef}
+                  onReady={onReady}
+                  minHeight="calc(100vh - 120px)"
+                />
+              </div>
+            </TabsContent>
+          </div>
+        </Tabs>
       </div>
     </div>
   );

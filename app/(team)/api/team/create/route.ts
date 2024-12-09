@@ -16,14 +16,14 @@ export async function POST(req: Request) {
     const session = await auth();
 
     if (!session?.user) {
-      logger.error(
-        FILE_NAME,
-        19,
-        'POST',
-        'session',
-        null,
-        '🔒 User not authenticated'
-      );
+      logger.error({
+        fileName: FILE_NAME,
+        emoji: "🔒",
+        action: "POST",
+        label: "session",
+        value: null,
+        message: "User not authenticated",
+      });
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -35,14 +35,14 @@ export async function POST(req: Request) {
     // Validate request body
     const validatedData = TeamCreateSchema.safeParse(body);
     if (!validatedData.success) {
-      logger.error(
-        FILE_NAME,
-        36,
-        'POST',
-        'validationError',
-        validatedData.error,
-        '❌ Invalid team data'
-      );
+      logger.error({
+        fileName: FILE_NAME,
+        emoji: "❌",
+        action: "POST",
+        label: "validationError",
+        value: validatedData.error,
+        message: "Invalid team data",
+      });
       return NextResponse.json(
         { error: 'Invalid input data' },
         { status: 400 }
@@ -56,14 +56,14 @@ export async function POST(req: Request) {
     });
 
     if (existingTeam?.teamId) {
-      logger.error(
-        FILE_NAME,
-        55,
-        'POST',
-        'existingTeam',
-        existingTeam,
-        '👥 User already belongs to a team'
-      );
+      logger.error({
+        fileName: FILE_NAME,
+        emoji: "👥",
+        action: "POST",
+        label: "existingTeam",
+        value: existingTeam,
+        message: "User already belongs to a team",
+      });
       return NextResponse.json(
         { error: 'User already belongs to a team' },
         { status: 409 }
@@ -83,26 +83,26 @@ export async function POST(req: Request) {
       }
     });
 
-    logger.info(
-      FILE_NAME,
-      80,
-      'POST',
-      'team',
-      team,
-      '✨ Team created successfully'
-    );
+    logger.info({
+      fileName: FILE_NAME,
+      emoji: "✨",
+      action: "POST",
+      label: "team",
+      value: team,
+      message: "Team created successfully",
+    });
 
     return NextResponse.json(team);
 
   } catch (error) {
-    logger.error(
-      FILE_NAME,
-      91,
-      'POST',
-      'error',
-      error,
-      '💥 Error creating team'
-    );
+    logger.error({
+      fileName: FILE_NAME,
+      emoji: "💥",
+      action: "POST",
+      label: "error",
+      value: error,
+      message: "Error creating team",
+    });
     
     return NextResponse.json(
       { error: 'Failed to create team' },

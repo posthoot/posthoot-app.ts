@@ -54,23 +54,23 @@ export function TeamProvider({ children }: { children: React.ReactNode }) {
       const teamData = await response.json();
       setTeam(teamData);
 
-      logger.info(
-        "team-provider.tsx",
-        45,
-        "fetchTeamData",
-        "teamData",
-        teamData,
-        "✅ Team data fetched successfully"
-      );
+      logger.info({
+        fileName: "team-provider.tsx",
+        action: "fetchTeamData",
+        label: "teamData",
+        value: teamData,
+        emoji: "✅",
+        message: "Team data fetched successfully",
+      });
     } catch (err) {
-      logger.error(
-        "team-provider.tsx",
-        53,
-        "fetchTeamData",
-        "error",
-        err,
-        "❌ Error fetching team data"
-      );
+      logger.error({
+        fileName: "team-provider.tsx",
+        action: "fetchTeamData",
+        label: "error",
+        value: err,
+        emoji: "❌",
+        message: "Error fetching team data",
+      });
       setError(
         err instanceof Error ? err : new Error("Failed to fetch team data")
       );

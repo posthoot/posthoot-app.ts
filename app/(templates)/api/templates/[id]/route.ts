@@ -20,25 +20,25 @@ export async function GET(
       );
     }
 
-    logger.info(
-      FILE_NAME,
-      24,
-      'GET',
-      'template',
-      template.id,
-      '📧 Retrieved email template'
-    );
+    logger.info({
+      fileName: FILE_NAME,
+      emoji: "📧",
+      action: "GET",
+      label: "template",
+      value: template.id,
+      message: "Retrieved email template",
+    });
 
     return NextResponse.json(template);
   } catch (error) {
-    logger.error(
-      FILE_NAME,
-      36,
-      'GET', 
-      'error',
-      error,
-      '❌ Error retrieving template'
-    );
+    logger.error({
+      fileName: FILE_NAME,
+      emoji: "❌",
+      action: "GET",
+      label: "error",
+      value: error,
+      message: "Error retrieving template",
+    });
 
     return NextResponse.json(
       { error: "Failed to fetch template" },
@@ -63,25 +63,25 @@ export async function PUT(
       },
     });
 
-    logger.info(
-      FILE_NAME,
-      64,
-      'PUT',
-      'template',
-      template.id,
-      '✅ Updated email template'
-    );
+    logger.info({
+      fileName: FILE_NAME,
+      emoji: "✅",
+      action: "PUT",
+      label: "template",
+      value: template.id,
+      message: "Updated email template",
+    });
 
     return NextResponse.json(template);
   } catch (error) {
-    logger.error(
-      FILE_NAME,
-      76,
-      'PUT',
-      'error',
-      error,
-      '❌ Error updating template'
-    );
+    logger.error({
+      fileName: FILE_NAME,
+      emoji: "❌",
+      action: "PUT",
+      label: "error",
+      value: error,
+      message: "Error updating template",
+    });
 
     return NextResponse.json(
       { error: "Failed to update template" },
@@ -99,25 +99,25 @@ export async function DELETE(
       where: { id: params.id },
     });
 
-    logger.info(
-      FILE_NAME,
-      98,
-      'DELETE',
-      'templateId',
-      params.id,
-      '🗑️ Deleted email template'
-    );
+    logger.info({
+      fileName: FILE_NAME,
+      emoji: "🗑️",
+      action: "DELETE",
+      label: "templateId",
+      value: params.id,
+      message: "Deleted email template",
+    });
 
     return new NextResponse(null, { status: 204 });
   } catch (error) {
-    logger.error(
-      FILE_NAME,
-      110,
-      'DELETE',
-      'error',
-      error,
-      '❌ Error deleting template'
-    );
+    logger.error({
+      fileName: FILE_NAME,
+      emoji: "❌",
+      action: "DELETE",
+      label: "error",
+      value: error,
+      message: "Error deleting template",
+    });
 
     return NextResponse.json(
       { error: "Failed to delete template" },
