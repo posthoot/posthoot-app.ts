@@ -30,7 +30,7 @@ export function extractVariables(html: string): string[] {
 
 export function removeUndefined<T>(obj: T): T {
   return Object.fromEntries(
-    Object.entries(obj).filter(([_, v]) => v !== undefined)
+    Object.entries(obj).filter(([_, v]) => !isEmpty(v))
   ) as T;
 }
 

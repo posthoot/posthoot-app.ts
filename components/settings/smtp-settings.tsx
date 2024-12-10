@@ -4,13 +4,6 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -41,8 +34,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { logger } from "@/app/lib/logger";
 import { useTeam } from "@/app/providers/team-provider";
+import { useSMTP } from "@/app/providers/smtp-provider";
+import { SMTPConfig, formSchema } from "@/lib/validations/smtp-provider";
 
 const SMTP_PROVIDERS = {
   gmail: {
@@ -63,24 +57,25 @@ const SMTP_PROVIDERS = {
   },
 } as const;
 
-const formSchema = z.object({
-  id: z.string().optional(),
-  provider: z.string(),
-  host: z.string().min(1, "Host is required"),
-  port: z.string().regex(/^\d+$/, "Port must be a number"),
-  username: z.string().email("Invalid email"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-  isActive: z.boolean().default(true),
-});
 
-type SMTPConfig = z.infer<typeof formSchema>;
 
-export function SMTPSettings({ isDialogOpen, setIsDialogOpen }: { isDialogOpen: boolean, setIsDialogOpen: (open: boolean) => void }) {
+export function SMTPSettings({
+  isDialogOpen,
+  setIsDialogOpen,
+}: {
+  isDialogOpen: boolean;
+  setIsDialogOpen: (open: boolean) => void;
+}) {
   const { toast } = useToast();
-  const [smtpConfigs, setSmtpConfigs] = useState<SMTPConfig[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [editConfig, setEditConfig] = useState<SMTPConfig | null>(null);
   const { team } = useTeam();
+  const {
+    configs: smtpConfigs,
+    isLoading,
+    error,
+    updateConfig,
+    refresh,
+  } = useSMTP();
 
   const openCreateSMTPDialog = () => {
     setEditConfig(null);
@@ -96,23 +91,8 @@ export function SMTPSettings({ isDialogOpen, setIsDialogOpen }: { isDialogOpen: 
     },
   });
 
-  const fetchSMTPConfigs = async (teamId: string) => {
-    try {
-      const response = await fetch(`/api/smtp?teamId=${teamId}`);
-      const data = await response.json();
-      setSmtpConfigs(data);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch SMTP configurations",
-        variant: "destructive",
-      });
-    }
-  };
-
   const onSubmit = async (data: SMTPConfig) => {
     try {
-      setIsLoading(true);
       const response = await fetch("/api/smtp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -120,8 +100,7 @@ export function SMTPSettings({ isDialogOpen, setIsDialogOpen }: { isDialogOpen: 
       });
 
       if (!response.ok) throw new Error("Failed to save configuration");
-
-      await fetchSMTPConfigs(team.id);
+      refresh();
       toast({
         title: "Success",
         description: "SMTP configuration saved successfully",
@@ -134,16 +113,13 @@ export function SMTPSettings({ isDialogOpen, setIsDialogOpen }: { isDialogOpen: 
         description: "Failed to save SMTP configuration",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const removeSMTPConfig = async (id: string) => {
     try {
-      setIsLoading(true);
       await fetch(`/api/smtp/${id}`, { method: "DELETE" });
-      setSmtpConfigs(smtpConfigs.filter((config) => config.id !== id));
+      refresh();
       toast({
         title: "Success",
         description: "SMTP configuration removed successfully",
@@ -154,14 +130,11 @@ export function SMTPSettings({ isDialogOpen, setIsDialogOpen }: { isDialogOpen: 
         description: "Failed to remove SMTP configuration",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const testConfiguration = async (config: SMTPConfig) => {
     try {
-      setIsLoading(true);
       const response = await fetch(`/api/smtp/test`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -180,8 +153,6 @@ export function SMTPSettings({ isDialogOpen, setIsDialogOpen }: { isDialogOpen: 
         description: "SMTP configuration test failed",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -193,12 +164,6 @@ export function SMTPSettings({ isDialogOpen, setIsDialogOpen }: { isDialogOpen: 
       form.setValue("port", provider.port);
     }
   };
-
-  useEffect(() => {
-    if (team?.id) {
-      fetchSMTPConfigs(team.id);
-    }
-  }, [team?.id]);
 
   useEffect(() => {
     if (editConfig) {
@@ -281,7 +246,12 @@ export function SMTPSettings({ isDialogOpen, setIsDialogOpen }: { isDialogOpen: 
 
   return (
     <div className="space-y-6">
-      <DataTable columns={columns} data={smtpConfigs} filterColumn="provider" />
+      <DataTable
+        isLoading={isLoading}
+        columns={columns}
+        data={smtpConfigs}
+        filterColumn="provider"
+      />
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>

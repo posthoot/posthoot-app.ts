@@ -52,6 +52,7 @@ model Team {
   invites     TeamInvite[]
   templates   EmailTemplate[]
   lists       MailingList[]
+  automations Automation[]
   campaigns   Campaign[]
   apiKeys     ApiKey[]
   createdAt   DateTime        @default(now())
@@ -95,28 +96,43 @@ model ApiKey {
 }
 
 model Campaign {
-  id           String             @id @default(cuid())
-  name         String
-  description  String?            @db.Text
-  templateId   String
-  template     EmailTemplate      @relation(fields: [templateId], references: [id])
-  userId       String
-  teamId       String
-  team         Team               @relation(fields: [teamId], references: [id])
-  status       CampaignStatus     @default(DRAFT)
-  scheduledFor DateTime?
-  listId       String
-  mailingList  MailingList        @relation(fields: [listId], references: [id])
-  sentEmails   SentEmail[]
-  analytics    CampaignAnalytics?
-  emailJobs    EmailJob[]
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
+  id                String                     @id @default(cuid())
+  name              String
+  description       String?                    @db.Text
+  templateId        String
+  template          EmailTemplate              @relation(fields: [templateId], references: [id])
+  teamId            String
+  team              Team                       @relation(fields: [teamId], references: [id])
+  status            CampaignStatus             @default(DRAFT)
+  scheduledFor      DateTime?
+  schedule          CampaignSchedule?
+  listId            String
+  recurringSchedule CampaignRecurringSchedule?
+  cronExpression    String?
+  mailingList       MailingList                @relation(fields: [listId], references: [id])
+  sentEmails        SentEmail[]
+  analytics         CampaignAnalytics?
+  smtpConfigId      String?
+  smtpConfig        SmtpConfig?                @relation(fields: [smtpConfigId], references: [id])
+  emailJobs         EmailJob[]
+  createdAt         DateTime                   @default(now())
+  updatedAt         DateTime                   @updatedAt
 
   @@index([templateId])
-  @@index([userId])
   @@index([teamId])
   @@index([listId])
+}
+
+enum CampaignSchedule {
+  ONE_TIME
+  RECURRING
+}
+
+enum CampaignRecurringSchedule {
+  DAILY
+  WEEKLY
+  MONTHLY
+  CUSTOM
 }
 
 model MailingList {
@@ -147,15 +163,15 @@ model Subscriber {
   state          String?
   postalCode     String?
   country        String?
-  metadata       Json?            // For any additional custom fields
-  tags           String[]         // For categorizing subscribers
-  customFields   Json?            // For structured custom fields
-  source         String?          // How the subscriber was added (import, form, api, etc.)
+  metadata       Json? // For any additional custom fields
+  tags           String[] // For categorizing subscribers
+  customFields   Json? // For structured custom fields
+  source         String? // How the subscriber was added (import, form, api, etc.)
   listId         String
   mailingList    MailingList      @relation(fields: [listId], references: [id])
   status         SubscriberStatus @default(ACTIVE)
   unsubscribedAt DateTime?
-  lastActivityAt DateTime?        // Last interaction (open, click, etc.)
+  lastActivityAt DateTime? // Last interaction (open, click, etc.)
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
   sentEmails     SentEmail[]
@@ -318,18 +334,78 @@ enum UserStatus {
 }
 
 model SmtpConfig {
-  id        String   @id @default(cuid())
-  provider  String   @default("custom")
+  id        String     @id @default(cuid())
+  provider  String     @default("custom")
   host      String
   port      String
   username  String
   password  String
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  isActive  Boolean    @default(true)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  campaigns Campaign[]
   teamId    String
-  team      Team     @relation(fields: [teamId], references: [id])
+  team      Team       @relation(fields: [teamId], references: [id])
 
   @@unique([teamId, provider])
   @@index([teamId])
+}
+
+model Automation {
+  id          String               @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  isActive    Boolean              @default(true)
+  teamId      String
+  team        Team                 @relation(fields: [teamId], references: [id])
+  nodes       AutomationNode[]
+  edges       AutomationNodeEdge[]
+
+  @@index([teamId])
+}
+
+model AutomationNode {
+  id           String               @id @default(cuid())
+  automationId String
+  automation   Automation           @relation(fields: [automationId], references: [id])
+  type         NodeType
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  edgesFrom    AutomationNodeEdge[] @relation("Source")
+  edgesTo      AutomationNodeEdge[] @relation("Target")
+  data         Json?
+}
+
+model AutomationNodeEdge {
+  id           String         @id @default(cuid())
+  automationId String
+  automation   Automation     @relation(fields: [automationId], references: [id])
+  sourceId     String
+  source       AutomationNode @relation("Source", fields: [sourceId], references: [id])
+  targetId     String
+  target       AutomationNode @relation("Target", fields: [targetId], references: [id])
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  label    String?
+  animated Boolean @default(true)
+}
+
+enum NodeType {
+  START
+  EMAIL // Send email using EmailTemplate
+  WAIT // Simple delay
+  CONDITION // Branch based on conditions
+  WEBHOOK // Call external webhook
+  ADD_TO_LIST // Add subscriber to MailingList
+  REMOVE_FROM_LIST // Remove subscriber from MailingList 
+  UPDATE_SUBSCRIBER // Update Subscriber fields
+  CHECK_ENGAGEMENT // Check if subscriber opened/clicked
+  SEGMENT // Filter subscribers based on criteria
+  TAG // Add/remove tags from subscriber
+  UNSUBSCRIBE // Mark subscriber as unsubscribed
+  CUSTOM_CODE // Run custom code
+  EXIT // End automation branch
 }

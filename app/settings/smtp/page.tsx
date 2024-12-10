@@ -1,5 +1,6 @@
 "use client";
 
+import { SMTPProvider } from "@/app/providers/smtp-provider";
 import { PageHeader } from "@/components/page-header";
 import { SMTPSettings } from "@/components/settings/smtp-settings";
 import { Button } from "@/components/ui/button";
@@ -18,14 +19,15 @@ export default function SMTPPage() {
         heading="SMTP Settings"
         description="Manage your SMTP servers and configurations"
       >
-        <Button
-          onClick={openCreateSMTPDialog}
-        >
-          Add SMTP Server
-        </Button>
+        <Button onClick={openCreateSMTPDialog}>Add SMTP Server</Button>
       </PageHeader>
       <div className="px-6 py-4">
-        <SMTPSettings isDialogOpen={isDialogOpen} setIsDialogOpen={setIsDialogOpen} />
+        <SMTPProvider>
+          <SMTPSettings
+            isDialogOpen={isDialogOpen}
+            setIsDialogOpen={setIsDialogOpen}
+          />
+        </SMTPProvider>
       </div>
     </div>
   );
