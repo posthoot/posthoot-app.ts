@@ -29,36 +29,38 @@ model EmailTemplate {
 }
 
 model User {
-  id              String       @id @default(cuid())
-  name            String?
-  email           String       @unique
-  password        String
-  role            UserRole     @default(USER)
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
-  status          UserStatus   @default(ACTIVE)
-  teamId          String?
-  team            Team?        @relation(fields: [teamId], references: [id])
-  invitesSent     TeamInvite[] @relation("Inviter")
-  invitesReceived TeamInvite[] @relation("Invitee")
+  id          String       @id @default(cuid())
+  name        String?
+  email       String       @unique
+  password    String
+  role        UserRole     @default(USER)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  status      UserStatus   @default(ACTIVE)
+  teamId      String?
+  team        Team?        @relation(fields: [teamId], references: [id])
+  invitesSent TeamInvite[] @relation("Inviter")
 
   @@index([teamId])
 }
 
 model Team {
-  id          String          @id @default(cuid())
-  name        String
-  users       User[]
-  invites     TeamInvite[]
-  templates   EmailTemplate[]
-  lists       MailingList[]
-  automations Automation[]
-  campaigns   Campaign[]
-  apiKeys     ApiKey[]
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-  smtpConfigs SmtpConfig[]
-  sentEmails  SentEmail[]
+  id              String          @id @default(cuid())
+  name            String
+  logoUrl         String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  emailTemplateId String?
+  users           User[]
+  invites         TeamInvite[]
+  templates       EmailTemplate[]
+  lists           MailingList[]
+  automations     Automation[]
+  campaigns       Campaign[]
+  apiKeys         ApiKey[]
+  smtpConfigs     SmtpConfig[]
+  sentEmails      SentEmail[]
+  customDomains   CustomDomain[]
 
   @@index([id])
 }
@@ -69,30 +71,50 @@ model TeamInvite {
   team      Team         @relation(fields: [teamId], references: [id])
   inviterId String
   inviter   User         @relation("Inviter", fields: [inviterId], references: [id])
-  inviteeId String
-  invitee   User         @relation("Invitee", fields: [inviteeId], references: [id])
   status    InviteStatus @default(PENDING)
   expiresAt DateTime
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
+  email     String
+  name      String
 
   @@index([teamId])
   @@index([inviterId])
-  @@index([inviteeId])
 }
 
 model ApiKey {
-  id         String    @id @default(cuid())
+  id         String        @id @default(cuid())
   name       String
-  key        String    @unique
+  key        String        @unique
   teamId     String
-  team       Team      @relation(fields: [teamId], references: [id])
+  team       Team          @relation(fields: [teamId], references: [id])
   lastUsedAt DateTime?
   expiresAt  DateTime?
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  scopes     String[]      @default([])
+  rateLimit  Int           @default(1000) // Requests per hour
+  isActive   Boolean       @default(true)
+  usageStats ApiKeyUsage[]
 
   @@index([teamId])
+  @@index([key])
+}
+
+model ApiKeyUsage {
+  id        String   @id @default(cuid())
+  apiKeyId  String
+  apiKey    ApiKey   @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+  endpoint  String
+  method    String
+  timestamp DateTime @default(now())
+  success   Boolean  @default(true)
+  error     String?
+  ipAddress String?
+  userAgent String?
+
+  @@index([apiKeyId])
+  @@index([timestamp])
 }
 
 model Campaign {
@@ -224,6 +246,8 @@ model EmailTracking {
 enum TrackingType {
   CLICKED
   OPENED
+  BOUNCED
+  FAILED
 }
 
 model EmailJob {
@@ -408,4 +432,25 @@ enum NodeType {
   UNSUBSCRIBE // Mark subscriber as unsubscribed
   CUSTOM_CODE // Run custom code
   EXIT // End automation branch
+}
+
+model CustomDomain {
+  id                String    @id @default(cuid())
+  domain            String    @unique
+  sslStatus         String    @default("pending") // pending, active, failed
+  sslCertificate    String? // SSL certificate details
+  sslPrivateKey     String?   @db.Text // SSL private key (encrypted)
+  sslExpiresAt      DateTime? // SSL certificate expiration date
+  verificationToken String    @default(cuid()) // For domain verification
+  dnsChallenge      String?   @db.Text // For ACME DNS challenge
+  dnsChallengeToken String? // For ACME DNS challenge token
+  isVerified        Boolean   @default(false)
+  isActive          Boolean   @default(false)
+  team              Team      @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId            String
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([teamId])
+  @@index([domain])
 }
