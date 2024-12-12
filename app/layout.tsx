@@ -1,9 +1,9 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { headers } from "next/headers";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Sidebar } from "@/components/sidebar";
-import { logger } from "@/app/lib/logger";
 import { auth } from "@/auth";
 import { NextAuthProvider } from "./providers/NextAuthProvider";
 import { TeamProvider } from "@/app/providers/team-provider";
@@ -38,15 +38,6 @@ export const metadata: Metadata = {
 async function MainLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
 
-  logger.info({
-    fileName: "layout.tsx",
-    action: "MainLayout",
-    message: "MainLayout",
-    emoji: "🏠",
-    label: "MainLayout",
-    value: session,
-  });
-
   if (!session) {
     return <>{children}</>;
   }
@@ -55,25 +46,25 @@ async function MainLayout({ children }: { children: React.ReactNode }) {
     <div className="flex h-screen bg-background">
       <Sidebar />
       <main className="flex-1 overflow-y-auto">
-        <div className="flex flex-col min-h-screen">
-          {children}
-        </div>
+        <div className="flex flex-col min-h-screen">{children}</div>
       </main>
     </div>
   );
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={cn(
-        inter.className,
-        "antialiased bg-background text-foreground"
-      )}>
+      <body
+        className={cn(
+          inter.className,
+          "antialiased bg-background text-foreground"
+        )}
+      >
         <ThemeProvider attribute="class" defaultTheme="dark">
           <NextAuthProvider>
             <TeamProvider>

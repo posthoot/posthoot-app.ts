@@ -1,6 +1,10 @@
 import { TemplateEditor } from "@/components/templates/template-editor";
 
-export default function EditTemplatePage({ params }: { params: { id: string } }) {
+export default async function EditTemplatePage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   return (
     <div className="p-8 space-y-8">
       <div>
@@ -9,7 +13,7 @@ export default function EditTemplatePage({ params }: { params: { id: string } })
           Edit your email template and preview the result
         </p>
       </div>
-      <TemplateEditor templateId={params.id} />
+      <TemplateEditor templateId={(await params).id} />
     </div>
   );
-} 
+}

@@ -1,11 +1,14 @@
 "use client";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { User, Bell, Key } from "lucide-react";
+import { User, Bell, Key, Palette, Globe } from "lucide-react";
 import { ApiKeys } from "./api-keys";
+import { ProfileSettings } from "./profile-settings";
+import { BrandingSettings } from "./branding-settings";
+import { CustomDomains } from "./custom-domains";
+import { TeamProvider } from "@/app/providers/team-provider";
 
 export function SettingsTabs() {
   return (
@@ -17,6 +20,20 @@ export function SettingsTabs() {
         >
           <User className="h-4 w-4" />
           Profile
+        </TabsTrigger>
+        <TabsTrigger
+          value="branding"
+          className="flex items-center gap-2 data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-12 px-4"
+        >
+          <Palette className="h-4 w-4" />
+          Branding
+        </TabsTrigger>
+        <TabsTrigger
+          value="domains"
+          className="flex items-center gap-2 data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-12 px-4"
+        >
+          <Globe className="h-4 w-4" />
+          Domains
         </TabsTrigger>
         <TabsTrigger
           value="notifications"
@@ -37,25 +54,23 @@ export function SettingsTabs() {
       <TabsContent value="profile" className="space-y-4">
         <div className="border rounded-lg p-6">
           <h3 className="font-semibold mb-4">Profile Settings</h3>
-          <div className="space-y-4 max-w-2xl">
-            <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
-              <Input id="name" placeholder="Your name" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="Your email" />
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Two-factor Authentication</Label>
-                <div className="text-sm text-muted-foreground">
-                  Add an extra layer of security to your account
-                </div>
-              </div>
-              <Switch />
-            </div>
+          <div className="max-w-2xl">
+            <ProfileSettings />
           </div>
+        </div>
+      </TabsContent>
+
+      <TabsContent value="branding" className="space-y-4">
+        <div className="max-w-4xl">
+          <BrandingSettings />
+        </div>
+      </TabsContent>
+
+      <TabsContent value="domains" className="space-y-4">
+        <div className="max-w-4xl">
+          <TeamProvider>
+            <CustomDomains />
+          </TeamProvider>
         </div>
       </TabsContent>
 

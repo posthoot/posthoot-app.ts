@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import prisma from "@/app/lib/prisma";
+import { prisma } from "@/app/lib/prisma";
 import { logger } from "@/app/lib/logger";
 import { auth } from "@/auth";
 import { put } from "@vercel/blob";
@@ -15,6 +15,49 @@ const createTempFile = async (
   return tempFile;
 };
 
+/**
+ * @openapi
+ * /api/templates:
+ *   get:
+ *     summary: List email templates
+ *     tags: [Templates]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: teamId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the team
+ *     responses:
+ *       200:
+ *         description: List of email templates
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                   name:
+ *                     type: string
+ *                   html:
+ *                     type: string
+ *                   variables:
+ *                     type: array
+ *                     items:
+ *                       type: string
+ *                   updatedAt:
+ *                     type: string
+ *                     format: date-time
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
+ */
 export async function GET(request: Request) {
   try {
     const session = await auth();
@@ -62,6 +105,43 @@ export async function GET(request: Request) {
   }
 }
 
+/**
+ * @openapi
+ * /api/templates:
+ *   post:
+ *     summary: Create email template
+ *     tags: [Templates]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - html
+ *               - teamId
+ *             properties:
+ *               name:
+ *                 type: string
+ *               html:
+ *                 type: string
+ *               teamId:
+ *                 type: string
+ *               emailCategoryId:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Template created successfully
+ *       401:
+ *         description: Unauthorized
+ *       400:
+ *         description: Bad Request
+ *       500:
+ *         description: Internal Server Error
+ */
 export async function POST(req: Request) {
   try {
     const json = await req.json();

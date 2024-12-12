@@ -11,6 +11,7 @@ import { toast } from "sonner";
 
 const inviteSchema = z.object({
   email: z.string().email("Invalid email address"),
+  name: z.string().default(""),
   role: z.enum(["ADMIN", "USER"]),
 });
 
@@ -52,6 +53,14 @@ export function InviteTeamMember() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <div>
+        <Input
+          {...register("name")}
+          type="text"
+          placeholder="Name"
+          disabled={loading}
+        />
+      </div>
       <div>
         <Input
           {...register("email")}

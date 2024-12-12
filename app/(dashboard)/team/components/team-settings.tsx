@@ -1,71 +1,80 @@
 "use client";
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useState, useEffect } from "react";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { useTemplates } from "@/app/providers/templates-provider";
 import { useTeam } from "@/app/providers/team-provider";
-import { toast } from "sonner";
 
-const settingsSchema = z.object({
-  name: z.string().min(2, "Team name must be at least 2 characters"),
-});
-
-type SettingsFormData = z.infer<typeof settingsSchema>;
 
 export function TeamSettings() {
-  const { team, refreshTeam } = useTeam();
-  const [loading, setLoading] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<string>("");
+  const { toast } = useToast();
+  const { templates } = useTemplates();
+  const { team } = useTeam();
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<SettingsFormData>({
-    resolver: zodResolver(settingsSchema),
-    defaultValues: {
-      name: team?.name,
-    },
-  });
+  useEffect(() => {
+    if (team?.emailTemplateId) {
+      setSelectedTemplate(team.emailTemplateId);
+    }
+  }, [team]);
 
-  const onSubmit = async (data: SettingsFormData) => {
+  const handleTemplateChange = async (value: string) => {
+    setSelectedTemplate(value);
     try {
-      setLoading(true);
-      const response = await fetch(`/api/team/${team?.id}`, {
+      const response = await fetch("/api/team/settings", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          inviteTemplateId: value,
+        }),
       });
 
-      if (!response.ok) throw new Error("Failed to update team settings");
+      if (!response.ok) throw new Error("Failed to update settings");
 
-      toast.success("Team settings updated successfully");
-      refreshTeam();
+      toast({
+        title: "Success",
+        description: "Invite template updated successfully",
+      });
     } catch (error) {
-      toast.error("Failed to update team settings");
-    } finally {
-      setLoading(false);
+      toast({
+        title: "Error",
+        description: "Failed to update invite template",
+        variant: "destructive",
+      });
     }
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div>
-        <Input
-          {...register("name")}
-          placeholder="Team name"
-          disabled={loading}
-        />
-        {errors.name && (
-          <p className="text-sm text-red-500 mt-1">{errors.name.message}</p>
-        )}
+    <div className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="inviteTemplate">Invitation Email Template</Label>
+        <Select
+          disabled={templates.length === 0}
+          value={selectedTemplate}
+          onValueChange={handleTemplateChange}
+        >
+          <SelectTrigger id="inviteTemplate">
+            <SelectValue placeholder="Select a template" />
+          </SelectTrigger>
+          <SelectContent>
+            {templates.map((template) => (
+              <SelectItem key={template.id} value={template.id}>
+                {template.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
-
-      <Button type="submit" disabled={loading}>
-        {loading ? "Saving..." : "Save Settings"}
-      </Button>
-    </form>
+    </div>
   );
 }

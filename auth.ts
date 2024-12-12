@@ -1,13 +1,12 @@
-import NextAuth, { NextAuthConfig } from "next-auth";
-import Credentials from "next-auth/providers/credentials";
+import NextAuth, { NextAuthConfig, User } from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
-import prisma from "@/app/lib/prisma";
+import { prisma } from "@/app/lib/prisma";
 import { authConfig } from "./auth.config";
 import { logger } from "./app/lib/logger";
 import bcrypt from "bcryptjs";
-import { CustomAuthUser } from "./types/next-auth";
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+const nextAuthConfig: NextAuthConfig = {
   callbacks: authConfig.callbacks as any,
   adapter: PrismaAdapter(prisma) as any,
   session: { strategy: "jwt", maxAge: 60 * 60 * 24 * 30 },
@@ -18,22 +17,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     newUser: "/",
   },
   providers: [
-    Credentials({
+    CredentialsProvider({
+      id: "credentials",
+      name: "Credentials",
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials, req) {
+      async authorize(credentials) {
         try {
           if (!credentials?.email || !credentials?.password) {
-            logger.info({
-              fileName: "auth.ts",
-              action: "authorize",
-              label: "credentials",
-              value: credentials,
-              emoji: "❌",
-              message: "Missing credentials",
-            });
             return null;
           }
 
@@ -42,38 +35,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             include: { team: true },
           });
 
+          if (!user || !user.password) return null;
+
           const passwordsMatch = await bcrypt.compare(
             credentials.password as string,
             user.password as string
           );
 
-          if (!user || !user?.hasOwnProperty("email") || !passwordsMatch) {
-            logger.info({
-              fileName: "auth.ts",
-              action: "authorize",
-              label: "user",
-              value: user,
-              emoji: "❌",
-              message: "User not found",
-            });
-            return null;
-          }
+          if (!passwordsMatch) return null;
 
-          const finalUser: CustomAuthUser = {
-            ...user,
-            teamId: user.team.id,
-          } as CustomAuthUser;
-
-          logger.info({
-            fileName: "auth.ts",
-            action: "authorize",
-            label: "user",
-            value: finalUser,
-            emoji: "✅",
-            message: "User authorized",
-          });
-
-          return finalUser;
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+            teamId: user.team?.id,
+          };
         } catch (error) {
           logger.error({
             fileName: "auth.ts",
@@ -87,5 +64,67 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
       },
     }),
+    CredentialsProvider({
+      id: "api-key",
+      name: "API Key",
+      credentials: {
+        apiKey: { label: "API Key", type: "text" },
+      },
+      async authorize(credentials) {
+        try {
+          if (!credentials?.apiKey) return null;
+
+          const apiKey = await prisma.apiKey.findUnique({
+            where: {
+              key: credentials.apiKey as string,
+              isActive: true,
+              OR: [
+                { expiresAt: null },
+                { expiresAt: { gt: new Date() } }
+              ]
+            },
+            include: {
+              team: {
+                include: {
+                  users: {
+                    where: { role: "ADMIN" },
+                    take: 1,
+                    select: {
+                      id: true,
+                      email: true,
+                      name: true,
+                      role: true,
+                    }
+                  }
+                }
+              }
+            }
+          });
+
+          if (!apiKey?.team?.users[0]) return null;
+
+          const user = apiKey.team.users[0];
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+            teamId: apiKey.teamId,
+          };
+        } catch (error) {
+          logger.error({
+            fileName: "auth.ts",
+            action: "api-key-authorize",
+            label: "error",
+            value: error,
+            emoji: "❌",
+            message: "Error",
+          });
+          return null;
+        }
+      },
+    }),
   ],
-} satisfies NextAuthConfig);
+};
+
+export const { handlers, auth, signIn, signOut } = NextAuth(nextAuthConfig);

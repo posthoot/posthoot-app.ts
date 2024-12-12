@@ -3,34 +3,23 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { logger } from "@/app/lib/logger";
+import { Team, User, TeamInvite, CustomDomain } from "@prisma/client";
 
-interface Team {
-  id: string;
-  name: string;
-  users: Array<{
-    id: string;
-    name: string | null;
-    email: string;
-    role: string;
-  }>;
-  invites: Array<{
-    id: string;
-    email: string;
-    role: string;
-    inviter: {
-      id: string;
-      name: string | null;
-      email: string;
-    };
-  }>;
+interface TeamWithUsers extends Team {
+  users: User[];
+  invites: (TeamInvite & {
+    inviter: User;
+  })[];
+  customDomains: CustomDomain[];
 }
 
 interface TeamContextType {
-  team: Team | null;
+  team: TeamWithUsers | null;
   loading: boolean;
   error: Error | null;
   refreshTeam: () => Promise<void>;
 }
+
 
 const TeamContext = createContext<TeamContextType | undefined>(undefined);
 
@@ -89,7 +78,9 @@ export function TeamProvider({ children }: { children: React.ReactNode }) {
   }, [session?.user]);
 
   return (
-    <TeamContext.Provider value={{ team, loading, error, refreshTeam }}>
+    <TeamContext.Provider
+      value={{ team: team as TeamWithUsers, loading, error, refreshTeam }}
+    >
       {children}
     </TeamContext.Provider>
   );

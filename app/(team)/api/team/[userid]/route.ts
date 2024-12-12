@@ -43,7 +43,7 @@ export async function GET(
   request: Request,
   {
     params,
-  }: { params: { userid: string } } & { params: Promise<{ userid: string }> }
+  }: { params: Promise<{ userid: string }> }
 ) {
   try {
     const session = await auth();
@@ -65,6 +65,12 @@ export async function GET(
             role: true,
           },
         },
+        invites: {
+          include: {
+            inviter: true,
+          },
+        },
+        customDomains: true,
       },
     });
 
@@ -76,15 +82,6 @@ export async function GET(
     if (!team.users.some((user) => user.id === session.user.id)) {
       return new NextResponse("Forbidden", { status: 403 });
     }
-
-    logger.info({
-      fileName: "route.ts",
-      emoji: "✅",
-      action: "GET",
-      label: "team",
-      value: JSON.stringify(team),
-      message: "Team data retrieved successfully",
-    });
 
     return NextResponse.json(team);
   } catch (error) {
@@ -136,7 +133,31 @@ export async function GET(
  */
 export async function PUT(
   request: Request,
-  { params }: { params: { userid: string } }
+  { params }: { params: Promise<{ userid: string }> }
 ) {
-  // ... existing implementation
+  const session = await auth();
+
+  if (!session?.user) {
+    return new NextResponse("Unauthorized", { status: 401 });
+  }
+
+  const { userid } = await params;
+
+  const { name, role } = await request.json();
+
+  const updatedUser = await prisma.user.update({
+    where: {
+      id: userid,
+      team: {
+        users: {
+          some: {
+            id: session.user.id,
+          },
+        },
+      },
+    },
+    data: { name, role },
+  });
+
+  return NextResponse.json(updatedUser);
 }

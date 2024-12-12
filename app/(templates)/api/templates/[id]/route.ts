@@ -1,16 +1,56 @@
 import { NextResponse } from "next/server";
-import prisma from "@/app/lib/prisma";
+import { prisma } from "@/app/lib/prisma";
 import { logger } from "@/app/lib/logger";
 
 const FILE_NAME = 'app/api/templates/[id]/route.ts';
 
+/**
+ * @openapi
+ * /api/templates/{id}:
+ *   get:
+ *     summary: Get a specific email template
+ *     tags: [Templates]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Template ID
+ *     responses:
+ *       200:
+ *         description: Email template details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 name:
+ *                   type: string
+ *                 html:
+ *                   type: string
+ *                 variables:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Template not found
+ *       500:
+ *         description: Internal Server Error
+ */
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const template = await prisma.emailTemplate.findUnique({
-      where: { id: params.id },
+      where: { id: (await params).id },
     });
 
     if (!template) {
@@ -47,14 +87,60 @@ export async function GET(
   }
 }
 
+/**
+ * @openapi
+ * /api/templates/{id}:
+ *   put:
+ *     summary: Update an email template
+ *     tags: [Templates]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Template ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - subject
+ *               - content
+ *             properties:
+ *               name:
+ *                 type: string
+ *               subject:
+ *                 type: string
+ *               content:
+ *                 type: string
+ *               variables:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *     responses:
+ *       200:
+ *         description: Template updated successfully
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Template not found
+ *       500:
+ *         description: Internal Server Error
+ */
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const json = await req.json();
     const template = await prisma.emailTemplate.update({
-      where: { id: params.id },
+      where: { id: (await params).id },
       data: {
         name: json.name,
         subject: json.subject,
@@ -92,11 +178,11 @@ export async function PUT(
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await prisma.emailTemplate.delete({
-      where: { id: params.id },
+      where: { id: (await params).id },
     });
 
     logger.info({
@@ -104,7 +190,7 @@ export async function DELETE(
       emoji: "🗑️",
       action: "DELETE",
       label: "templateId",
-      value: params.id,
+      value: (await params).id,
       message: "Deleted email template",
     });
 

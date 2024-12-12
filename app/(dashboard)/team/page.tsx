@@ -3,10 +3,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TeamInfo } from "./components/team-info";
 import { InviteTeamMember } from "./components/invite-member";
 import { TeamInvites } from "./components/team-invites";
-import { TeamSettings } from "./components/team-settings";
 import { PageHeader } from "@/components/page-header";
 import { Users, Mail, Settings, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { TeamSettings } from "./components/team-settings";
+import { TemplatesProvider } from "@/app/providers/templates-provider";
 
 export const metadata: Metadata = {
   title: "Team Management | Email Engine",
@@ -67,11 +68,12 @@ export default function TeamPage() {
               <TeamInvites />
             </div>
           </TabsContent>
-
           <TabsContent value="settings" className="space-y-4">
             <div className="border rounded-lg p-6">
               <h3 className="font-semibold mb-4">Team Settings</h3>
-              <TeamSettings />
+              <TemplatesProvider>
+                <TeamSettings />
+              </TemplatesProvider>
             </div>
           </TabsContent>
         </Tabs>

@@ -5,6 +5,33 @@ import { auth } from "@/auth";
 const prisma = new PrismaClient();
 const FILE_NAME = "app/(email-category)/api/email-category/route.ts";
 
+/**
+ * @openapi
+ * /api/email-category:
+ *   get:
+ *     summary: List all email categories
+ *     tags: [Email Categories]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of email categories
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                   name:
+ *                     type: string
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
+ */
 export async function GET() {
   try {
     const session = await auth();
@@ -41,6 +68,35 @@ export async function GET() {
   }
 }
 
+/**
+ * @openapi
+ * /api/email-category:
+ *   post:
+ *     summary: Create a new email category
+ *     tags: [Email Categories]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *             properties:
+ *               name:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Email category created successfully
+ *       401:
+ *         description: Unauthorized - Requires admin role
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal Server Error
+ */
 export async function POST(req: Request) {
   try {
     const json = await req.json();
@@ -93,6 +149,38 @@ export async function POST(req: Request) {
   }
 }
 
+/**
+ * @openapi
+ * /api/email-category:
+ *   put:
+ *     summary: Update an email category
+ *     tags: [Email Categories]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - id
+ *               - name
+ *             properties:
+ *               id:
+ *                 type: string
+ *               name:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Email category updated successfully
+ *       401:
+ *         description: Unauthorized - Requires admin role
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal Server Error
+ */
 export async function PUT(req: Request) {
   try {
     const session = await auth();

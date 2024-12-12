@@ -11,6 +11,46 @@ const TeamCreateSchema = z.object({
   name: z.string().min(2, 'Team name must be at least 2 characters')
 });
 
+/**
+ * @openapi
+ * /api/team/create:
+ *   post:
+ *     summary: Create a new team
+ *     tags: [Team]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Team created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 name:
+ *                   type: string
+ *                 users:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                       email:
+ *                         type: string
+ *                       name:
+ *                         type: string
+ *                       role:
+ *                         type: string
+ *                       createdAt:
+ *                         type: string
+ *                         format: date-time
+ *                       updatedAt:
+ *                         type: string
+ *                         format: date-time
+ */
 export async function POST(req: Request) {
   try {
     const session = await auth();

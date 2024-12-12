@@ -12,9 +12,16 @@ export function formatDate(date: Date): string {
   }).format(new Date(date));
 }
 
-export function isEmpty(value: string | undefined | null): boolean {
+export function isEmpty(value: string | undefined | null | boolean): boolean {
+  if (typeof value === "boolean") {
+    return !value;
+  }
   return (
-    value === undefined || value === null || value === "" || value.length === 0
+    !value ||
+    value === undefined ||
+    value === null ||
+    value === "" ||
+    value.length === 0
   );
 }
 

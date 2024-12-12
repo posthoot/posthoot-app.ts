@@ -68,7 +68,9 @@ export function TeamInfo() {
                 </Avatar>
                 <div>
                   <p className="font-medium">{member.name || "Unnamed"}</p>
-                  <p className="text-sm text-muted-foreground">{member.email}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {member.email}
+                  </p>
                 </div>
               </div>
             </TableCell>
@@ -90,11 +92,7 @@ export function TeamInfo() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem
-                    onClick={() => {
-                      // Handle role change
-                    }}
-                  >
+                  <DropdownMenuItem onClick={() => {}}>
                     Change Role
                   </DropdownMenuItem>
                   <DropdownMenuItem
