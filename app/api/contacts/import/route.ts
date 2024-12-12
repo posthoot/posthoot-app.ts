@@ -4,6 +4,74 @@ import { prisma } from "@/app/lib/prisma";
 import { logger } from "@/app/lib/logger";
 import { parse } from "papaparse";
 
+/**
+ * @openapi
+ * /api/contacts/import:
+ *   post:
+ *     summary: Import contacts from a CSV file
+ *     tags: [Contacts]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 description: The CSV file to import
+ *                 in: formData
+ *                 required: true
+ *               teamId:
+ *                 type: string
+ *                 description: The ID of the team to import into
+ *                 in: formData
+ *                 required: true
+ *               listId:
+ *                 type: string
+ *                 description: The ID of the mailing list to import into
+ *                 in: formData
+ *                 required: true
+ *     responses:
+ *       200:
+ *         description: Contacts imported successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       400:
+ *         description: Invalid input data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *       404:
+ *         description: List not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ */
 export async function POST(request: Request) {
   try {
     const session = await auth();

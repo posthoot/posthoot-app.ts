@@ -10,47 +10,49 @@ const groupSchema = z.object({
   teamId: z.string(),
 });
 
-export async function POST(request: Request) {
-  try {
-    const session = await auth();
-    if (!session?.user) {
-      return new NextResponse("Unauthorized", { status: 401 });
-    }
-
-    const body = await request.json();
-    const { name, description, teamId } = groupSchema.parse(body);
-
-    const createdGroup = await prisma.mailingList.create({
-      data: {
-        name,
-        description,
-        teamId: teamId || session.user.teamId,
-      },
-    });
-
-    logger.info({
-      fileName: "route.ts",
-      emoji: "👥",
-      action: "POST",
-      label: "group",
-      value: createdGroup,
-      message: "Group created successfully",
-    });
-
-    return NextResponse.json(createdGroup);
-  } catch (error) {
-    logger.error({
-      fileName: "route.ts",
-      emoji: "❌",
-      action: "POST",
-      label: "error",
-      value: error,
-      message: "Failed to create group",
-    });
-    return new NextResponse("Internal Server Error", { status: 500 });
-  }
-}
-
+/**
+ * @openapi
+ * /api/mailing-list:
+ *   get:
+ *     summary: List all mailing lists
+ *     tags: [Mailing Lists]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: teamId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the team
+ *     responses:
+ *       200:
+ *         description: List of mailing lists
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                   name:
+ *                     type: string
+ *                   description:
+ *                     type: string
+ *                   _count:
+ *                     type: object
+ *                     properties:
+ *                       subscribers:
+ *                         type: number
+ *       401:
+ *         description: Unauthorized
+ *       400:
+ *         description: Bad Request - Team ID required
+ *       500:
+ *         description: Internal Server Error
+ */
 export async function GET(request: Request) {
   try {
     const session = await auth();
@@ -79,7 +81,6 @@ export async function GET(request: Request) {
       },
     });
 
-
     return NextResponse.json(mailingLists);
   } catch (error) {
     logger.error({
@@ -94,6 +95,42 @@ export async function GET(request: Request) {
   }
 }
 
+/**
+ * @openapi
+ * /api/mailing-list:
+ *   put:
+ *     summary: Update a mailing list
+ *     tags: [Mailing Lists]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - groupId
+ *               - name
+ *             properties:
+ *               groupId:
+ *                 type: string
+ *               name:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               teamId:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Mailing list updated successfully
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Group not found or not authorized
+ *       500:
+ *         description: Internal Server Error
+ */
 export async function PUT(request: Request) {
   try {
     const session = await auth();
@@ -102,7 +139,9 @@ export async function PUT(request: Request) {
     }
 
     const body = await request.json();
-    const { groupId, name, description, teamId } = groupSchema.extend({ groupId: z.string() }).parse(body);
+    const { groupId, name, description, teamId } = groupSchema
+      .extend({ groupId: z.string() })
+      .parse(body);
 
     const updatedGroup = await prisma.mailingList.updateMany({
       where: {
@@ -116,7 +155,9 @@ export async function PUT(request: Request) {
     });
 
     if (updatedGroup.count === 0) {
-      return new NextResponse("Group not found or not authorized", { status: 404 });
+      return new NextResponse("Group not found or not authorized", {
+        status: 404,
+      });
     }
 
     logger.info({
@@ -164,7 +205,9 @@ export async function DELETE(request: Request) {
     });
 
     if (deletedGroup.count === 0) {
-      return new NextResponse("Group not found or not authorized", { status: 404 });
+      return new NextResponse("Group not found or not authorized", {
+        status: 404,
+      });
     }
 
     logger.info({
@@ -185,6 +228,94 @@ export async function DELETE(request: Request) {
       label: "error",
       value: error,
       message: "Failed to delete group",
+    });
+    return new NextResponse("Internal Server Error", { status: 500 });
+  }
+}
+
+/**
+ * @openapi
+ * /api/mailing-list:
+ *   post:
+ *     summary: Create a new mailing list
+ *     tags: [Mailing Lists]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               teamId:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Mailing list created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 name:
+ *                   type: string
+ *                 description:
+ *                   type: string
+ *       401:
+ *         description: Unauthorized
+ *       400:
+ *         description: Bad Request - Invalid input
+ *       500:
+ *         description: Internal Server Error
+ */
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+    const validatedData = groupSchema.safeParse(body);
+
+    if (!validatedData.success) {
+      return new NextResponse("Invalid input", { status: 400 });
+    }
+
+    const { name, description, teamId } = validatedData.data;
+
+    const mailingList = await prisma.mailingList.create({
+      data: {
+        name,
+        description,
+        team: {
+          connect: {
+            id: teamId,
+          },
+        },
+      },
+    });
+
+    logger.info({
+      fileName: "route.ts",
+      emoji: "✨",
+      action: "POST",
+      label: "mailingList",
+      value: mailingList,
+      message: "Mailing list created successfully",
+    });
+
+    return NextResponse.json(mailingList, { status: 201 });
+  } catch (error) {
+    logger.error({
+      fileName: "route.ts",
+      emoji: "❌",
+      action: "POST",
+      label: "error",
+      value: error,
+      message: "Failed to create mailing list",
     });
     return new NextResponse("Internal Server Error", { status: 500 });
   }

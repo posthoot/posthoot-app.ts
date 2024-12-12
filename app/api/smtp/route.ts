@@ -14,6 +14,139 @@ const smtpConfigSchema = z.object({
   isActive: z.boolean(),
 });
 
+/**
+ * @openapi
+ * /api/smtp:
+ *   get:
+ *     summary: Get SMTP configurations
+ *     tags: [SMTP]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: teamId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the team
+ *     responses:
+ *       200:
+ *         description: List of SMTP configurations
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                   host:
+ *                     type: string
+ *                   port:
+ *                     type: number
+ *                   username:
+ *                     type: string
+ *                   isDefault:
+ *                     type: boolean
+ *       401:
+ *         description: Unauthorized
+ *       400:
+ *         description: Bad Request - Team ID required
+ *       500:
+ *         description: Internal Server Error
+ */
+export async function GET(request: Request) {
+  try {
+    const session = await auth();
+    if (!session?.user) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const teamId = searchParams.get("teamId");
+
+    if (!teamId) {
+      return new NextResponse("Team ID is required", { status: 400 });
+    }
+
+    const configs = await prisma.smtpConfig.findMany({
+      where: { teamId },
+    });
+
+    logger.info({
+      fileName: "route.ts",
+      emoji: "📨",
+      action: "GET",
+      label: `smtpConfigs: ${teamId}`,
+      value: configs,
+      message: "SMTP configurations fetched successfully",
+    });
+
+    return NextResponse.json(configs);
+  } catch (error) {
+    logger.error({
+      fileName: "route.ts",
+      emoji: "❌",
+      action: "GET",
+      label: "error",
+      value: error,
+      message: "Failed to fetch SMTP configurations",
+    });
+    return new NextResponse("Internal Server Error", { status: 500 });
+  }
+}
+
+/**
+ * @openapi
+ * /api/smtp:
+ *   post:
+ *     summary: Create SMTP configurations
+ *     tags: [SMTP]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - smtpConfigs
+ *               - teamId
+ *             properties:
+ *               smtpConfigs:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   required:
+ *                     - host
+ *                     - port
+ *                     - username
+ *                     - password
+ *                   properties:
+ *                     host:
+ *                       type: string
+ *                     port:
+ *                       type: number
+ *                     username:
+ *                       type: string
+ *                     password:
+ *                       type: string
+ *                     isDefault:
+ *                       type: boolean
+ *               teamId:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: SMTP configurations created successfully
+ *       401:
+ *         description: Unauthorized
+ *       400:
+ *         description: Bad Request - Invalid configuration
+ *       500:
+ *         description: Internal Server Error
+ */
 export async function POST(request: Request) {
   try {
     const session = await auth();
@@ -65,47 +198,31 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET(request: Request) {
-  try {
-    const session = await auth();
-    if (!session?.user) {
-      return new NextResponse("Unauthorized", { status: 401 });
-    }
-
-    const { searchParams } = new URL(request.url);
-    const teamId = searchParams.get("teamId");
-
-    if (!teamId) {
-      return new NextResponse("Team ID is required", { status: 400 });
-    }
-
-    const configs = await prisma.smtpConfig.findMany({
-      where: { teamId },
-    });
-
-    logger.info({
-      fileName: "route.ts",
-      emoji: "📨",
-      action: "GET",
-      label: `smtpConfigs: ${teamId}`,
-      value: configs,
-      message: "SMTP configurations fetched successfully",
-    });
-
-    return NextResponse.json(configs);
-  } catch (error) {
-    logger.error({
-      fileName: "route.ts",
-      emoji: "❌",
-      action: "GET",
-      label: "error",
-      value: error,
-      message: "Failed to fetch SMTP configurations",
-    });
-    return new NextResponse("Internal Server Error", { status: 500 });
-  }
-}
-
+/**
+ * @openapi
+ * /api/smtp:
+ *   delete:
+ *     summary: Delete SMTP configuration
+ *     tags: [SMTP]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the SMTP configuration to delete
+ *     responses:
+ *       200:
+ *         description: SMTP configuration deleted successfully
+ *       401:
+ *         description: Unauthorized
+ *       400:
+ *         description: Bad Request - Config ID required
+ *       500:
+ *         description: Internal Server Error
+ */
 export async function DELETE(request: Request) {
   try {
     const session = await auth();

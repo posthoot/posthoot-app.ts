@@ -3,6 +3,59 @@ import { auth } from "@/auth";
 import { logger } from "@/app/lib/logger";
 import nodemailer from "nodemailer";
 
+/**
+ * @openapi
+ * /api/smtp/test:
+ *   post:
+ *     summary: Test SMTP configuration
+ *     tags: [SMTP]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - host
+ *               - port
+ *               - username
+ *               - password
+ *             properties:
+ *               host:
+ *                 type: string
+ *               port:
+ *                 type: string
+ *                 pattern: ^\d+$
+ *               username:
+ *                 type: string
+ *                 format: email
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: SMTP configuration test successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Test successful
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Test failed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
 export async function POST(request: Request) {
   try {
     const session = await auth();

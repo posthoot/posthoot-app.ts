@@ -7,11 +7,13 @@ import { prisma } from "@/app/lib/prisma";
 import { TrackingType } from "@prisma/client";
 import { createJwtFromSecret, removeUndefined } from "../utils";
 import { logger } from "@/app/lib/logger";
+import { getEmailSmtpConfig, getEmailTemplate } from "@/app/lib/smtp";
+import { getSubscriber } from "./email/subscriber";
 const cleo = Cleo.getInstance();
 
 cleo.configure({
   redis: {
-    host: process.env.REDIS_HOST,
+    host: process.env.CLEO_REDIS_HOST,
     port: parseInt(process.env.REDIS_PORT),
     password: process.env.REDIS_PASSWORD,
     db: parseInt(process.env.REDIS_DB),
@@ -105,53 +107,16 @@ class EmailService {
     });
 
     const mailTrackingOptions: MailTrackOptions = {
-      baseUrl: `https://webhook.site/45010aa2-3b50-40b2-976d-3d993a4ad066`,
+      baseUrl: `${process.env.NEXT_PUBLIC_APP_URL}/api/email/track/${sentEmail.id}`,
       getData: async (data) => {
         return {
           ...data,
           sentEmailId: sentEmail.id,
         };
       },
-      jwtSecret: createJwtFromSecret(
-        {
-          sentEmailId: sentEmail.id,
-        },
-        process.env.JWT_SECRET
-      ),
-      onLinkClick: async ({ sentEmailId }) => {
-        await prisma.sentEmail
-          .update({
-            where: { id: sentEmailId },
-            data: {
-              clickedAt: new Date(),
-            },
-          })
-          .then(async (sentEmail) => {
-            await prisma.emailTracking.create({
-              data: {
-                sentEmailId: sentEmail.id,
-                type: TrackingType.CLICKED,
-              },
-            });
-          });
-      },
-      onBlankImageView: async ({ sentEmailId }) => {
-        await prisma.sentEmail
-          .update({
-            where: { id: sentEmailId },
-            data: {
-              openedAt: new Date(),
-            },
-          })
-          .then(async (sentEmail) => {
-            await prisma.emailTracking.create({
-              data: {
-                sentEmailId: sentEmail.id,
-                type: TrackingType.OPENED,
-              },
-            });
-          });
-      },
+      jwtSecret: process.env.JWT_SECRET,
+      onLinkClick: async ({ sentEmailId }) => {},
+      onBlankImageView: async ({ sentEmailId }) => {},
     };
 
     const mailOptions = {
@@ -163,14 +128,7 @@ class EmailService {
     };
 
     try {
-      const info = await sendMail(
-        mailTrackingOptions,
-        transporter,
-        mailOptions
-      );
-      console.log(
-        `File name: email.ts, 📧, line no: 20, function name: sendTestEmail, variable name: info, value: ${info}`
-      );
+      await sendMail(mailTrackingOptions, transporter, mailOptions);
     } catch (error) {
       console.error(
         `File name: email.ts, ❌, line no: 20, function name: sendTestEmail, variable name: error, value: ${error}`
@@ -182,8 +140,39 @@ class EmailService {
       success: true,
     };
   }
+
+  async sendInvitationEmail(
+    email: string,
+    subject: string,
+    teamId: string,
+    templateId: string,
+    providerId?: string | null,
+    data?: Record<string, any>
+  ) {
+    const provider = await getEmailSmtpConfig(teamId, providerId);
+    const emailTemplate = await getEmailTemplate(templateId, data);
+
+    await this.sendEmail(
+      email,
+      emailTemplate.html,
+      subject ?? emailTemplate.subject,
+      provider.host,
+      parseInt(provider.port),
+      provider.username,
+      provider.password,
+      provider.username,
+      [],
+      teamId,
+      (
+        await getSubscriber(email, teamId, null, "Team Invites")
+      ).id,
+      null,
+      templateId
+    );
+  }
 }
 
 const emailService = new EmailService();
 
 export default emailService;
+export { cleo };
