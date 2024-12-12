@@ -67,10 +67,8 @@ const EmailFlowBuilder = () => {
   } | null>(null);
   
   const onConnect = useCallback(
-    (params: Connection) => {
-      setEdges((eds) => addEdge(params, eds));
-    },
-    []
+    (params: Connection) => setEdges((eds) => addEdge(params, eds)),
+    [setEdges]
   );
 
   const onEdgeUpdate = useCallback(

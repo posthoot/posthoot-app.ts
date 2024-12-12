@@ -43,7 +43,7 @@ import { cn, isEmpty } from "@/lib/utils";
 import { useTeam } from "@/app/providers/team-provider";
 import { toast } from "@/hooks/use-toast";
 import { useCampaigns } from "@/app/providers/campaigns-provider";
-import { Campaign } from "@prisma/client";
+import { Campaign, CampaignStatus } from "@prisma/client";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -53,46 +53,49 @@ import {
 } from "../ui/dropdown-menu";
 import { useState } from "react";
 
-export function createCampaignDialog({
-  isOpen,
-  onClose,
+const createCampaignSchema = z.object({
+  id: z.string().optional(),
+  name: z.string().min(1),
+  status: z.enum(Object.values(CampaignStatus) as [string, ...string[]]),
+  description: z.string().optional(),
+  templateId: z.string().min(1),
+  listId: z.string().min(1),
+  schedule: z.enum(["ONE_TIME", "RECURRING"]),
+  recurringSchedule: z.enum(["DAILY", "WEEKLY", "MONTHLY", "CUSTOM"]),
+  cronExpression: z
+    .string()
+    .refine((value) => {
+      if (!value) return true; // Allow empty string since it's optional
+      try {
+        // Basic cron validation - 5 or 6 space-separated fields
+        const fields = value.trim().split(/\s+/);
+        return fields.length >= 5 && fields.length <= 6;
+      } catch {
+        return false;
+      }
+    }, "Invalid cron expression")
+    .optional(),
+  scheduledFor: z.date().refine((value) => {
+    if (!value) return true; // Allow empty string since it's optional
+    return value > new Date();
+  }, "Scheduled date must be in the future"),
+  smtpConfigId: z.string().min(1),
+});
+
+interface CreateCampaignDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSubmit: (data: z.infer<typeof createCampaignSchema>) => void;
+  prefilledData?: Campaign;
+}
+
+function CreateCampaignDialog({
+  open,
+  onOpenChange,
   onSubmit,
   prefilledData,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  onSubmit: (data: any) => void;
-  prefilledData?: Campaign;
-}) {
-  const createCampaignSchema = z.object({
-    id: z.string().optional(),
-    name: z.string().min(1),
-    description: z.string().optional(),
-    templateId: z.string().min(1),
-    listId: z.string().min(1),
-    schedule: z.enum(["ONE_TIME", "RECURRING"]),
-    recurringSchedule: z.enum(["DAILY", "WEEKLY", "MONTHLY", "CUSTOM"]),
-    cronExpression: z
-      .string()
-      .refine((value) => {
-        if (!value) return true; // Allow empty string since it's optional
-        try {
-          // Basic cron validation - 5 or 6 space-separated fields
-          const fields = value.trim().split(/\s+/);
-          return fields.length >= 5 && fields.length <= 6;
-        } catch {
-          return false;
-        }
-      }, "Invalid cron expression")
-      .optional(),
-    scheduledFor: z.string().refine((value) => {
-      if (!value) return true; // Allow empty string since it's optional
-      return new Date(value) > new Date();
-    }, "Scheduled date must be in the future"),
-    smtpConfigId: z.string().min(1),
-  });
-
-  const form = useForm({
+}: CreateCampaignDialogProps) {
+  const form = useForm<z.infer<typeof createCampaignSchema>>({
     resolver: zodResolver(createCampaignSchema),
     defaultValues: {
       id: prefilledData?.id || "",
@@ -103,24 +106,28 @@ export function createCampaignDialog({
       schedule: prefilledData?.schedule || "ONE_TIME",
       recurringSchedule: prefilledData?.recurringSchedule || "DAILY",
       cronExpression: prefilledData?.cronExpression || "",
-      scheduledFor: prefilledData?.scheduledFor || "",
+      scheduledFor: prefilledData?.scheduledFor
+        ? new Date(prefilledData.scheduledFor)
+        : new Date(),
       smtpConfigId: prefilledData?.smtpConfigId || "",
     },
   });
 
   const { lists } = useMailingLists();
-
   const { templates } = useTemplates();
-
   const { configs: smtpConfigs } = useSMTP();
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create Campaign</DialogTitle>
+          <DialogTitle>
+            {prefilledData ? "Edit Campaign" : "Create Campaign"}
+          </DialogTitle>
           <DialogDescription>
-            Create a new email campaign to send to your subscribers.
+            {prefilledData
+              ? "Edit your email campaign settings."
+              : "Create a new email campaign to send to your subscribers."}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -288,8 +295,8 @@ export function createCampaignDialog({
                         <Input placeholder="*/5 * * * *" {...field} />
                       </FormControl>
                       <FormDescription>
-                        Enter a valid cron expression (e.g. &quot;0 9 * *
-                        *&quot; for daily at 9 AM)
+                        Enter a valid cron expression (e.g. "0 9 * * *" for
+                        daily at 9 AM)
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -327,23 +334,19 @@ export function createCampaignDialog({
                         <PopoverContent className="w-auto p-0" align="start">
                           <Calendar
                             mode="single"
-                            selected={
-                              field.value ? new Date(field.value) : undefined
-                            }
+                            selected={field.value}
                             onSelect={field.onChange}
                             disabled={(date) =>
-                              date > new Date() || date < new Date("1900-01-01")
+                              date < new Date() || date < new Date("1900-01-01")
                             }
                             initialFocus
                           />
                         </PopoverContent>
                       </Popover>
-                      <FormLabel>
-                        <TimePicker
-                          value={field.value as string}
-                          onChange={field.onChange}
-                        />
-                      </FormLabel>
+                      <TimePicker
+                        value={field.value ? format(field.value, "HH:mm") : ""}
+                        onChange={field.onChange}
+                      />
                     </div>
                     <FormMessage />
                   </FormItem>
@@ -351,7 +354,9 @@ export function createCampaignDialog({
               />
             )}
             <DialogFooter>
-              <Button type="submit">Create Campaign</Button>
+              <Button type="submit">
+                {prefilledData ? "Update" : "Create"} Campaign
+              </Button>
             </DialogFooter>
           </form>
         </Form>
@@ -360,7 +365,7 @@ export function createCampaignDialog({
   );
 }
 
-export function CampaignsList({
+export async function CampaignsList({
   isOpen,
   onClose,
 }: {
@@ -369,32 +374,35 @@ export function CampaignsList({
 }) {
   const { team } = useTeam();
   const { campaigns, refetch, loading: isLoading } = useCampaigns();
-  const createCampaign = async (data: any) => {
+  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(
+    null
+  );
+
+  const createCampaign = async (data: z.infer<typeof createCampaignSchema>) => {
     const campaign = await fetch("/api/campaigns", {
       method: data.id ? "PUT" : "POST",
       body: JSON.stringify({
         ...data,
+        status: "SCHEDULED",
         teamId: team?.id,
       }),
     });
 
     if (campaign.ok) {
       refetch();
+      onClose();
       return toast({
-        title: "Campaign created",
-        description: "Campaign has been created",
+        title: "Success",
+        description: `Campaign ${data.id ? "updated" : "created"} successfully`,
       });
     }
 
     return toast({
       title: "Error",
-      description: "Error creating campaign",
+      description: `Error ${data.id ? "updating" : "creating"} campaign`,
+      variant: "destructive",
     });
   };
-
-  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(
-    null
-  );
 
   const deleteCampaign = async (id: string) => {
     const campaign = await fetch(`/api/campaigns/${id}`, {
@@ -404,36 +412,15 @@ export function CampaignsList({
     if (campaign.ok) {
       refetch();
       return toast({
-        title: "Campaign deleted",
-        description: "Campaign has been deleted",
+        title: "Success",
+        description: "Campaign deleted successfully",
       });
     }
 
     return toast({
       title: "Error",
       description: "Error deleting campaign",
-    });
-  };
-
-  const updateCampaign = async (id: string, data: any) => {
-    const campaign = await fetch(`/api/campaigns/${id}`, {
-      method: "PUT",
-      body: JSON.stringify({
-        ...data,
-      }),
-    });
-
-    if (campaign.ok) {
-      refetch();
-      return toast({
-        title: "Campaign updated",
-        description: "Campaign has been updated",
-      });
-    }
-
-    return toast({
-      title: "Error",
-      description: "Error updating campaign",
+      variant: "destructive",
     });
   };
 
@@ -448,19 +435,10 @@ export function CampaignsList({
       cell: ({ row }) => {
         const status = row.getValue("status") as string;
         return (
-          <Badge variant={status === "Active" ? "default" : "secondary"}>
+          <Badge variant={status === "SCHEDULED" ? "default" : "secondary"}>
             {status}
           </Badge>
         );
-      },
-    },
-    {
-      accessorKey: "sent",
-      header: "Progress",
-      cell: ({ row }) => {
-        const sent = row.getValue("sent") as number;
-        const total = row.getValue("total") as number;
-        return `${sent} of ${total} sent`;
       },
     },
     {
@@ -472,42 +450,15 @@ export function CampaignsList({
       },
     },
     {
-      accessorKey: "recurringSchedule",
-      header: "Schedule",
-      cell: ({ row }) => {
-        const scheduledFor = row.getValue("scheduledFor") as string;
-        return isEmpty(scheduledFor)
-          ? row.getValue("recurringSchedule")
-          : format(new Date(scheduledFor), "PPP");
-      },
-    },
-    {
-      accessorKey: "openRate",
-      header: "Open Rate",
-      cell: ({ row }) => {
-        const openRate = row.getValue("openRate") as number;
-        return `${openRate}%`;
-      },
-    },
-    {
-      accessorKey: "clickRate",
-      header: "Click Rate",
-      cell: ({ row }) => {
-        const clickRate = row.getValue("clickRate") as number;
-        return `${clickRate}%`;
-      },
-    },
-    {
       accessorKey: "createdAt",
       header: "Created At",
       cell: ({ row }) => {
         const createdAt = row.getValue("createdAt") as Date;
-        return format(createdAt, "PPP");
+        return format(new Date(createdAt), "PPP");
       },
     },
     {
-      accessorKey: "actions",
-      header: "Actions",
+      id: "actions",
       cell: ({ row }) => {
         return (
           <DropdownMenu>
@@ -519,10 +470,11 @@ export function CampaignsList({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem
-                disabled={row.getValue("status") === "ACTIVE"}
+                disabled={row.getValue("status") === "SCHEDULED"}
                 onClick={() =>
-                  updateCampaign(row.original.id, {
-                    status: "ACTIVE",
+                  createCampaign({
+                    ...row.original,
+                    status: "SCHEDULED",
                   })
                 }
               >
@@ -531,7 +483,6 @@ export function CampaignsList({
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => {
-                  console.log("edit campaign", row.original);
                   setSelectedCampaign(row.original);
                   onClose();
                 }}
@@ -539,6 +490,7 @@ export function CampaignsList({
                 <Edit className="mr-2 h-4 w-4" />
                 Edit Campaign
               </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={() => deleteCampaign(row.original.id)}
                 className="text-red-500"
@@ -554,20 +506,25 @@ export function CampaignsList({
   ];
 
   return (
-    <>
-      <DataTable
-        columns={columns}
-        data={campaigns as Campaign[]}
-        isLoading={isLoading}
-      />
-      <div key={selectedCampaign?.id}>
-        {createCampaignDialog({
-          isOpen,
-          onClose,
-          onSubmit: createCampaign,
-          prefilledData: selectedCampaign,
-        })}
+    <div>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold">Campaigns</h2>
+        <Button
+          onClick={() => {
+            setSelectedCampaign(null);
+            onClose();
+          }}
+        >
+          Create Campaign
+        </Button>
       </div>
-    </>
+      <DataTable columns={columns} data={campaigns} isLoading={isLoading} />
+      <CreateCampaignDialog
+        open={isOpen}
+        onOpenChange={onClose}
+        onSubmit={createCampaign}
+        prefilledData={selectedCampaign}
+      />
+    </div>
   );
 }
