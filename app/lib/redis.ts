@@ -1,5 +1,5 @@
 import { Redis } from 'ioredis';
-import {logger, LogLevel} from '@/app/lib/logger';
+import {logger} from '@/app/lib/logger';
 
 const FILE_NAME = 'lib/redis.ts';
 
@@ -12,9 +12,10 @@ class RedisClient {
     if (!RedisClient.instance) {
       logger.info({
         fileName: FILE_NAME,
-        lineNumber: 20,
-        level: LogLevel.INFO,
-        functionName: 'getInstance',
+        label: 'Redis',
+        value: RedisClient.instance,
+        emoji: '🔌',
+        action: 'getInstance',
         message: 'Creating new Redis connection'
       });
       
@@ -23,9 +24,10 @@ class RedisClient {
       RedisClient.instance.on('connect', () => {
         logger.info({
           fileName: FILE_NAME, 
-          lineNumber: 32,
-          level: LogLevel.INFO,
-          functionName: 'onConnect',
+          label: 'Redis',
+          emoji: '🔌',
+          action: 'connect',
+          value: RedisClient.instance,
           message: '✅ Redis connected successfully'
         });
       });
@@ -33,9 +35,10 @@ class RedisClient {
       RedisClient.instance.on('error', (error) => {
         logger.error({
           fileName: FILE_NAME,
-          lineNumber: 36,
-          level: LogLevel.ERROR,
-          functionName: 'onError',
+          label: 'Redis',
+          emoji: '🔌',
+          action: 'error',
+          value: error,
           message: `❌ Redis connection error, error:${error.message}`
         });
       });
@@ -53,9 +56,10 @@ export const disconnectRedis = async () => {
   if (RedisClient.getInstance()) {
     logger.info({
       fileName: FILE_NAME,
-      lineNumber: 55,
-      level: LogLevel.INFO,
-      functionName: 'disconnectRedis',
+      label: 'Redis', 
+      value: RedisClient.getInstance(),
+      emoji: '🔌',
+      action: 'disconnect',
       message: '🔌 Disconnecting Redis'
     });
     await RedisClient.getInstance().quit();

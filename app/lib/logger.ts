@@ -1,4 +1,4 @@
-type LogLevel = 'info' | 'error' | 'warn' | 'debug';
+export type LogLevel = 'info' | 'error' | 'warn' | 'debug';
 
 interface LoggerOptions {
   fileName: string;
