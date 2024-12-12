@@ -1,37 +1,6 @@
 version: "3.8"
 
 services:
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: sailmail_app
-    restart: unless-stopped
-    env_file: .env
-    ports:
-      - "3000:3000"
-    depends_on:
-      - postgres
-      - redis
-    networks:
-      - sailmail_network
-
-  nginx:
-    image: openresty/openresty:alpine-fat
-    container_name: sailmail_nginx
-    restart: unless-stopped
-    entrypoint: ["sh", "/usr/local/bin/setup-nginx.sh"]
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./scripts/setup-nginx.sh:/usr/local/bin/setup-nginx.sh:ro
-      - ./nginx/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf:ro
-    depends_on:
-      - app
-    networks:
-      - sailmail_network
-
   postgres:
     image: postgres:16-alpine
     container_name: sailmail_postgres
@@ -46,6 +15,12 @@ services:
       - "5432:5432"
     networks:
       - sailmail_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
 
   redis:
     image: redis:7-alpine
@@ -58,6 +33,55 @@ services:
       - "6379:6379"
     networks:
       - sailmail_network
+    healthcheck:
+      test: ["CMD-SHELL", "redis-server --daemonize yes && redis-cli ping"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sailmail_app
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - sailmail_network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000 || exit 1"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+  nginx:
+    image: openresty/openresty:alpine-fat
+    container_name: sailmail_nginx
+    restart: unless-stopped
+    entrypoint: ["sh", "/usr/local/bin/setup-nginx.sh"]
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./scripts/setup-nginx.sh:/usr/local/bin/setup-nginx.sh:ro
+      - ./nginx/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf:ro
+    depends_on:
+      - app
+      - redis
+    networks:
+      - sailmail_network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:80 || exit 1"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
 
 volumes:
   postgres_data:
