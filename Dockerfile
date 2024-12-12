@@ -35,7 +35,7 @@ COPY . .
 # ======================
 
 RUN echo "🚀 ✨ Building Next.js application..." && \
-    bun build
+    bun run build
 
 
 # 🌠 Stage 2: Production image 🌠
@@ -71,4 +71,4 @@ EXPOSE 3000
 # 🚀 Launch application 🚀
 # ======================
 
-CMD ["bun", "start"]
+CMD ["bun", "run", "start"]
