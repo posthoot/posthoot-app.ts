@@ -1,7 +1,7 @@
 # 🌟 Stage 1: Install dependencies and build the application 🌟
 # ============================================================
 
-FROM oven/bun:canary-alpine
+FROM oven/bun:canary-alpine AS builder
 
 RUN echo "🔮 ✨ Installing system dependencies..." && \
     apk add --no-cache nodejs npm git
