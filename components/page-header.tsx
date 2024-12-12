@@ -1,7 +1,21 @@
+"use client";
+
 import { logger } from "@/app/lib/logger";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { auth } from "@/auth";
+import { signOut, useSession } from "next-auth/react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+import { Button } from "./ui/button";
 
 interface PageHeaderProps {
   heading: string;
@@ -36,6 +50,8 @@ export function PageHeader({
     label: "props",
   });
 
+  const session = useSession();
+
   return (
     <div
       className={cn(
@@ -63,6 +79,28 @@ export function PageHeader({
             </Link>
           )}{" "}
           {children}
+          <DropdownMenu>
+            <DropdownMenuTrigger className="ml-2">
+              <Avatar>
+                <AvatarImage src={session?.data?.user?.image ?? ""} />
+                <AvatarFallback>
+                  {session?.data?.user?.name?.charAt(0)}
+                </AvatarFallback>
+              </Avatar>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>
+                <span>Account</span>
+              </DropdownMenuLabel>
+              <DropdownMenuItem
+                className="text-red-400"
+                onClick={() => signOut()}
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Logout</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </div>

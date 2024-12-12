@@ -18,13 +18,26 @@ interface TimePickerProps {
 
 const TimePicker = React.forwardRef<HTMLDivElement, TimePickerProps>(
   ({ value, onChange, className, disabled }, ref) => {
-    const [hours, setHours] = React.useState<string>(
-      value ? value.split(":")[0] : "12"
+    // Parse initial value in 24h format to 12h format
+    const parseInitialValue = () => {
+      if (!value) return { hours: "12", minutes: "00", period: "AM" };
+
+      const [hoursStr, minutes] = value.split(":");
+      const hours = parseInt(hoursStr);
+      
+      if (hours === 0) return { hours: "12", minutes, period: "AM" };
+      if (hours === 12) return { hours: "12", minutes, period: "PM" };
+      if (hours > 12) return { hours: (hours - 12).toString().padStart(2, "0"), minutes, period: "PM" };
+      return { hours: hours.toString().padStart(2, "0"), minutes, period: "AM" };
+    };
+
+    const { hours: initialHours, minutes: initialMinutes, period: initialPeriod } = parseInitialValue();
+
+    const [hours, setHours] = React.useState<string>(initialHours);
+    const [minutes, setMinutes] = React.useState<string>(initialMinutes);
+    const [period, setPeriod] = React.useState<"AM" | "PM">(
+      initialPeriod as "AM" | "PM"
     );
-    const [minutes, setMinutes] = React.useState<string>(
-      value ? value.split(":")[1] : "00"
-    );
-    const [period, setPeriod] = React.useState<"AM" | "PM">("AM");
 
     const hoursArray = Array.from({ length: 12 }, (_, i) =>
       (i + 1).toString().padStart(2, "0")
@@ -50,18 +63,24 @@ const TimePicker = React.forwardRef<HTMLDivElement, TimePickerProps>(
       }
 
       if (onChange) {
-        const formattedHours =
-          period === "PM" && hours !== "12"
-            ? (parseInt(hours) + 12).toString()
-            : hours;
-        onChange(`${formattedHours}:${minutes}`);
+        let formattedHours: number;
+        const hoursNum = parseInt(type === "hours" ? newValue : hours);
+        const newPeriod = type === "period" ? newValue : period;
+
+        if (newPeriod === "AM") {
+          formattedHours = hoursNum === 12 ? 0 : hoursNum;
+        } else {
+          formattedHours = hoursNum === 12 ? 12 : hoursNum + 12;
+        }
+
+        onChange(`${formattedHours.toString().padStart(2, "0")}:${type === "minutes" ? newValue : minutes}`);
       }
     };
 
     return (
       <div
         ref={ref}
-        className={cn("flex items-center gap-2", className)}
+        className={cn("flex justify-center items-center gap-1", className)}
       >
         <Select
           value={hours}

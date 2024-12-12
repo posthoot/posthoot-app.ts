@@ -34,6 +34,7 @@ interface DataTableProps<TData, TValue> {
   pagination?: boolean;
   filterColumn?: string;
   isLoading?: boolean;
+  searchKey?: string;
 }
 
 export function DataTable<TData, TValue>({
@@ -43,6 +44,7 @@ export function DataTable<TData, TValue>({
   pagination = true,
   filterColumn,
   isLoading,
+  searchKey,
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
@@ -60,6 +62,12 @@ export function DataTable<TData, TValue>({
       columnVisibility,
       rowSelection,
       columnFilters,
+    },
+    filterFns: {
+      globalFilter: (row, id, value) => {
+        const rowValue = row.getValue(id) ?? '';
+        return rowValue ? rowValue.toString().toLowerCase().includes(value.toLowerCase()) : false;
+      },
     },
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,

@@ -14,14 +14,18 @@ import {
   Mail,
   Ship,
   ShipWheel,
+  Moon,
+  Sun,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 import { signOut } from "next-auth/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Logo } from "./logo";
+import { ThemeProvider } from "./theme-provider";
+import { useTheme } from "next-themes";
 
 const routes = [
   {
@@ -69,6 +73,7 @@ const routes = [
 export function Sidebar() {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const { theme, setTheme } = useTheme();
 
   return (
     <div
@@ -79,13 +84,8 @@ export function Sidebar() {
     >
       <div>
         <div className="p-4 border-b flex items-center justify-between">
-          <div
-            className={cn(
-              "transition-all duration-300",
-            )}
-          >
-            {!isCollapsed && <Logo />}
-            {isCollapsed && <ShipWheel className="h-6 w-6" />}
+          <div className={cn("transition-all duration-300")}>
+          <Logo onlyLogo={isCollapsed} />
           </div>
           <Button
             variant="ghost"
@@ -119,17 +119,17 @@ export function Sidebar() {
           ))}
         </nav>
       </div>
-      <Button
-        className={cn(
-          "m-3 flex items-center gap-2",
-          isCollapsed ? "px-2 justify-center" : "px-4"
-        )}
-        variant="outline"
-        onClick={() => signOut()}
-      >
-        {!isCollapsed && <span>Logout</span>}
-        <LogOut className="h-4 w-4" />
-      </Button>
+      <div className="flex px-3 pb-3 flex-col items-center">
+        <Button
+          variant="ghost"
+          onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+          className={cn("w-full", isCollapsed ? "px-2 justify-center" : "px-4")}
+        >
+          <Sun className="rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+          <Moon className="rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+          <span className={isCollapsed ? "hidden" : ""}>Toggle theme</span>
+        </Button>
+      </div>
     </div>
   );
 }
