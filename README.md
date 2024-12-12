@@ -11,6 +11,15 @@
 
 🚢 SailMail is an enterprise-grade email orchestration platform that helps businesses automate their email workflows, manage contact lists, and deliver personalized communications at scale. Built with modern technologies and designed for performance.
 
+## Latest Updates
+
+🎉 **Version 1.1.0 Released!** - [See Changelog](CHANGELOG.md)
+
+Major updates include:
+- Custom Domain Support with automatic SSL
+- Team Management & Collaboration
+- Enhanced Security Features
+
 ## Architecture
 
 ```mermaid
@@ -50,161 +59,152 @@ graph TD
   - Custom fields and attributes
   - Contact activity tracking
 
-### Email Automation
-- **Campaign Management**
-  - Template-based email creation
-  - Dynamic variable injection
-  - Smart queue processing
-  - Automated retry logic
-  - Scheduled sending
+### Custom Domains
+- 🌐 Custom Domain Support with A Record Verification
+- 🔒 Automatic SSL Certificate Generation
+- 🔄 DNS Management & Real-time Status
+- ✅ One-click Domain Verification
+- 🔐 Automated SSL Renewal
 
-### Team Collaboration
-- **Workspace Management**
-  - Role-based access control (RBAC)
-  - Team workspaces
-  - Activity audit logging
-  - Collaborative template editing
+### Analytics & Reporting
+- 📊 Real-time Email Tracking
+- 📈 Performance Analytics Dashboard
+- 📉 Trend Analysis & Insights
+- 📋 CSV/JSON Report Generation
+- 📱 Device & Location Analytics
 
-### Analytics & Monitoring
-- **Performance Insights**
-  - Delivery analytics
-  - Engagement metrics
-  - Bounce tracking
-  - Real-time dashboards
-  - A/B testing analytics
+### Team Management
+- 👥 Multi-user Support
+- 🔑 Role-based Access Control
+- 📨 Team Invitations
+- 🎨 Custom Branding
+- 🏢 Organization Settings
+
+### Security & Compliance
+- 🔒 SSL/TLS Encryption
+- 🔐 API Key Management
+- 📝 Audit Logs
+- 🔑 Two-factor Authentication
+- 🛡️ Rate Limiting
 
 ## Tech Stack
 
-### Frontend
-- Next.js 15
-- React 19
-- TypeScript
-- TailwindCSS
-- Shadcn/ui Components
-
-### Backend
-- Next.js Edge Runtime
-- Prisma ORM
-- NextAuth.js
-- API Routes
-
-### Infrastructure
-- PostgreSQL 16
-- Redis 7
-- Docker
-- Docker Compose
-
-### Development
-- Bun Package Manager
-- ESLint
-- Prettier
-- Husky
-- Jest
+- **Frontend**: Next.js 14, React, Tailwind CSS, shadcn/ui
+- **Backend**: Node.js, PostgreSQL, Redis
+- **Infrastructure**: Docker, Nginx, OpenResty
+- **Email**: SMTP, Custom Domain Support
+- **Security**: Let's Encrypt, SSL/TLS
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js 20.x or higher
-- Bun 1.0.x or higher
+- Node.js 20 or later
 - Docker and Docker Compose
-- PostgreSQL 16
-- Redis 7
+- Git
 
 ### Installation
 
 1. Clone the repository:
-```bash
-git clone https://github.com/your-org/sailmail.git
+\`\`\`bash
+git clone https://github.com/yourusername/sailmail.git
 cd sailmail
-```
+\`\`\`
 
-2. Install dependencies:
-```bash
-bun install
-```
+2. Copy environment files:
+\`\`\`bash
+cp .env.example .env
+\`\`\`
 
-3. Set up environment variables:
-```bash
-cp .env.example .env.local
-```
-
-4. Start the development environment:
-```bash
-docker-compose up -d
-bun dev
-```
-
-The application will be available at `http://localhost:3000`
-
-## Environment Variables
-
-```env
-# Database Configuration
-DATABASE_URL=postgresql://user:password@localhost:5432/sailmail
-REDIS_URL=redis://localhost:6379
-
-# Authentication
+3. Update environment variables in \`.env\`:
+\`\`\`env
+# Required variables
+DOMAIN=your-domain.com
+SERVER_IP=your.server.ip
+POSTGRES_PASSWORD=your-secure-password
+REDIS_PASSWORD=your-redis-password
 NEXTAUTH_SECRET=your-secret-key
-NEXTAUTH_URL=http://localhost:3000
+\`\`\`
 
-# Email Service
-SMTP_HOST=smtp.provider.com
-SMTP_PORT=587
-SMTP_USER=your-smtp-user
-SMTP_PASSWORD=your-smtp-password
-```
+4. Start the application:
+\`\`\`bash
+# Development
+npm install
+npm run dev
 
-## Project Structure
+# Production with Docker
+docker-compose up -d
+\`\`\`
 
-```
-sailmail/
-├── app/                    # Next.js app directory
-│   ├── api/               # API routes
-│   ├── contacts/          # Contact management pages
-│   └── email/            # Email management pages
-├── components/            # Reusable React components
-├── lib/                   # Utility functions and shared logic
-├── prisma/               # Database schema and migrations
-└── public/               # Static assets
-```
+### Custom Domain Setup
 
-## Testing
+1. Add your domain in the dashboard
+2. Add an A record pointing to your server IP:
+\`\`\`
+Type: A
+Host: @
+Value: <Your Server IP>
+\`\`\`
+3. Click "Verify" in the dashboard
+4. SSL certificate will be automatically generated
 
-```bash
-# Run unit tests
-bun test
+## Development
 
-# Run integration tests
-bun test:integration
+### Local Development
+\`\`\`bash
+# Install dependencies
+npm install
 
-# Run e2e tests
-bun test:e2e
-```
+# Run development server
+npm run dev
 
-## Deployment
+# Run tests
+npm run test
 
-### Docker Deployment
-```bash
-docker-compose -f docker-compose.prod.yml up -d
-```
+# Build for production
+npm run build
+\`\`\`
 
-### Manual Deployment
-```bash
-bun run build
-bun run start
-```
+### Docker Development
+\`\`\`bash
+# Build and start services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+\`\`\`
 
 ## API Documentation
 
-API documentation is available at `/api/docs` when running the development server.
+API documentation is available at \`/api-docs\` when running the application. The API uses OpenAPI/Swagger specification.
+
+### Key API Endpoints
+
+- `/api/campaigns` - Campaign management
+- `/api/templates` - Email templates
+- `/api/settings` - Application settings
+- `/api/team` - Team management
+- `/api/metrics` - Analytics and reporting
+
+## Versioning
+
+SailMail follows [Semantic Versioning](https://semver.org/). For the versions available, see the [tags on this repository](https://github.com/yourusername/sailmail/tags).
+
+- **Major version** changes indicate incompatible API changes
+- **Minor version** changes add functionality in a backward-compatible manner
+- **Patch version** changes include backward-compatible bug fixes
+
+For detailed release notes, see our [Changelog](CHANGELOG.md).
 
 ## Contributing
 
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
+2. Create your feature branch (\`git checkout -b feature/AmazingFeature\`)
+3. Commit your changes (\`git commit -m 'Add some AmazingFeature'\`)
+4. Push to the branch (\`git push origin feature/AmazingFeature\`)
 5. Open a Pull Request
 
 ## License
@@ -213,20 +213,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
-For support, email me@iamharsh.dev or join our Discord community.
-
-## Security
-
-Please report security vulnerabilities to me@iamharsh.dev
-
-## Acknowledgments
-
-- Next.js team for the amazing framework
-- Our contributors and community
-- All open-source projects that made this possible
-
----
-
-<div align="center">
-  <p>Made with ❤️ by the SailMail Team</p>
-</div>
+For support, email support@sailmail.dev or join our Discord community.
