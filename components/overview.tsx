@@ -3,41 +3,72 @@
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-const data = [
-  { name: "Jan", total: 4800, sales: 2400 },
-  { name: "Feb", total: 3800, sales: 2100 },
-  { name: "Mar", total: 5200, sales: 3200 },
-  { name: "Apr", total: 4800, sales: 2900 },
-  { name: "May", total: 5500, sales: 3100 },
-  { name: "Jun", total: 6800, sales: 4100 },
-  { name: "Jul", total: 7200, sales: 4300 },
-  { name: "Aug", total: 6800, sales: 4000 },
-  { name: "Sep", total: 7900, sales: 4800 },
-  { name: "Oct", total: 8500, sales: 5200 },
-  { name: "Nov", total: 8900, sales: 5400 },
-  { name: "Dec", total: 9200, sales: 5800 },
-];
+import { useEffect, useState } from "react";
+import { addDays, format, subDays } from "date-fns";
+import { useTeam } from "@/app/providers/team-provider";
+import { MetricsData } from "@/types/stats";
 
 export function Overview() {
+  const [metricsData, setMetricsData] = useState<MetricsData[]>([]);
+  const [timeframe, setTimeframe] = useState<'week' | 'month' | 'all'>('week');
+  const { team } = useTeam();
+
+  useEffect(() => {
+    const fetchMetrics = async () => {
+      const startDate = timeframe === 'week' 
+        ? subDays(new Date(), 7)
+        : timeframe === 'month'
+          ? subDays(new Date(), 30)
+          : subDays(new Date(), 90);
+
+      try {
+        const response = await fetch(
+          `/api/email/track/metrics?teamId=${team?.id}&startDate=${startDate.toISOString()}`
+        );
+        const data = await response.json();
+        // Sort data by date in ascending order for the chart
+        const sortedData = Array.isArray(data) 
+          ? data.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+          : [data];
+        setMetricsData(sortedData);
+      } catch (error) {
+        console.error('Failed to fetch metrics:', error);
+      }
+    };
+
+    fetchMetrics();
+  }, [timeframe, team?.id]);
+
+  const chartData = metricsData.map(metric => ({
+    date: metric.date,
+    openRate: metric.openRate,
+    clickRate: metric.clickRate,
+    bounceRate: metric.bounceRate,
+    total: metric.total
+  }));
+
   return (
-    <Tabs defaultValue="all" className="space-y-4">
+    <Tabs 
+      defaultValue="week" 
+      className="space-y-4" 
+      onValueChange={(value) => setTimeframe(value as 'week' | 'month' | 'all')}
+    >
       <div className="flex items-center justify-between">
         <TabsList>
-          <TabsTrigger value="all">All Time</TabsTrigger>
-          <TabsTrigger value="month">This Month</TabsTrigger>
           <TabsTrigger value="week">This Week</TabsTrigger>
+          <TabsTrigger value="month">This Month</TabsTrigger>
+          <TabsTrigger value="all">All Time</TabsTrigger>
         </TabsList>
       </div>
-      <TabsContent value="all" className="space-y-4">
+      <TabsContent value={timeframe} className="space-y-4">
         <div className="h-[350px]">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
-              data={data}
+              data={chartData}
               margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
             >
               <defs>
-                <linearGradient id="total" x1="0" y1="0" x2="0" y2="1">
+                <linearGradient id="openRate" x1="0" y1="0" x2="0" y2="1">
                   <stop
                     offset="0%"
                     stopColor="hsl(var(--primary))"
@@ -49,7 +80,7 @@ export function Overview() {
                     stopOpacity={0}
                   />
                 </linearGradient>
-                <linearGradient id="sales" x1="0" y1="0" x2="0" y2="1">
+                <linearGradient id="clickRate" x1="0" y1="0" x2="0" y2="1">
                   <stop
                     offset="0%"
                     stopColor="hsl(var(--secondary))"
@@ -58,44 +89,83 @@ export function Overview() {
                   <stop
                     offset="100%"
                     stopColor="hsl(var(--secondary))"
+                    stopOpacity={0}
+                  />
+                </linearGradient>
+                <linearGradient id="bounceRate" x1="0" y1="0" x2="0" y2="1">
+                  <stop
+                    offset="0%"
+                    stopColor="hsl(var(--destructive))"
+                    stopOpacity={0.25}
+                  />
+                  <stop
+                    offset="100%"
+                    stopColor="hsl(var(--destructive))"
                     stopOpacity={0}
                   />
                 </linearGradient>
               </defs>
               <XAxis
-                dataKey="name"
+                dataKey="date"
                 stroke="hsl(var(--muted-foreground))"
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
+                tickFormatter={(value) => format(new Date(value), 'MMM dd')}
               />
               <YAxis
                 stroke="hsl(var(--muted-foreground))"
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
-                tickFormatter={(value) => `$${value}`}
+                tickFormatter={(value) => `${(value * 100).toFixed(0)}%`}
               />
               <Tooltip
                 content={({ active, payload }) => {
                   if (active && payload && payload.length) {
                     return (
                       <div className="rounded-lg border bg-background p-2 shadow-sm">
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid gap-2">
                           <div className="flex flex-col">
                             <span className="text-[0.70rem] uppercase text-muted-foreground">
-                              Total
+                              Date
                             </span>
                             <span className="font-bold text-muted-foreground">
-                              ${payload[0].value}
+                              {format(new Date(payload[0].payload.date), 'MMM dd, yyyy')}
                             </span>
+                          </div>
+                          <div className="grid grid-cols-3 gap-2">
+                            <div className="flex flex-col">
+                              <span className="text-[0.70rem] uppercase text-muted-foreground">
+                                Open Rate
+                              </span>
+                              <span className="font-bold text-primary">
+                                {((payload[0].value as number) * 100).toFixed(1)}%
+                              </span>
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-[0.70rem] uppercase text-muted-foreground">
+                                Click Rate
+                              </span>
+                              <span className="font-bold text-secondary">
+                                {((payload[1].value as number) * 100).toFixed(1)}%
+                              </span>
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-[0.70rem] uppercase text-muted-foreground">
+                                Bounce Rate
+                              </span>
+                              <span className="font-bold text-destructive">
+                                {((payload[2].value as number) * 100).toFixed(1)}%
+                              </span>
+                            </div>
                           </div>
                           <div className="flex flex-col">
                             <span className="text-[0.70rem] uppercase text-muted-foreground">
-                              Sales
+                              Total Emails
                             </span>
                             <span className="font-bold text-muted-foreground">
-                              ${payload[1].value}
+                              {payload[0].payload.total}
                             </span>
                           </div>
                         </div>
@@ -107,18 +177,26 @@ export function Overview() {
               />
               <Area
                 type="monotone"
-                dataKey="total"
+                dataKey="openRate"
                 stroke="hsl(var(--primary))"
                 strokeWidth={2}
-                fill="url(#total)"
+                fill="url(#openRate)"
                 fillOpacity={1}
               />
               <Area
                 type="monotone"
-                dataKey="sales"
+                dataKey="clickRate"
                 stroke="hsl(var(--secondary))"
                 strokeWidth={2}
-                fill="url(#sales)"
+                fill="url(#clickRate)"
+                fillOpacity={1}
+              />
+              <Area
+                type="monotone"
+                dataKey="bounceRate"
+                stroke="hsl(var(--destructive))"
+                strokeWidth={2}
+                fill="url(#bounceRate)"
                 fillOpacity={1}
               />
             </AreaChart>

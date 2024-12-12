@@ -1,39 +1,88 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Users, Mail, MessageSquare, TrendingUp } from "lucide-react";
+import { Users, Mail, MousePointerClick, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const stats = [
-  {
-    name: "Total Contacts",
-    value: "8,234",
-    icon: Users,
-    change: "+2.5%",
-    trend: "up",
-  },
-  {
-    name: "Email Sent",
-    value: "12.3K",
-    icon: Mail,
-    change: "+12%",
-    trend: "up",
-  },
-  {
-    name: "Conversations",
-    value: "24.4K",
-    icon: MessageSquare,
-    change: "+5%",
-    trend: "up",
-  },
-  {
-    name: "Conversion Rate",
-    value: "2.4%",
-    icon: TrendingUp,
-    change: "-1.2%",
-    trend: "down",
-  },
-];
+import { useEffect, useState } from "react";
+import { MetricsData } from "@/types/stats";
+import { useTeam } from "@/app/providers/team-provider";
 
 export function Stats() {
+  const [metricsData, setMetricsData] = useState<MetricsData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { team } = useTeam();
+
+  useEffect(() => {
+    const fetchMetrics = async () => {
+      try {
+        const response = await fetch(`/api/email/track/metrics?teamId=${team?.id}`);
+        const data = await response.json();
+        setMetricsData(Array.isArray(data) ? data : [data]);
+      } catch (error) {
+        console.error("Failed to fetch metrics:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchMetrics();
+  }, [team?.id]);
+
+  // Calculate current metrics (most recent data point)
+  const currentMetrics = metricsData[0] || null;
+
+  // Calculate trends by comparing with previous period
+  const calculateTrend = (current: number, previous: number) => {
+    if (!previous) return 0;
+    return ((current - previous) / previous) * 100;
+  };
+
+  // Get metrics from previous period for comparison
+  const previousMetrics = metricsData[1] || null;
+
+  const stats = [
+    {
+      name: "Total Sent",
+      value: currentMetrics?.total || 0,
+      icon: Mail,
+      change: previousMetrics 
+        ? calculateTrend(currentMetrics?.total || 0, previousMetrics.total).toFixed(1) + '%'
+        : "0%",
+      trend: previousMetrics && currentMetrics
+        ? currentMetrics.total >= previousMetrics.total ? "up" : "down"
+        : "up",
+    },
+    {
+      name: "Open Rate",
+      value: currentMetrics ? `${(currentMetrics.openRate * 100).toFixed(1)}%` : "0%",
+      icon: Users,
+      change: previousMetrics 
+        ? calculateTrend(currentMetrics?.openRate || 0, previousMetrics.openRate).toFixed(1) + '%'
+        : "0%",
+      trend: previousMetrics && currentMetrics
+        ? currentMetrics.openRate >= previousMetrics.openRate ? "up" : "down"
+        : "up",
+    },
+    {
+      name: "Click Rate",
+      value: currentMetrics ? `${(currentMetrics.clickRate * 100).toFixed(1)}%` : "0%",
+      icon: MousePointerClick,
+      change: previousMetrics 
+        ? calculateTrend(currentMetrics?.clickRate || 0, previousMetrics.clickRate).toFixed(1) + '%'
+        : "0%",
+      trend: previousMetrics && currentMetrics
+        ? currentMetrics.clickRate >= previousMetrics.clickRate ? "up" : "down"
+        : "up",
+    },
+    {
+      name: "Bounce Rate",
+      value: currentMetrics ? `${(currentMetrics.bounceRate * 100).toFixed(1)}%` : "0%",
+      icon: AlertTriangle,
+      change: previousMetrics 
+        ? calculateTrend(currentMetrics?.bounceRate || 0, previousMetrics.bounceRate).toFixed(1) + '%'
+        : "0%",
+      trend: "down",
+    },
+  ];
+
   return (
     <>
       {stats.map((stat) => (
@@ -49,15 +98,19 @@ export function Stats() {
                 </span>
                 <div className="flex items-center space-x-1">
                   <span
-                    className={
-                      stat.trend === "up"
-                        ? "text-emerald-500 text-sm font-medium"
-                        : "text-rose-500 text-sm font-medium"
-                    }
+                    className={cn(
+                      "text-sm font-medium",
+                      stat.trend === "up" 
+                        ? "text-emerald-500"
+                        : "text-rose-500"
+                    )}
                   >
+                    {stat.change.startsWith('-') ? '' : '+'}
                     {stat.change}
                   </span>
-                  <span className="text-sm text-muted-foreground">vs last month</span>
+                  <span className="text-sm text-muted-foreground">
+                    vs previous period
+                  </span>
                 </div>
               </div>
               <div className="rounded-full p-2.5 bg-primary/5 dark:bg-primary/10">
