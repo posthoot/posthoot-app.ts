@@ -1,13 +1,14 @@
 version: "3.8"
 
 services:
+  # 🐘 📊 PostgreSQL Database Service 💾
   postgres:
     image: postgres:16-alpine
     container_name: sailmail_postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD} 
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -22,6 +23,7 @@ services:
       retries: 5
       start_period: 30s
 
+  # 🚀 ⚡️ Redis Cache Service 💫
   redis:
     image: redis:7-alpine
     container_name: sailmail_redis
@@ -40,11 +42,13 @@ services:
       retries: 5
       start_period: 30s
 
+  # ⚡ 🎯 Main Application Service 🔥
   app:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: sailmail_app
+    command: ['sh', '-c', 'bun run start']
     restart: unless-stopped
     env_file: .env
     ports:
@@ -60,6 +64,8 @@ services:
       timeout: 30s
       retries: 5
       start_period: 30s
+
+  # 🌐 🔒 Nginx Reverse Proxy Service 🚦
   nginx:
     image: openresty/openresty:alpine-fat
     container_name: sailmail_nginx
@@ -83,10 +89,12 @@ services:
       retries: 5
       start_period: 30s
 
+# 💾 📦 Persistent Data Volumes 💿
 volumes:
-  postgres_data:
-  redis_data:
+  postgres_data:  # 💽 PostgreSQL data persistence
+  redis_data:     # 📀 Redis data persistence
 
+# 🌐 🔌 Docker Networks 🌍
 networks:
   sailmail_network:
-    driver: bridge 
+    driver: bridge
