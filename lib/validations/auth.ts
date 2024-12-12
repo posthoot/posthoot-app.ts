@@ -12,6 +12,7 @@ export const SignupSchema = z.object({
     .max(100, "Name must be less than 100 characters")
     .optional(),
   role: z.enum(["ADMIN", "USER"]).optional(),
+  teamId: z.string().optional(),
 })
 
 export type SignupInput = z.infer<typeof SignupSchema> 

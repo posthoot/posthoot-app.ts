@@ -51,6 +51,6 @@ export const getApiDocs = () => {
     definition: apiConfig as OpenAPIV3.Document & {
       paths: OpenAPIV3.PathsObject;
     },
-    apiFolder: "app/api",
+    apiFolder: "app",
   });
 };

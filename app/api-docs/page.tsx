@@ -1,9 +1,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import SwaggerUI from 'swagger-ui-react';
+import dynamic from 'next/dynamic';
 import type { SwaggerUIProps } from 'swagger-ui-react';
+import type { ComponentType } from 'react';
 import 'swagger-ui-react/swagger-ui.css';
+
+const SwaggerUI = dynamic(() => 
+  import('swagger-ui-react').then((mod) => mod.default) as Promise<ComponentType<SwaggerUIProps>>,
+  { ssr: false }
+);
 
 export default function ApiDocs() {
   const [spec, setSpec] = useState<SwaggerUIProps['spec']>(null);
