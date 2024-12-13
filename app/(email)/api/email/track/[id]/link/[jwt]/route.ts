@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 import { JwtDataForLink } from "nodemailer-mail-tracking/dist/types";
 import { prisma } from "@/app/lib/prisma";
-import { TrackingType } from "@prisma/client";
+import { TrackingType } from "@/@prisma/client";
 
 /**
  * @openapi

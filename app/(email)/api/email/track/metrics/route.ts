@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/app/lib/prisma";
 import { removeUndefined } from "@/lib/utils";
-import { TrackingType } from "@prisma/client";
+import { TrackingType } from "@/@prisma/client";
 import { MetricsData } from "@/types/stats";
 
 /**
