@@ -1,14 +1,18 @@
+# 🌟 Docker Compose Configuration 🌟
+# ================================
+
 version: "3.8"
 
 services:
-  # 🐘 📊 PostgreSQL Database Service 💾
+  # 🐘 PostgreSQL Database Service 🐘
+  # ================================
   postgres:
     image: postgres:16-alpine
     container_name: sailmail_postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD} 
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -18,17 +22,19 @@ services:
       - sailmail_network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
-      interval: 1m30s
-      timeout: 30s
-      retries: 5
-      start_period: 30s
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
 
-  # 🚀 ⚡️ Redis Cache Service 💫
+
+  # ⚡️ Redis Cache Service ⚡️
+  # ========================
   redis:
     image: redis:7-alpine
     container_name: sailmail_redis
     restart: unless-stopped
-    command: redis-server --appendonly yes
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
     volumes:
       - redis_data:/data
     ports:
@@ -36,65 +42,94 @@ services:
     networks:
       - sailmail_network
     healthcheck:
-      test: ["CMD-SHELL", "redis-server --daemonize yes && redis-cli ping"]
-      interval: 1m30s
-      timeout: 30s
-      retries: 5
-      start_period: 30s
+      test: ["CMD-SHELL", "redis-cli -a ${REDIS_PASSWORD} ping | grep PONG"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
 
-  # ⚡ 🎯 Main Application Service 🔥
+
+  # 🚀 Main Application Service 🚀
+  # ============================
   app:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - NODE_ENV=${NODE_ENV}
     container_name: sailmail_app
-    command: ['sh', '-c', 'bun run start']
     restart: unless-stopped
-    env_file: .env
-    ports:
-      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
+    volumes:
+      - ./uploads:/app/uploads
+      - ./public:/app/public
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - sailmail_network
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3000 || exit 1"]
-      interval: 1m30s
-      timeout: 30s
-      retries: 5
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
       start_period: 30s
 
-  # 🌐 🔒 Nginx Reverse Proxy Service 🚦
+
+  # 🔒 Nginx Reverse Proxy Service 🔒
+  # ===============================
   nginx:
-    image: openresty/openresty:alpine-fat
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
     container_name: sailmail_nginx
     restart: unless-stopped
-    entrypoint: ["sh", "/usr/local/bin/setup-nginx.sh"]
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ./scripts/setup-nginx.sh:/usr/local/bin/setup-nginx.sh:ro
-      - ./nginx/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf:ro
-    depends_on:
-      - app
-      - redis
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/ssl:/etc/nginx/ssl:rw
+      - ./nginx/auto-ssl:/etc/resty-auto-ssl:rw
+      - ./nginx/logs:/var/log/nginx:rw
+    environment:
+      - NGINX_HOST=${DOMAIN:-localhost}
+      - NGINX_PORT=80
+      - SSL_EMAIL=${ACME_EMAIL}
+      - SSL_STAGING=${ACME_STAGING:-true}
+    # depends_on:
+    #   app:
+    #     condition: service_healthy
     networks:
       - sailmail_network
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:80 || exit 1"]
-      interval: 1m30s
-      timeout: 30s
-      retries: 5
-      start_period: 30s
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
 
-# 💾 📦 Persistent Data Volumes 💿
+
+# 💾 Persistent Data Volumes 💾
+# ==========================
 volumes:
-  postgres_data:  # 💽 PostgreSQL data persistence
-  redis_data:     # 📀 Redis data persistence
+  postgres_data:
+    name: sailmail_postgres_data
+  redis_data:
+    name: sailmail_redis_data
 
-# 🌐 🔌 Docker Networks 🌍
+
+# 🌐 Docker Networks 🌐
+# ===================
 networks:
   sailmail_network:
+    name: sailmail_network
     driver: bridge

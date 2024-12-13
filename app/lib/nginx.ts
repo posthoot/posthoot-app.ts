@@ -1,7 +1,7 @@
 import { writeFile } from 'fs/promises';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { CustomDomain } from '@prisma/client';
+import { CustomDomain } from '@/@prisma/client';
 import path from 'path';
 
 const execAsync = promisify(exec);
