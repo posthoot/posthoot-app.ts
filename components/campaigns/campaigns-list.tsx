@@ -43,7 +43,7 @@ import { cn, isEmpty } from "@/lib/utils";
 import { useTeam } from "@/app/providers/team-provider";
 import { toast } from "@/hooks/use-toast";
 import { useCampaigns } from "@/app/providers/campaigns-provider";
-import { Campaign, CampaignStatus } from "@prisma/client";
+import { Campaign, CampaignStatus } from "@/@prisma/client";
 import {
   DropdownMenu,
   DropdownMenuContent,

@@ -1,6 +1,6 @@
 "use client";
 
-import { Campaign } from "@prisma/client";
+import { Campaign } from "@/@prisma/client";
 import { createContext, useContext, useEffect, useState } from "react";
 import { useTeam } from "./team-provider";
 

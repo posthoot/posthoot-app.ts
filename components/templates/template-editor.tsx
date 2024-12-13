@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { EmailTemplate } from "@/types";
 import { useTeam } from "@/app/providers/team-provider";
-import { EmailCategory } from "@prisma/client";
+import { EmailCategory } from "@/@prisma/client";
 import {
   Select,
   SelectContent,

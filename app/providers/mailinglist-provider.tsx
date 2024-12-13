@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import type { MailingList } from "@prisma/client";
+import type { MailingList } from "@/@prisma/client";
 import { useTeam } from "./team-provider";
 
 type MailingListContextType = {

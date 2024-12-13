@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { logger } from "@/app/lib/logger";
-import { Team, User, TeamInvite, CustomDomain } from "@prisma/client";
+import { Team, User, TeamInvite, CustomDomain } from "@/@prisma/client";
 
 interface TeamWithUsers extends Team {
   users: User[];

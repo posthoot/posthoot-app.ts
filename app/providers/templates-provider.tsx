@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import type { EmailTemplate } from "@prisma/client";
+import type { EmailTemplate } from "@/@prisma/client";
 import { useTeam } from "./team-provider";
 
 type TemplatesContextType = {
