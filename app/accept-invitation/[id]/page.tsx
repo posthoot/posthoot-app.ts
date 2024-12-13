@@ -17,7 +17,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { signIn, useSession } from "next-auth/react";
-import { Team, TeamInvite, User } from "@prisma/client";
+import { Team, TeamInvite, User } from "@/@prisma/client";
 
 const acceptInviteSchema = z
   .object({
