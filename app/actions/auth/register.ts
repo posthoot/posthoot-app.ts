@@ -1,8 +1,8 @@
 import { prisma } from "@/app/lib/prisma";
 import { isEmpty, removeUndefined } from "@/lib/utils";
 import { SignupInput } from "@/lib/validations/auth";
-import { User } from "@prisma/client";
-import { hash } from "bcryptjs";
+import { User } from "@/@prisma/client";
+import { hashSync } from "bcrypt-edge";
 
 export const register = async (body: SignupInput): Promise<{ user: User }> => {
   const exists = await prisma.user.findUnique({
@@ -13,7 +13,7 @@ export const register = async (body: SignupInput): Promise<{ user: User }> => {
     throw new Error("Email already exists");
   }
 
-  const hashedPassword = await hash(body.password, 10);
+  const hashedPassword = hashSync(body.password, 10);
 
   // Create user and team in a single transaction for atomicity
   const { user } = await prisma.$transaction(async (tx) => {

@@ -1,10 +1,7 @@
-import { hash } from "bcrypt";
 import { NextResponse } from "next/server";
-import { prisma } from "@/app/lib/prisma";
 import { logger } from "@/app/lib/logger";
 import { z } from "zod";
 import { SignupSchema } from "@/lib/validations/auth";
-import { isEmpty, removeUndefined } from "@/lib/utils";
 import { register } from "@/app/actions/auth/register";
 
 const FILE_NAME = "app/api/auth/signup/route.ts";

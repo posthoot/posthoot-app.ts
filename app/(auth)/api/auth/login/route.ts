@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import bcrypt from "bcrypt";
 import { LoginSchema } from "@/lib/validations/auth";
 import { logger } from "@/app/lib/logger";
 import { prisma } from "@/app/lib/prisma";
+import { compareSync } from "bcrypt-edge";
 
 const FILE_NAME = 'app/(auth)/api/auth/login/route.ts';
 
@@ -103,7 +103,7 @@ export async function POST(req: Request) {
     }
 
     // Verify password
-    const isValidPassword = await bcrypt.compare(password, user.password);
+    const isValidPassword = compareSync(password, user.password);
     if (!isValidPassword) {
       logger.error({
         fileName: FILE_NAME,

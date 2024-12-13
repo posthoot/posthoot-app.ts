@@ -4,10 +4,11 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/app/lib/prisma";
 import { authConfig } from "./auth.config";
 import { logger } from "./app/lib/logger";
-import bcrypt from "bcryptjs";
+import { compareSync } from "bcrypt-edge";
 
 const nextAuthConfig: NextAuthConfig = {
   callbacks: authConfig.callbacks as any,
+  trustHost: true,
   adapter: PrismaAdapter(prisma) as any,
   session: { strategy: "jwt", maxAge: 60 * 60 * 24 * 30 },
   pages: {
@@ -37,7 +38,7 @@ const nextAuthConfig: NextAuthConfig = {
 
           if (!user || !user.password) return null;
 
-          const passwordsMatch = await bcrypt.compare(
+          const passwordsMatch = compareSync(
             credentials.password as string,
             user.password as string
           );
@@ -78,10 +79,7 @@ const nextAuthConfig: NextAuthConfig = {
             where: {
               key: credentials.apiKey as string,
               isActive: true,
-              OR: [
-                { expiresAt: null },
-                { expiresAt: { gt: new Date() } }
-              ]
+              OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
             },
             include: {
               team: {
@@ -94,11 +92,11 @@ const nextAuthConfig: NextAuthConfig = {
                       email: true,
                       name: true,
                       role: true,
-                    }
-                  }
-                }
-              }
-            }
+                    },
+                  },
+                },
+              },
+            },
           });
 
           if (!apiKey?.team?.users[0]) return null;
