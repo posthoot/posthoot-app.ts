@@ -3,8 +3,8 @@
 
 FROM oven/bun:canary-alpine AS builder
 
-RUN echo "🔮 ✨ Installing system dependencies..." && \
-    apk add --no-cache nodejs npm git
+RUN echo "🔮 ✨ Why did the dependency feel lonely? Because nobody would require it! 😄" && \
+    apk add --no-cache nodejs git build-base python3 make npm
 
 # 📂 Set working directory 📂
 # ==========================
@@ -21,7 +21,8 @@ COPY package.json package-lock.json ./
 # 📦 Install dependencies 📦
 # ========================
 
-RUN echo "🎭 ✨ Installing project dependencies..." && \
+RUN echo "🎭 ✨ What did npm say to the package? I node you from somewhere! 🤣" && \
+    bun install -g npx && \
     bun install
 
 
@@ -34,7 +35,7 @@ COPY . .
 # 🏗️ Build application 🏗️
 # ======================
 
-RUN echo "🚀 ✨ Building Next.js application..." && \
+RUN echo "🚀 ✨ Why did the Next.js build take so long? It was taking a page break! 😆" && \
     bun run build
 
 
@@ -53,7 +54,7 @@ WORKDIR /app
 # 📋 Copy build artifacts 📋
 # ========================
 
-RUN echo "🎪 ✨ Preparing production environment..."
+RUN echo "🎪 ✨ Why did the Docker container feel claustrophobic? Because it was packed in production! 🎭"
 
 COPY --from=builder /app/node_modules ./node_modules
 

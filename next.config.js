@@ -4,9 +4,15 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   images: { unoptimized: true },
-  webpack: (config) => {
-    config.externals.push('everything-json');
-    return config;
+  webpack: (config, { nextRuntime }) => {
+    if (nextRuntime !== "nodejs") return config;
+    return {
+      ...config,
+      externals: [
+        ...config.externals,
+        'everything-json',
+      ],
+    }
   }
 };
 

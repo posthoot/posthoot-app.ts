@@ -1,5 +1,5 @@
-import { PrismaClient } from "@prisma/client";
-import { hash } from "bcrypt";
+import { PrismaClient } from "@/@prisma/client";
+import { hashSync } from "bcrypt-edge";
 
 const prisma = new PrismaClient();
 
@@ -36,7 +36,7 @@ async function main() {
       role: "ADMIN",
       status: "ACTIVE",
       teamId: team.id,
-      password: await hash(process.env.ADMIN_PASSWORD, 10),
+      password: hashSync(process.env.ADMIN_PASSWORD, 10),
     },
   });
 
