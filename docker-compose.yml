@@ -7,7 +7,7 @@ services:
   # 🐘 PostgreSQL Database Service 🐘
   # ================================
   postgres:
-    image: postgres:15-alpine
+    image: postgres:16-alpine
     container_name: kori_postgres
     restart: unless-stopped
     environment:

@@ -61,6 +61,8 @@ COPY --from=builder /app/.next ./.next
 
 COPY --from=builder /app/package.json ./
 
+COPY --from=builder /app/public ./public
+
 # Copy Prisma schema and migrations from builder stage 🦆
 # ====================================================
 
