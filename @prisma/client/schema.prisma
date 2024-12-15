@@ -63,6 +63,7 @@ model Team {
   smtpConfigs     SmtpConfig[]
   sentEmails      SentEmail[]
   customDomains   CustomDomain[]
+  webhooks        Webhook[]
 
   @@index([id])
 }
@@ -242,6 +243,7 @@ model EmailTracking {
   sentEmailId String
   sentEmail   SentEmail    @relation(fields: [sentEmailId], references: [id])
   type        TrackingType
+  data        Json?
   createdAt   DateTime     @default(now())
 }
 
@@ -455,4 +457,63 @@ model CustomDomain {
 
   @@index([teamId])
   @@index([domain])
+}
+
+enum WebhookEventType {
+  EMAIL_SENT
+  EMAIL_OPENED
+  EMAIL_CLICKED
+  EMAIL_BOUNCED
+  CAMPAIGN_STARTED
+  CAMPAIGN_COMPLETED
+  CAMPAIGN_FAILED
+  SUBSCRIPTION_UPDATED
+  CUSTOM_DOMAIN_VERIFIED
+  SUBSCRIBER_CREATED
+  SUBSCRIBER_UPDATED
+  SUBSCRIBER_DELETED
+  ADDED_TO_LIST
+  REMOVED_FROM_LIST
+}
+
+model Webhook {
+  id          String         @id @default(cuid())
+  name        String
+  url         String
+  secret      String
+  isActive    Boolean        @default(true)
+  events      WebhookEvent[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  team        Team           @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId      String
+  lastStatus  Int? // HTTP status from last delivery
+  lastAttempt DateTime? // Last delivery attempt timestamp
+  retryCount  Int            @default(0)
+
+  @@index([teamId])
+}
+
+model WebhookEvent {
+  id        String           @id @default(cuid())
+  eventType WebhookEventType
+  webhook   Webhook          @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+  webhookId String
+  createdAt DateTime         @default(now())
+
+  @@index([webhookId])
+}
+
+model WebhookDelivery {
+  id        String           @id @default(cuid())
+  webhookId String
+  eventType WebhookEventType
+  payload   Json
+  status    Int // HTTP status code
+  response  String? // Response body
+  error     String? // Error message if failed
+  createdAt DateTime         @default(now())
+
+  @@index([webhookId])
+  @@index([createdAt])
 }

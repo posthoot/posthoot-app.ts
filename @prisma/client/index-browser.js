@@ -264,6 +264,7 @@ exports.Prisma.EmailTrackingScalarFieldEnum = {
   id: 'id',
   sentEmailId: 'sentEmailId',
   type: 'type',
+  data: 'data',
   createdAt: 'createdAt'
 };
 
@@ -368,6 +369,38 @@ exports.Prisma.CustomDomainScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.WebhookScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  url: 'url',
+  secret: 'secret',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  teamId: 'teamId',
+  lastStatus: 'lastStatus',
+  lastAttempt: 'lastAttempt',
+  retryCount: 'retryCount'
+};
+
+exports.Prisma.WebhookEventScalarFieldEnum = {
+  id: 'id',
+  eventType: 'eventType',
+  webhookId: 'webhookId',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.WebhookDeliveryScalarFieldEnum = {
+  id: 'id',
+  webhookId: 'webhookId',
+  eventType: 'eventType',
+  payload: 'payload',
+  status: 'status',
+  response: 'response',
+  error: 'error',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -375,6 +408,10 @@ exports.Prisma.SortOrder = {
 
 exports.Prisma.NullableJsonNullValueInput = {
   DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull
+};
+
+exports.Prisma.JsonNullValueInput = {
   JsonNull: Prisma.JsonNull
 };
 
@@ -485,6 +522,23 @@ exports.NodeType = exports.$Enums.NodeType = {
   EXIT: 'EXIT'
 };
 
+exports.WebhookEventType = exports.$Enums.WebhookEventType = {
+  EMAIL_SENT: 'EMAIL_SENT',
+  EMAIL_OPENED: 'EMAIL_OPENED',
+  EMAIL_CLICKED: 'EMAIL_CLICKED',
+  EMAIL_BOUNCED: 'EMAIL_BOUNCED',
+  CAMPAIGN_STARTED: 'CAMPAIGN_STARTED',
+  CAMPAIGN_COMPLETED: 'CAMPAIGN_COMPLETED',
+  CAMPAIGN_FAILED: 'CAMPAIGN_FAILED',
+  SUBSCRIPTION_UPDATED: 'SUBSCRIPTION_UPDATED',
+  CUSTOM_DOMAIN_VERIFIED: 'CUSTOM_DOMAIN_VERIFIED',
+  SUBSCRIBER_CREATED: 'SUBSCRIBER_CREATED',
+  SUBSCRIBER_UPDATED: 'SUBSCRIBER_UPDATED',
+  SUBSCRIBER_DELETED: 'SUBSCRIBER_DELETED',
+  ADDED_TO_LIST: 'ADDED_TO_LIST',
+  REMOVED_FROM_LIST: 'REMOVED_FROM_LIST'
+};
+
 exports.Prisma.ModelName = {
   EmailTemplate: 'EmailTemplate',
   User: 'User',
@@ -505,7 +559,10 @@ exports.Prisma.ModelName = {
   Automation: 'Automation',
   AutomationNode: 'AutomationNode',
   AutomationNodeEdge: 'AutomationNodeEdge',
-  CustomDomain: 'CustomDomain'
+  CustomDomain: 'CustomDomain',
+  Webhook: 'Webhook',
+  WebhookEvent: 'WebhookEvent',
+  WebhookDelivery: 'WebhookDelivery'
 };
 
 /**
