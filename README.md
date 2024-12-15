@@ -1,15 +1,15 @@
-# SailMail - Enterprise Email Orchestration Platform
+# kori 🦆 - Enterprise Email Orchestration Platform
 
 <div align="center">
-  <img src="public/sailer.svg" alt="SailMail Logo" />
+  <img src="public/sailer.svg" alt="kori Logo" />
   <p><em>First-class email automation for modern enterprises</em></p>
 </div>
 
-![SailMail Demo](public/preview.png)
+![kori Demo](public/preview.png)
 
 ## Overview
 
-🚢 SailMail is an enterprise-grade email orchestration platform that helps businesses automate their email workflows, manage contact lists, and deliver personalized communications at scale. Built with modern technologies and designed for performance.
+🦆 kori is an enterprise-grade email orchestration platform that helps businesses automate their email workflows, manage contact lists, and deliver personalized communications at scale. Built with modern technologies and designed for performance.
 
 ## Latest Updates
 
@@ -107,8 +107,8 @@ graph TD
 
 1. Clone the repository:
 \`\`\`bash
-git clone https://github.com/yourusername/sailmail.git
-cd sailmail
+git clone https://github.com/yourusername/kori.git
+cd kori
 \`\`\`
 
 2. Copy environment files:
@@ -191,7 +191,7 @@ API documentation is available at \`/api-docs\` when running the application. Th
 
 ## Versioning
 
-SailMail follows [Semantic Versioning](https://semver.org/). For the versions available, see the [tags on this repository](https://github.com/yourusername/sailmail/tags).
+kori follows [Semantic Versioning](https://semver.org/). For the versions available, see the [tags on this repository](https://github.com/yourusername/kori/tags).
 
 - **Major version** changes indicate incompatible API changes
 - **Minor version** changes add functionality in a backward-compatible manner
@@ -213,4 +213,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
-For support, email support@sailmail.dev or join our Discord community.
+For support, email support@kori.dev or join our Discord community.

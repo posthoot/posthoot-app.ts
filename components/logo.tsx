@@ -22,7 +22,7 @@ export function Logo({ className, onlyLogo }: LogoProps) {
         <ShipWheel className="h-6 w-6" />
       )}
       {!onlyLogo && (
-        <span className="font-semibold">{team?.name || "SailMail"}</span>
+        <span className="font-semibold">{team?.name || "kori 🦆"}</span>
       )}
     </div>
   );

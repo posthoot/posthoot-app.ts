@@ -7,8 +7,8 @@ services:
   # 🐘 PostgreSQL Database Service 🐘
   # ================================
   postgres:
-    image: postgres:16-alpine
-    container_name: sailmail_postgres
+    image: postgres:15-alpine
+    container_name: kori_postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -17,7 +17,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - sailmail_network
+      - kori_network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
       interval: 30s
@@ -30,13 +30,13 @@ services:
   # ========================
   redis:
     image: redis:7-alpine
-    container_name: sailmail_redis
+    container_name: kori_redis
     restart: unless-stopped
     command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
     volumes:
       - redis_data:/data
     networks:
-      - sailmail_network
+      - kori_network
     healthcheck:
       test: ["CMD-SHELL", "redis-cli -a ${REDIS_PASSWORD} ping | grep PONG"]
       interval: 30s
@@ -53,7 +53,7 @@ services:
       dockerfile: Dockerfile
       args:
         - NODE_ENV=${NODE_ENV}
-    container_name: sailmail_app
+    container_name: kori_app
     restart: unless-stopped
     command: sh -c "bunx prisma migrate deploy && bun run start"
     environment:
@@ -67,7 +67,7 @@ services:
       redis:
         condition: service_healthy
     networks:
-      - sailmail_network
+      - kori_network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
       interval: 30s
@@ -82,8 +82,8 @@ services:
     build:
       context: ./nginx
       dockerfile: Dockerfile
-    container_name: sailmail_nginx
-    restart: unless-stopped
+    container_name: kori_nginx
+    restart: always
     ports:
       - "80:80"
       - "443:443"
@@ -101,7 +101,7 @@ services:
       app:
         condition: service_healthy
     networks:
-      - sailmail_network
+      - kori_network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/health"]
       interval: 30s
@@ -118,14 +118,15 @@ services:
 # ==========================
 volumes:
   postgres_data:
-    name: sailmail_postgres_data
+    name: kori_postgres_data
   redis_data:
-    name: sailmail_redis_data
+    name: kori_redis_data
+    driver: local
 
 
 # 🌐 Docker Networks 🌐
 # ===================
 networks:
-  sailmail_network:
-    name: sailmail_network
+  kori_network:
+    name: kori_network
     driver: bridge

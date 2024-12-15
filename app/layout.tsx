@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "SailMail",
+  title: "kori 🦆",
   description: "A powerful email automation and management platform",
   keywords: [
     "email",
@@ -28,9 +28,9 @@ export const metadata: Metadata = {
   robots: "index, follow",
   openGraph: {
     type: "website",
-    title: "SailMail",
+    title: "kori 🦆",
     description: "A powerful email automation and management platform",
-    siteName: "SailMail",
+    siteName: "kori 🦆",
   },
 };
 

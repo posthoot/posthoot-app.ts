@@ -41,7 +41,7 @@ export function BrandingSettings() {
   } = useForm<BrandingFormData>({
     resolver: zodResolver(brandingSchema),
     defaultValues: {
-      dashboardName: team?.name || "SailMail", // Default name
+      dashboardName: team?.name || "kori 🦆", // Default name
     },
   });
 
