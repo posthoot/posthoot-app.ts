@@ -22,7 +22,6 @@ COPY package.json package-lock.json ./
 # ========================
 
 RUN echo "🎭 ✨ What did npm say to the package? I node you from somewhere! 🤣" && \
-    bun install -g npx && \
     bun install
 
 

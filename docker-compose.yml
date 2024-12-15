@@ -59,6 +59,9 @@ services:
         - NODE_ENV=${NODE_ENV}
     container_name: sailmail_app
     restart: unless-stopped
+    command: sh -c "bunx prisma migrate deploy && bun run start"
+    env_file:
+      - .env.local
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
@@ -101,9 +104,9 @@ services:
       - NGINX_PORT=80
       - SSL_EMAIL=${ACME_EMAIL}
       - SSL_STAGING=${ACME_STAGING:-true}
-    # depends_on:
-    #   app:
-    #     condition: service_healthy
+    depends_on:
+      app:
+        condition: service_healthy
     networks:
       - sailmail_network
     healthcheck:
