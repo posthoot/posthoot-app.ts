@@ -7,20 +7,7 @@ export interface TurboNodeData extends Record<string, unknown> {
   subline?: string;
   type?: string;
   description?: string;
-  config?: {
-    duration?: number;
-    unit?: 'minutes' | 'hours' | 'days' | 'weeks';
-    subject?: string;
-    template?: string;
-    type?: 'email_opened' | 'email_clicked' | 'custom';
-    value?: string;
-    operator?: string;
-    criteria?: string;
-    action?: 'add' | 'remove';
-    tags?: string[];
-    audienceSize?: number;
-    segmentName?: string;
-  };
+  config?: NodeConfig;
 }
 
 export interface NodeConfig {
@@ -36,6 +23,10 @@ export interface NodeConfig {
   tags?: string[];
   audienceSize?: number;
   segmentName?: string;
+  prompt?: string;
+  model?: string;
+  temperature?: number;
+  maxTokens?: number;
 }
 
 export interface EmailFlowState {

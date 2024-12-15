@@ -4,6 +4,8 @@ import { NextResponse } from "next/server";
 import { getEmailSmtpConfig, getEmailTemplate } from "@/app/lib/smtp";
 import { isEmpty } from "@/lib/utils";
 import { getSubscriber } from "@/lib/services/email/subscriber";
+import prisma from "@/app/lib/prisma";
+import { auth } from "@/auth";
 
 const zodSchema = z.object({
   email: z.string().email(),
@@ -22,7 +24,11 @@ const zodSchema = z.object({
  *     summary: Send an email
  *     tags: [Email]
  *     security:
- *       - BearerAuth: []
+ *       - ApiKeyAuth: [
+ *         type: apiKey
+ *         in: header
+ *         name: x-api-key
+ *       ]
  *     requestBody:
  *       required: true
  *       content:
@@ -33,7 +39,7 @@ const zodSchema = z.object({
  *               - email
  *               - subject
  *               - provider
- *               - teamId
+ *               - data
  *             properties:
  *               email:
  *                 type: string
@@ -46,8 +52,9 @@ const zodSchema = z.object({
  *                 type: string
  *               provider:
  *                 type: string
- *               teamId:
- *                 type: string
+ *               data:
+ *                 type: object
+ *                 description: Data to be used in the email template
  *     responses:
  *       200:
  *         description: Email sent successfully
@@ -55,14 +62,33 @@ const zodSchema = z.object({
  *         description: Unauthorized
  *       400:
  *         description: Bad Request - Invalid email configuration
+ *       404:
+ *         description: Team not found
  *       500:
  *         description: Internal Server Error
  */
 export async function POST(request: Request) {
   try {
     const body = await request.json();
+    const session = await auth();
 
-    let { email, html, templateId, subject, provider, teamId, data } =
+    const team = await prisma.team.findFirst({
+      where: {
+        users: {
+          some: {
+            id: session?.user.id,
+          },
+        },
+      },
+    });
+
+    if (!team) {
+      return new NextResponse("Team not found", { status: 404 });
+    }
+
+    const teamId = team.id;
+
+    let { email, html, templateId, subject, provider, data } =
       zodSchema.parse(body);
 
     if (isEmpty(templateId) && isEmpty(html)) {

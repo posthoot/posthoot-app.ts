@@ -1,6 +1,6 @@
 import React from 'react';
 import { Node, Edge } from '@xyflow/react';
-import { FiUsers, FiMail, FiClock, FiGitBranch, FiCheck } from 'react-icons/fi';
+import { FiUsers, FiMail, FiClock, FiGitBranch, FiCheck, FiCpu } from 'react-icons/fi';
 import { TurboNodeData } from '@/components/emailFlowBuilder/types';
 
 const createIcon = (Icon: React.ComponentType) => React.createElement(Icon);
@@ -55,6 +55,24 @@ export const initialNodes: Node<TurboNodeData>[] = [
     id: "4",
     position: { x: 600, y: 150 },
     data: {
+      icon: createIcon(FiCpu),
+      title: "AI Email Generator",
+      subline: "Generate Email Content",
+      type: "ai",
+      description: "Generate personalized email content using AI",
+      config: {
+        prompt: "Generate engaging email content",
+        model: "gpt-3.5-turbo",
+        temperature: 0.7,
+        maxTokens: 500
+      }
+    },
+    type: "turbo"
+  },
+  {
+    id: "5",
+    position: { x: 900, y: 300 },
+    data: {
       icon: createIcon(FiGitBranch),
       title: "Engagement Check",
       subline: "Email Opened?",
@@ -68,7 +86,7 @@ export const initialNodes: Node<TurboNodeData>[] = [
     type: "turbo",
   },
   {
-    id: "5",
+    id: "6",
     position: { x: 900, y: 0 },
     data: {
       icon: createIcon(FiMail),
@@ -83,7 +101,7 @@ export const initialNodes: Node<TurboNodeData>[] = [
     type: "turbo",
   },
   {
-    id: "6",
+    id: "7",
     position: { x: 900, y: 300 },
     data: {
       icon: createIcon(FiMail),
@@ -98,7 +116,7 @@ export const initialNodes: Node<TurboNodeData>[] = [
     type: "turbo",
   },
   {
-    id: "7",
+    id: "8",
     position: { x: 1200, y: 150 },
     data: {
       icon: createIcon(FiCheck),
@@ -161,6 +179,12 @@ export const initialEdges: Edge[] = [
     id: "e6-7",
     source: "6",
     target: "7",
+    animated: true,
+  },
+  {
+    id: "e7-8",
+    source: "7",
+    target: "8",
     animated: true,
   },
 ];

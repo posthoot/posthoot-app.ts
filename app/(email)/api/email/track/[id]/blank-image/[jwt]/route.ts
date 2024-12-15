@@ -1,80 +1,101 @@
 import { NextResponse } from "next/server";
-import jwt from "jsonwebtoken";
-import { JwtData } from "nodemailer-mail-tracking/dist/types";
 import { prisma } from "@/app/lib/prisma";
-import { TrackingType } from "@/@prisma/client";
-
-// Return 1x1 transparent GIF
-const TRANSPARENT_GIF_BUFFER = Buffer.from(
+import { logger } from "@/app/lib/logger";
+import { webhookService } from "@/app/lib/webhooks";
+import { TrackingType, WebhookEventType } from "@/@prisma/client";
+import jwt from "jsonwebtoken";
+// 1x1 transparent GIF
+const TRACKING_PIXEL = Buffer.from(
   "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
   "base64"
 );
 
-const emptyImageResponse = new NextResponse(TRANSPARENT_GIF_BUFFER, {
-  headers: {
-    "Content-Type": "image/gif",
-    "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
-    Pragma: "no-cache",
-    Expires: "0",
-  },
-});
-
-/**
- * @openapi
- * /api/email/track/blank-image/{jwt}:
- *   get:
- *     summary: Track email opens via blank tracking image
- *     tags: [Email]
- *     parameters:
- *       - in: path
- *         name: jwt
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Returns a 1x1 transparent GIF image
- *       401:
- *         description: Invalid JWT token
- */
 export async function GET(
   req: Request,
-  { params }: { params: Promise<{ jwt: string; id: string }> }
+  { params }: { params: Promise<{ id: string; jwt: string }> }
 ) {
   try {
-    // Verify and decode JWT token
-    const decoded: JwtData = jwt.verify(
-      (await params).jwt,
-      process.env.JWT_SECRET
-    ) as JwtData;
+    const { id, jwt: jwtToken } = await params;
 
-    if (decoded.recipient) {
-      const imageId = (await params).id;
-
-      if (imageId) {
-        await prisma.sentEmail
-          .update({
-            where: { id: imageId },
-            data: {
-              openedAt: new Date(),
-            },
-          })
-          .then(async () => {
-            await prisma.emailTracking.create({
-              data: {
-                sentEmail: {
-                  connect: {
-                    id: imageId,
-                  },
-                },
-                type: TrackingType.OPENED,
-              },
-            });
-          });
-      }
+    // Verify JWT token
+    const payload = jwt.verify(jwtToken, process.env.JWT_SECRET!);
+    if (!payload) {
+      return new NextResponse("Invalid token", { status: 401 });
     }
-    return emptyImageResponse;
+
+    // Record open event
+    const sentEmail = await prisma.sentEmail.findUnique({
+      where: { id },
+      include: {
+        campaign: {
+          select: {
+            teamId: true,
+          },
+        },
+      },
+    });
+
+    if (!sentEmail) {
+      return new NextResponse("Email not found", { status: 404 });
+    }
+
+    await prisma.emailTracking.create({
+      data: {
+        type: TrackingType.OPENED,
+        sentEmailId: id,
+      },
+    });
+
+    // Trigger webhook
+    await webhookService.triggerWebhook(
+      WebhookEventType.EMAIL_OPENED,
+      sentEmail.campaign.teamId,
+      {
+        emailId: id,
+        timestamp: new Date().toISOString(),
+      }
+    );
+
+    logger.info({
+      message: "Email opened",
+      label: "email",
+      value: {
+        emailId: id,
+      },
+      emoji: "📩",
+      fileName: "track/blank-image/[jwt]/route.ts",
+      action: "trackEmailOpen",
+    });
+
+    // Return tracking pixel
+    return new NextResponse(TRACKING_PIXEL, {
+      headers: {
+        "Content-Type": "image/gif",
+        "Cache-Control":
+          "no-store, no-cache, must-revalidate, proxy-revalidate",
+        Pragma: "no-cache",
+        Expires: "0",
+      },
+    });
   } catch (error) {
-    return emptyImageResponse;
+    logger.error({
+      message: "Error tracking email open",
+      label: "email",
+      value: {
+        emailId: (await params).id,
+      },
+      emoji: "📩",
+      fileName: "track/blank-image/[jwt]/route.ts",
+      action: "trackEmailOpen",
+    });
+    return new NextResponse(TRACKING_PIXEL, {
+      headers: {
+        "Content-Type": "image/gif",
+        "Cache-Control":
+          "no-store, no-cache, must-revalidate, proxy-revalidate",
+        Pragma: "no-cache",
+        Expires: "0",
+      },
+    });
   }
 }

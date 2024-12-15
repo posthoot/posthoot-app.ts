@@ -1,5 +1,7 @@
-import { PrismaClient } from "@/@prisma/client";
-import { hashSync } from "bcrypt-edge";
+import { PrismaClient } from "../@prisma/client";
+import { hash } from "bcryptjs";
+
+require("dotenv").config();
 
 const prisma = new PrismaClient();
 
@@ -36,20 +38,22 @@ async function main() {
       role: "ADMIN",
       status: "ACTIVE",
       teamId: team.id,
-      password: hashSync(process.env.ADMIN_PASSWORD, 10),
+      password: await hash(process.env.ADMIN_PASSWORD, 10),
     },
   });
 
   // create a mailing list
-  const list = await prisma.mailingList.create({
-    data: {
-      name: "Admin List",
-      team: {
-        connect: {
-          id: team.id,
-        },
+  const lists = await prisma.mailingList.createMany({
+    data: [
+      {
+        name: "Generic List",
+        teamId: team.id,
       },
-    },
+      {
+        name: "Team Invites",
+        teamId: team.id,
+      },
+    ],
   });
 
   // create a subscriber
@@ -60,7 +64,7 @@ async function main() {
       lastName: "None",
       mailingList: {
         connect: {
-          id: list.id,
+          id: lists[0].id,
         },
       },
     },

@@ -16,6 +16,7 @@ import {
   ShipWheel,
   Moon,
   Sun,
+  Webhook,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -67,6 +68,11 @@ const routes = [
     label: "SMTP",
     icon: Mail,
     href: "/settings/smtp",
+  },
+  {
+    label: "Webhooks",
+    icon: Webhook,
+    href: "/settings/webhooks",
   },
 ];
 

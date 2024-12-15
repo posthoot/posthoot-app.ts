@@ -3,7 +3,7 @@ import { Ratelimit } from '@upstash/ratelimit'
 
 // Create Redis instance
 const redis = new Redis({
-  url: process.env.REDIS_URL || '',
+  url: process.env.UPSTASH_REDIS_REST_URL || '',
   token: process.env.REDIS_PASSWORD || '',
 })
 

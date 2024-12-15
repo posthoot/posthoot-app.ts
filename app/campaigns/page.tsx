@@ -1,7 +1,6 @@
 "use client";
 
 import { CampaignsList } from "@/components/campaigns/campaigns-list";
-import { CampaignsHeader } from "@/components/campaigns/campaigns-header";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";

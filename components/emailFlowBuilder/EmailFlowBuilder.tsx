@@ -31,6 +31,7 @@ type NodeType = {
   icon: IconType;
   title: string;
   description: string;
+  config?: any;
 };
 
 type NodeTypeMap = {
@@ -119,6 +120,8 @@ const EmailFlowBuilder = () => {
           title: nodeTypeInfo.title,
           subline: "Configure step",
           type: type,
+          description: nodeTypeInfo.description,
+          config: nodeTypeInfo.config,
         },
       };
 

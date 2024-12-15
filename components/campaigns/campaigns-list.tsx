@@ -365,7 +365,7 @@ function CreateCampaignDialog({
   );
 }
 
-export async function CampaignsList({
+export function CampaignsList({
   isOpen,
   onClose,
 }: {
@@ -507,17 +507,6 @@ export async function CampaignsList({
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">Campaigns</h2>
-        <Button
-          onClick={() => {
-            setSelectedCampaign(null);
-            onClose();
-          }}
-        >
-          Create Campaign
-        </Button>
-      </div>
       <DataTable columns={columns} data={campaigns} isLoading={isLoading} />
       <CreateCampaignDialog
         open={isOpen}

@@ -52,7 +52,7 @@ export const register = async (body: SignupInput): Promise<{ user: User }> => {
             createMany: {
               data: [
                 {
-                  name: "Generic",
+                  name: "Generic List",
                   description: "Generic list for all users",
                 },
                 {

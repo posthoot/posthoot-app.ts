@@ -9,10 +9,22 @@ import {
   FiMessageSquare,
   FiFilter,
   FiTag,
+  FiCpu,
 } from "react-icons/fi";
 import { NodeTypeSelectorProps } from '@/components/emailFlowBuilder/types';
 
 export const nodeTypes = {
+  ai: {
+    icon: FiCpu,
+    title: "AI",
+    description: "Create and send email content",
+    config: {
+      prompt: "",
+      model: "gpt-3.5-turbo",
+      temperature: 0.7,
+      maxTokens: 500,
+    },
+  },
   audience: {
     icon: FiUsers,
     title: "Segment",

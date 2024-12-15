@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
-import jwt from "jsonwebtoken";
-import { JwtDataForLink } from "nodemailer-mail-tracking/dist/types";
 import { prisma } from "@/app/lib/prisma";
-import { TrackingType } from "@/@prisma/client";
+import jwt from "jsonwebtoken";
+import { logger } from "@/app/lib/logger";
+import { webhookService } from "@/app/lib/webhooks";
+import { JwtDataForLink } from "nodemailer-mail-tracking/dist/types";
+import { TrackingType, WebhookEventType } from "@/@prisma/client";
 
 /**
  * @openapi
@@ -24,41 +26,79 @@ import { TrackingType } from "@/@prisma/client";
  */
 export async function GET(
   req: Request,
-  { params }: { params: Promise<{ jwt: string; id: string }> }
+  { params }: { params: Promise<{ id: string; jwt: string }> }
 ) {
-  // Verify and decode JWT token
-  const decoded: JwtDataForLink = jwt.verify(
-    (await params).jwt,
-    process.env.JWT_SECRET
-  ) as JwtDataForLink;
   try {
-    const sentEmailId = (await params).id;
+    const { id, jwt: jwtToken } = await params;
 
-    if (decoded.recipient) {
-      await prisma.sentEmail
-        .update({
-          where: { id: sentEmailId },
-          data: {
-            clickedAt: new Date(),
-          },
-        })
-        .then(async () => {
-          await prisma.emailTracking.create({
-            data: {
-              sentEmail: {
-                connect: {
-                  id: sentEmailId,
-                },
-              },
-              type: TrackingType.CLICKED,
-            },
-          });
-        });
+    // Verify JWT token
+    const payload: JwtDataForLink = jwt.verify(
+      jwtToken,
+      process.env.JWT_SECRET!
+    ) as JwtDataForLink;
+    if (!payload || !payload.link) {
+      return new NextResponse("Invalid token", { status: 401 });
     }
 
-    // Redirect to the original link
-    return NextResponse.redirect(decoded.link);
+    // Record click event
+    const sentEmail = await prisma.sentEmail.findUnique({
+      where: { id },
+      include: {
+        campaign: {
+          select: {
+            teamId: true,
+          },
+        },
+      },
+    });
+
+    if (!sentEmail) {
+      return new NextResponse("Email not found", { status: 404 });
+    }
+
+    await prisma.emailTracking.create({
+      data: {
+        type: TrackingType.CLICKED,
+        sentEmailId: id,
+        data: {
+          url: payload.url,
+        },
+      },
+    });
+
+    // Trigger webhook
+    await webhookService.triggerWebhook(
+      WebhookEventType.EMAIL_CLICKED,
+      sentEmail.campaign.teamId,
+      {
+        emailId: id,
+        url: payload.url,
+        timestamp: new Date().toISOString(),
+      }
+    );
+
+    logger.info({
+      message: "Email link clicked",
+      label: "email-link-clicked",
+      value: {
+        url: payload.url,
+      },
+      fileName: "email-link-clicked",
+      emoji: "🔗",
+      action: "email-link-clicked",
+    });
+
+    // Redirect to original URL
+    return NextResponse.redirect(payload.url);
   } catch (error) {
-    return NextResponse.redirect(decoded.link);
+    logger.error({
+      message: "Error tracking email link click",
+      label: "email-link-clicked",
+      value: {},
+      fileName: "email-link-clicked",
+      emoji: "🔗",
+      action: "email-link-clicked",
+    });
+    return new NextResponse("Internal Server Error", { status: 500 });
   }
 }

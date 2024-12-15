@@ -16,7 +16,9 @@ export async function scheduleCampaign(campaignId: string) {
     }, {
         timeout: 10000,
         retryDelay: 1000,
-        schedule: new Date(campaign.scheduledFor).toISOString(),
+        schedule: {
+            every: 1000,
+        },
         backoff: {
             type: "exponential",
             delay: 1000,

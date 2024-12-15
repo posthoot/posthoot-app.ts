@@ -4,21 +4,22 @@ import { sendMail } from "nodemailer-mail-tracking";
 import nodemailer from "nodemailer";
 import { MailTrackOptions } from "nodemailer-mail-tracking/dist/types";
 import { prisma } from "@/app/lib/prisma";
-import { createJwtFromSecret, removeUndefined } from "../utils";
+import { removeUndefined } from "../utils";
 import { logger } from "@/app/lib/logger";
 import { getEmailSmtpConfig, getEmailTemplate } from "@/app/lib/smtp";
 import { getSubscriber } from "./email/subscriber";
+
 const cleo = Cleo.getInstance();
 
 cleo.configure({
   redis: {
     host: process.env.CLEO_REDIS_HOST,
-    port: parseInt(process.env.REDIS_PORT),
+    port: parseInt(process.env.CLEO_REDIS_PORT),
+    db: parseInt(process.env.CLEO_REDIS_DB),
     password: process.env.REDIS_PASSWORD,
-    db: parseInt(process.env.REDIS_DB),
   },
   worker: {
-    concurrency: 3,
+    concurrency: 10,
   },
 });
 

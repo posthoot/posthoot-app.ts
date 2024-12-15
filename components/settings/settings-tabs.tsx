@@ -3,7 +3,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { User, Bell, Key, Palette, Globe } from "lucide-react";
+import { User, Bell, Key, Palette, Globe, Webhook } from "lucide-react";
 import { ApiKeys } from "./api-keys";
 import { ProfileSettings } from "./profile-settings";
 import { BrandingSettings } from "./branding-settings";
