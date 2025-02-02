@@ -1,8 +1,6 @@
 import type { NextAuthConfig, Session } from "next-auth";
 import type { JWT } from "next-auth/jwt";
-import { CustomAuthUser } from "./types/next-auth";
-import { logger } from "./app/lib/logger";
-
+import { User } from "./types";
 export const authConfig = {
   callbacks: {
     // @ts-ignore
@@ -12,7 +10,7 @@ export const authConfig = {
       token,
     }: {
       session: Session;
-      user: CustomAuthUser;
+      user: User;
       token: JWT;
     }) {
       return {

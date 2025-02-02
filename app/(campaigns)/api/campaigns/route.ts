@@ -1,7 +1,55 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { prisma } from "@/app/lib/prisma";
+import { APIService } from "@/lib/services/api";
 import { isEmpty, removeUndefined } from "@/lib/utils";
+import { logger } from "@/app/lib/logger";
+import { ApiError } from "@/types";
+
+// Response interfaces
+interface CampaignResponse {
+  campaigns: Campaign[];
+  error?: string;
+}
+
+interface Campaign {
+  id: string;
+  name: string;
+  description?: string;
+  status: "DRAFT" | "SCHEDULED" | "SENDING" | "COMPLETED" | "FAILED";
+  analytics?: Record<string, any>;
+}
+
+interface CreateCampaignRequest {
+  name: string;
+  description?: string;
+  templateId: string;
+  listId: string;
+  schedule?: string;
+  scheduledFor?: string;
+  recurringSchedule?: string;
+  cronExpression?: string;
+  smtpConfigId: string;
+  teamId: string;
+}
+
+interface CreateCampaignResponse {
+  campaign: Campaign;
+  error?: string;
+}
+
+interface UpdateCampaignRequest {
+  id: string;
+  name?: string;
+  description?: string;
+  schedule?: string;
+}
+
+interface UpdateCampaignResponse {
+  campaign: Campaign;
+  error?: string;
+}
+
+const FILE_NAME = "campaigns/route.ts";
 
 /**
  * @openapi
@@ -28,7 +76,7 @@ import { isEmpty, removeUndefined } from "@/lib/utils";
  *               items:
  *                 type: object
  *                 properties:
- *                   id: 
+ *                   id:
  *                     type: string
  *                   name:
  *                     type: string
@@ -46,39 +94,68 @@ import { isEmpty, removeUndefined } from "@/lib/utils";
  *       500:
  *         description: Internal Server Error
  */
-export async function GET(req: Request) {
+export async function GET(
+  req: Request
+): Promise<NextResponse<CampaignResponse | { error: string }>> {
   try {
     const session = await auth();
-    if (!session.user) {
-      return new NextResponse("Unauthorized", { status: 401 });
+    if (!session?.user) {
+      logger.warn({
+        fileName: FILE_NAME,
+        emoji: "🚫",
+        action: "authenticate",
+        label: "campaigns",
+        value: {},
+        message: "Unauthorized access attempt",
+      });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { searchParams } = new URL(req.url);
     const teamId = searchParams.get("teamId");
 
     if (!teamId) {
-      return new NextResponse("Team ID required", { status: 400 });
+      logger.warn({
+        fileName: FILE_NAME,
+        emoji: "❓",
+        action: "validate",
+        label: "campaigns",
+        value: { teamId },
+        message: "Missing team ID",
+      });
+      return NextResponse.json({ error: "Team ID required" }, { status: 400 });
     }
 
-    const campaigns = await prisma.campaign.findMany({
-      where: {
-        team: {
-          users: {
-            some: {
-              id: session.user.id,
-            },
-          },
-        },
-      },
-      include: {
-        analytics: true,
-      },
+    const apiService = new APIService("campaigns", session);
+    const campaigns = await apiService.get<Campaign[]>("", {
+      teamId,
+      userId: session.user.id,
     });
 
-    return NextResponse.json(campaigns);
+    logger.info({
+      fileName: FILE_NAME,
+      emoji: "✅",
+      action: "fetch",
+      label: "campaigns",
+      value: { count: campaigns.length },
+      message: "Successfully retrieved campaigns",
+    });
+
+    return NextResponse.json({ campaigns });
   } catch (error) {
-    console.error("[CAMPAIGNS_GET]", error);
-    return new NextResponse("Internal Error", { status: 500 });
+    const apiError = error as ApiError;
+    logger.error({
+      fileName: FILE_NAME,
+      emoji: "❌",
+      action: "fetch",
+      label: "campaigns",
+      value: {},
+      message: apiError.message || "Failed to fetch campaigns",
+    });
+    return NextResponse.json(
+      { error: "Failed to fetch campaigns" },
+      { status: 500 }
+    );
   }
 }
 
@@ -134,73 +211,69 @@ export async function GET(req: Request) {
  *       500:
  *         description: Internal Server Error
  */
-export async function POST(req: Request) {
+export async function POST(
+  req: Request
+): Promise<NextResponse<CreateCampaignResponse | { error: string }>> {
   try {
     const session = await auth();
-
-    if (!session.user) {
-      return new NextResponse("Unauthorized", { status: 401 });
+    if (!session?.user) {
+      logger.warn({
+        fileName: FILE_NAME,
+        emoji: "🚫",
+        action: "authenticate",
+        label: "campaigns",
+        value: {},
+        message: "Unauthorized access attempt",
+      });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await req.json();
-
+    const body = (await req.json()) as CreateCampaignRequest;
     if (!body) {
+      logger.warn({
+        fileName: FILE_NAME,
+        emoji: "❓",
+        action: "validate",
+        label: "campaigns",
+        value: {},
+        message: "Missing request body",
+      });
       return NextResponse.json(
         { error: "Request body is required" },
         { status: 400 }
       );
     }
 
-    const {
-      name,
-      description,
-      templateId,
-      listId,
-      schedule,
-      scheduledFor,
-      recurringSchedule,
-      cronExpression,
-      smtpConfigId,
-      teamId,
-    } = body;
-
-    const parsedBody = removeUndefined({
-      name,
-      description,
-      schedule,
-      scheduledFor: isEmpty(scheduledFor) ? null : new Date(scheduledFor),
-      recurringSchedule,
-      cronExpression,
-      template: {
-        connect: {
-          id: templateId,
-        },
-      },
-      mailingList: {
-        connect: {
-          id: listId,
-        },
-      },
-      smtpConfig: {
-        connect: {
-          id: smtpConfigId,
-        },
-      },
-      team: {
-        connect: {
-          id: teamId,
-        },
-      },
+    const apiService = new APIService("campaigns", session);
+    const campaign = await apiService.post<Campaign>("", {
+      ...body,
+      userId: session.user.id,
     });
 
-    const campaign = await prisma.campaign.create({
-      data: parsedBody,
+    logger.info({
+      fileName: FILE_NAME,
+      emoji: "✅",
+      action: "create",
+      label: "campaigns",
+      value: { campaignId: campaign.id },
+      message: "Campaign created successfully",
     });
 
-    return NextResponse.json(campaign);
+    return NextResponse.json({ campaign });
   } catch (error) {
-    console.error("[CAMPAIGNS_POST]", error);
-    return new NextResponse("Internal Error", { status: 500 });
+    const apiError = error as ApiError;
+    logger.error({
+      fileName: FILE_NAME,
+      emoji: "❌",
+      action: "create",
+      label: "campaigns",
+      value: { error: apiError.message },
+      message: "Failed to create campaign",
+    });
+    return NextResponse.json(
+      { error: "Failed to create campaign" },
+      { status: 500 }
+    );
   }
 }
 
@@ -242,29 +315,66 @@ export async function POST(req: Request) {
 export async function PUT(req: Request) {
   try {
     const session = await auth();
-    if (!session.user) {
+    if (!session?.user) {
+      logger.warn({
+        fileName: FILE_NAME,
+        emoji: "🚫",
+        action: "authenticate",
+        label: "campaigns",
+        value: {},
+        message: "Unauthorized access attempt",
+      });
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const body = await req.json();
+    const body = (await req.json()) as UpdateCampaignRequest;
     const { id, ...updateData } = body;
 
     if (!id) {
+      logger.warn({
+        fileName: FILE_NAME,
+        emoji: "❓",
+        action: "validate",
+        label: "campaigns",
+        value: {},
+        message: "Missing campaign ID",
+      });
       return new NextResponse("Campaign ID required", { status: 400 });
     }
 
-    const campaign = await prisma.campaign.update({
-      where: {
-        id,
-        team: { users: { some: { id: session.user.id } } },
-        status: "DRAFT",
-      },
-      data: updateData,
+    logger.info({
+      fileName: FILE_NAME,
+      emoji: "📝",
+      action: "update",
+      label: "campaigns",
+      value: { id },
+      message: "Updating campaign",
+    });
+
+    const campaign = await new APIService("campaigns", session).post<Campaign>(
+      "/campaigns/update",
+      body
+    );
+
+    logger.info({
+      fileName: FILE_NAME,
+      emoji: "✅",
+      action: "update",
+      label: "campaigns",
+      value: { id },
+      message: "Successfully updated campaign",
     });
 
     return NextResponse.json(campaign);
   } catch (error) {
-    console.error("[CAMPAIGNS_PUT]", error);
+    logger.error({
+      fileName: FILE_NAME,
+      emoji: "❌",
+      action: "update",
+      label: "campaigns",
+      value: { error: (error as ApiError).message },
+      message: "Failed to update campaign",
+    });
     return new NextResponse("Internal Error", { status: 500 });
   }
 }
@@ -308,18 +418,7 @@ export async function DELETE(req: Request) {
       return new NextResponse("Campaign ID required", { status: 400 });
     }
 
-    await prisma.campaign.delete({
-      where: {
-        id: campaignId,
-        team: {
-          users: {
-            some: {
-              id: session.user.id,
-            },
-          },
-        },
-      },
-    });
+    await new APIService("campaigns", session).delete(`/${campaignId}`);
 
     return new NextResponse(null, { status: 204 });
   } catch (error) {

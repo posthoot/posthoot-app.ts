@@ -1,6 +1,23 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { prisma } from "@/app/lib/prisma";
+import { APIService } from "@/lib/services/api";
+import { logger } from "@/app/lib/logger";
+import { ApiError } from "@/types";
+
+const FILE_NAME = "app/api/team/api-keys/[id]/stats/route.ts";
+
+interface GetAPIKeyStatsResponse {
+  totalRequests: number;
+  successRate: number;
+  topEndpoints: Array<{
+    endpoint: string;
+    count: number;
+  }>;
+  recentErrors: Array<{
+    timestamp: string;
+    error: string;
+  }>;
+}
 
 /**
  * @openapi
@@ -69,75 +86,37 @@ import { prisma } from "@/app/lib/prisma";
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
-) {
+): Promise<NextResponse<GetAPIKeyStatsResponse | { error: string }>> {
   try {
-    // Get API key usage stats
-    const [
-      totalRequests,
-      successRate,
-      topEndpoints,
-      recentErrors
-    ] = await Promise.all([
-      // Total requests
-      prisma.apiKeyUsage.count({
-        where: { apiKeyId: (await params).id }
-      }),
-      // Success rate
-      prisma.apiKeyUsage.aggregate({
-        where: { apiKeyId: (await params).id },
-        _count: {
-          _all: true,
-          success: true
-        }
-      }),
-      // Top endpoints
-      prisma.apiKeyUsage.groupBy({
-        by: ['endpoint'],
-        where: { apiKeyId: (await params).id },
-        _count: true,
-        orderBy: {
-          _count: {
-            endpoint: 'desc'
-          }
-        },
-        take: 5
-      }),
-      // Recent errors
-      prisma.apiKeyUsage.findMany({
-        where: {
-          apiKeyId: (await params).id,
-          success: false,
-          error: { not: null }
-        },
-        select: {
-          timestamp: true,
-          error: true
-        },
-        orderBy: {
-          timestamp: 'desc'
-        },
-        take: 5
-      })
-    ]);
+    const session = await auth();
+    if (!session?.user) {
+      logger.warn({
+        fileName: FILE_NAME,
+        emoji: "🚫",
+        action: "authenticate",
+        label: "api-key-stats",
+        value: {},
+        message: "Unauthorized access attempt"
+      });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-    return NextResponse.json({
-      totalRequests,
-      successRate: successRate._count._all > 0 
-        ? Math.round((successRate._count.success / successRate._count._all) * 100)
-        : 0,
-      topEndpoints: topEndpoints.map(e => ({
-        endpoint: e.endpoint,
-        count: e._count
-      })),
-      recentErrors: recentErrors.map(e => ({
-        timestamp: e.timestamp,
-        error: e.error
-      }))
-    });
+    const apiService = new APIService("api-keys", session);
+    const data = await apiService.get<GetAPIKeyStatsResponse>(`${(await params).id}/stats`);
+
+    return NextResponse.json({ ...data });
   } catch (error) {
-    console.error('Error fetching API key stats:', error);
-    return new NextResponse(
-      JSON.stringify({ error: "Internal server error" }),
+    const apiError = error as ApiError;
+    logger.error({
+      fileName: FILE_NAME,
+      emoji: "❌",
+      action: "fetch",
+      label: "api-key-stats",
+      value: { error: apiError.message || "Unknown error" },
+      message: "Failed to fetch API key stats"
+    });
+    return NextResponse.json(
+      { error: "Failed to fetch API key statistics" }, 
       { status: 500 }
     );
   }

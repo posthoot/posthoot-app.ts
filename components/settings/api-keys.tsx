@@ -52,19 +52,18 @@ import { Calendar } from "../ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+const API_SCOPES = {
+  templates: ["read", "write"],
+};
 
-const AVAILABLE_SCOPES = {
-  "contacts:read": "Read contacts",
-  "contacts:write": "Manage contacts",
-  "templates:read": "Read templates",
-  "templates:write": "Manage templates",
-  "campaigns:read": "Read campaigns",
-  "campaigns:write": "Manage campaigns",
-  "team:read": "Read team settings",
-  "team:write": "Manage team settings",
-  "smtp:read": "Read SMTP settings",
-  "smtp:write": "Manage SMTP settings",
-} as const;
+// Generate available scopes from API_SCOPES
+const AVAILABLE_SCOPES = Object.values(API_SCOPES)
+  .flat()
+  .reduce((acc, scope) => {
+    const [resource, action] = scope.split(":");
+    acc[scope] = `${action.charAt(0).toUpperCase() + action.slice(1)} ${resource}`;
+    return acc;
+  }, {} as Record<string, string>);
 
 interface ApiKey {
   id: string;
@@ -117,7 +116,9 @@ export function ApiKeys() {
       const response = await fetch("/api/team/api-keys");
       const data = await response.json();
       setApiKeys(data);
-      setSelectedKey(data[0].id);
+      if (data.length > 0) {
+        setSelectedKey(data[0].id);
+      }
     } catch (error) {
       toast({
         title: "Error",
@@ -350,7 +351,7 @@ export function ApiKeys() {
                   render={() => (
                     <FormItem>
                       <FormLabel>Permissions</FormLabel>
-                      <div className="grid grid-cols-2 gap-2">
+                      <div className="grid grid-cols-4 gap-2">
                         {Object.entries(AVAILABLE_SCOPES).map(
                           ([scope, description]) => (
                             <FormField

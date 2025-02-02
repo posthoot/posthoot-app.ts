@@ -1,7 +1,22 @@
-import { uploadFile } from "@/app/lib/blobs";
 import { auth } from "@/auth";
-import { put } from "@vercel/blob";
 import { NextResponse } from "next/server";
+import { logger } from "@/app/lib/logger";
+import { APIService } from "@/lib/services/api";
+import { ApiError } from "@/types";
+
+const FILE_NAME = "api/blobs/route.ts";
+
+interface BlobUploadRequest {
+  filename: string;
+  file: File;
+}
+
+interface BlobUploadResponse {
+  data: {
+    url: string;
+  };
+  error?: string;
+}
 
 /**
  * @openapi
@@ -24,21 +39,39 @@ import { NextResponse } from "next/server";
  *                 in: formData
  *                 required: true
  */
-export async function POST(request: Request): Promise<NextResponse> {
-  const { searchParams } = new URL(request.url);
-  const session = await auth();
+export async function POST(
+  request: Request
+): Promise<NextResponse<BlobUploadResponse | { error: string }>> {
+  try {
+    const session = await auth();
+    if (!session?.user) {
+      logger.warn({
+        fileName: FILE_NAME,
+        emoji: "🚫",
+        action: "authenticate",
+        label: "blob",
+        value: {},
+        message: "Unauthorized"
+      });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-  if (!session?.user) {
-    return new NextResponse("Unauthorized", { status: 401 });
+    const apiService = new APIService("blobs", session);
+
+    // ... existing code for handling file upload ...
+  } catch (error) {
+    const apiError = error as ApiError;
+    logger.error({
+      fileName: FILE_NAME,
+      emoji: "❌",
+      action: "upload",
+      label: "blob",
+      value: { error: apiError.message || "Unknown error" },
+      message: "Failed to upload blob"
+    });
+    return NextResponse.json(
+      { error: "Failed to upload file" },
+      { status: 500 }
+    );
   }
-
-  const filename = searchParams.get("filename");
-
-  const uploadedFile = await uploadFile(request.body);
-
-  const blob = await put(filename, uploadedFile, {
-    access: "public",
-  });
-
-  return NextResponse.json(blob);
 }

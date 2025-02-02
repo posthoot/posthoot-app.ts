@@ -1,103 +1,85 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/app/lib/prisma";
-import { logger } from "@/app/lib/logger";
 import { auth } from "@/auth";
-import { put } from "@vercel/blob";
-import { extractVariables, isEmpty } from "@/lib/utils";
+import { encodeToBase64, extractVariables } from "@/lib/utils";
+import { APIService } from "@/lib/services/api";
+import { logger } from "@/app/lib/logger";
+import { ApiError } from "@/types";
 
-const FILE_NAME = "app/api/templates/route.ts";
+const FILE_NAME = "app/(templates)/api/templates/route.ts";
 
-const createTempFile = async (
-  content: string,
-  filename: string
-): Promise<File> => {
-  const tempFile = new File([content], filename, { type: "text/html" });
-  return tempFile;
-};
+// Response interfaces
+interface TemplateResponse {
+  data: {
+    id: string;
+    html: string;
+    variables: string[];
+    teamId: string;
+    emailCategoryId: string;
+  };
+  error?: string;
+}
 
-/**
- * @openapi
- * /api/templates:
- *   get:
- *     summary: List email templates
- *     tags: [Templates]
- *     security:
- *       - BearerAuth: []
- *     parameters:
- *       - in: query
- *         name: teamId
- *         required: true
- *         schema:
- *           type: string
- *         description: ID of the team
- *     responses:
- *       200:
- *         description: List of email templates
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: string
- *                   name:
- *                     type: string
- *                   html:
- *                     type: string
- *                   variables:
- *                     type: array
- *                     items:
- *                       type: string
- *                   updatedAt:
- *                     type: string
- *                     format: date-time
- *       401:
- *         description: Unauthorized
- *       500:
- *         description: Internal Server Error
- */
-export async function GET(request: Request) {
+// Request interfaces
+interface TemplateRequest {
+  id: string;
+  html: string;
+  teamId: string;
+  emailCategoryId: string;
+  duplicate?: boolean;
+  [key: string]: any;
+}
+
+export async function GET(
+  request: Request
+): Promise<NextResponse<TemplateResponse | { error: string }>> {
   try {
     const session = await auth();
-
-    if (!session) {
+    if (!session?.user) {
+      logger.warn({
+        fileName: FILE_NAME,
+        emoji: "🚫",
+        action: "GET",
+        label: "templates",
+        value: {},
+        message: "Unauthorized access attempt",
+      });
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const url = new URL(request.url);
-    const teamId = url.searchParams.get("teamId");
+    const page = url.searchParams.get("page");
+    const limit = url.searchParams.get("limit");
 
-    const templates = await prisma.emailTemplate.findMany({
-      where: {
-        teamId: {
-          equals: teamId,
-        },
-      },
-      orderBy: { updatedAt: "desc" },
+    const apiService = new APIService("templates", session);
+    const data = await apiService.get<TemplateResponse["data"][]>("", {
+      include: "Category",
+      limit: limit ? parseInt(limit) : 50,
+      page: page ? parseInt(page) : 1,
     });
 
     logger.info({
       fileName: FILE_NAME,
-      emoji: "📧",
+      emoji: "🔍",
       action: "GET",
       label: "templates",
-      value: templates.length,
+      value: { count: data.length },
       message: "Retrieved email templates",
     });
 
-    return NextResponse.json(templates);
+    return NextResponse.json({
+      ...data,
+      error: null,
+    });
   } catch (error) {
+    const apiError = error as ApiError;
     logger.error({
       fileName: FILE_NAME,
-      emoji: "💥",
+      emoji: "❌",
       action: "GET",
-      label: "error",
-      value: error,
-      message: "Error retrieving templates",
+      label: "templates",
+      value: { error: apiError.message || "Unknown error" },
+      message: "Failed to fetch templates",
     });
-
     return NextResponse.json(
       { error: "Failed to fetch templates" },
       { status: 500 }
@@ -105,169 +87,84 @@ export async function GET(request: Request) {
   }
 }
 
-/**
- * @openapi
- * /api/templates:
- *   post:
- *     summary: Create email template
- *     tags: [Templates]
- *     security:
- *       - BearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - name
- *               - html
- *               - teamId
- *             properties:
- *               name:
- *                 type: string
- *               html:
- *                 type: string
- *               teamId:
- *                 type: string
- *               emailCategoryId:
- *                 type: string
- *     responses:
- *       200:
- *         description: Template created successfully
- *       401:
- *         description: Unauthorized
- *       400:
- *         description: Bad Request
- *       500:
- *         description: Internal Server Error
- */
-export async function POST(req: Request) {
-  try {
-    const json = await req.json();
-
-    const htmlFile = `${json.id}.html`;
-
-    const variables = extractVariables(json.html);
-
-    // create a temp file with the html
-    const tempFile: File = await createTempFile(json.html, htmlFile);
-
-    const blob = await put(htmlFile, tempFile, {
-      access: "public",
-    });
-
-    json.html = blob.url;
-
-    if (!isEmpty(json.id)) {
-      throw new Error("Template ID is not allowed to be set");
-    } else {
-      delete json.id;
-    }
-
-    const teamId = json.teamId;
-    const emailCategoryId = json.emailCategoryId;
-
-    delete json.teamId;
-    delete json.emailCategoryId;
-
-    const template = await prisma.emailTemplate.create({
-      data: {
-        ...json,
-        variables,
-        team: {
-          connect: {
-            id: teamId,
-          },
-        },
-        category: {
-          connect: {
-            id: emailCategoryId,
-          },
-        },
-      },
-    });
-
-    logger.info({
-      fileName: FILE_NAME,
-      emoji: "✅",
-      action: "POST",
-      label: "template",
-      value: template.id,
-      message: "Created new email template",
-    });
-
-    return NextResponse.json(template);
-  } catch (error) {
-    logger.error({
-      fileName: FILE_NAME,
-      emoji: "❌",
-      action: "POST",
-      label: "error",
-      value: error.message,
-      message: "Error creating template",
-    });
-
-    return NextResponse.json(
-      { error: "Failed to create template" },
-      { status: 500 }
-    );
-  }
-}
-
-export async function PUT(req: Request) {
+export async function POST(
+  req: Request
+): Promise<NextResponse<TemplateResponse | { error: string }>> {
   try {
     const session = await auth();
+
     if (!session) {
+      logger.warn({
+        fileName: FILE_NAME,
+        emoji: "🚫",
+        action: "POST",
+        value: {
+          emailCategoryId: ``,
+        },
+        label: "templates",
+        message: "Unauthorized access attempt",
+      });
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const json = await req.json();
+    const json: TemplateRequest = await req.json();
 
-    // create a html file with the name of the template id
-    const htmlFile = `${json.id}.html`;
+    let variables: string[] = [];
+    let htmlFileId: string = "";
+    let designJson: string = "";
+    if (!json.duplicate) {
+      const htmlFile = `${json.id}.html`;
+      variables = extractVariables(json.html);
 
-    const variables = extractVariables(json.html);
+      const createTempFile = require("@/lib/email").createTempFile;
 
-    // create a temp file with the html
-    const tempFile: File = await createTempFile(json.html, htmlFile);
+      // Create blob storage for HTML content
+      const tempFile = await createTempFile(json.html, htmlFile);
+      const fileService = new APIService("files", session);
+      const { file } = await fileService.upload(tempFile);
+      htmlFileId = file;
+      designJson = encodeToBase64(JSON.stringify(json.designJson));
+    } else {
+      htmlFileId = json.htmlFileId;
+      variables = json.variables;
+      designJson = json.designJson;
+    }
 
-    const blob = await put(htmlFile, tempFile, {
-      access: "public",
-    });
+    const templateData = {
+      ...json,
+      htmlFileId,
+      variables,
+      designJson,
+    };
 
-    json.html = blob.url;
-
-    const template = await prisma.emailTemplate.update({
-      where: { id: json.id },
-      data: {
-        ...json,
-        variables,
-      },
-    });
+    const apiService = new APIService("templates", session);
+    const data = await apiService.post<TemplateResponse["data"]>(
+      "",
+      templateData
+    );
 
     logger.info({
       fileName: FILE_NAME,
       emoji: "✅",
-      action: "PUT",
+      action: "POST",
       label: "template",
-      value: template.id,
-      message: "Updated email template",
+      value: data.id,
+      message: "Created new email template",
     });
 
-    return NextResponse.json(template);
+    return NextResponse.json({ data });
   } catch (error) {
+    const apiError = error as ApiError;
     logger.error({
       fileName: FILE_NAME,
       emoji: "❌",
-      action: "PUT",
-      label: "error",
-      value: error,
-      message: "Error updating template",
+      action: "POST",
+      label: "template",
+      value: apiError.message || "Unknown error",
+      message: "Failed to create template",
     });
-
     return NextResponse.json(
-      { error: "Failed to update template" },
+      { error: "Failed to create template" },
       { status: 500 }
     );
   }

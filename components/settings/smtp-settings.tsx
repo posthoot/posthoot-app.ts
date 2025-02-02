@@ -5,8 +5,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { DataTable } from "@/components/ui/data-table";
 import { ColumnDef } from "@tanstack/react-table";
@@ -20,44 +18,59 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useTeam } from "@/app/providers/team-provider";
 import { useSMTP } from "@/app/providers/smtp-provider";
 import { SMTPConfig, formSchema } from "@/lib/validations/smtp-provider";
-
-const SMTP_PROVIDERS = {
-  gmail: {
-    host: "smtp.gmail.com",
-    port: "587",
-  },
-  outlook: {
-    host: "smtp.office365.com",
-    port: "587",
-  },
-  amazon: {
-    host: "email-smtp.us-east-1.amazonaws.com",
-    port: "587",
-  },
-  custom: {
+import { SMTPProviders } from "./smtp-providers";
+import { SMTPProvider } from "@/types";
+import Link from "next/link";
+const DEFAULT_PROVIDER = SMTPProvider.CUSTOM;
+const DEFAULT_PROVIDERS: Record<SMTPProvider, SMTPConfig> = {
+  [SMTPProvider.CUSTOM]: {
+    provider: SMTPProvider.CUSTOM,
     host: "",
     port: "",
+    username: "",
+    password: "",
+    requiresAuth: true,
+    supportsTLS: true,
+    maxSendRate: "1000",
+    documentation: "",
   },
-} as const;
-
-
+  [SMTPProvider.GMAIL]: {
+    provider: SMTPProvider.GMAIL,
+    host: "smtp.gmail.com",
+    port: "587",
+    username: "",
+    password: "",
+    requiresAuth: true,
+    supportsTLS: true,
+    maxSendRate: "1000",
+    documentation: "https://support.google.com/mail/answer/7126229?hl=en",
+  },
+  [SMTPProvider.OUTLOOK]: {
+    provider: SMTPProvider.OUTLOOK,
+    host: "smtp.office365.com",
+    port: "587",
+    username: "",
+    password: "",
+    requiresAuth: true,
+    supportsTLS: true,
+    maxSendRate: "1000",
+    documentation: "https://support.microsoft.com/en-us/office/set-up-a-connection-to-an-smtp-server-for-outlook-com-d088d509-d54c-4036-a5c3-21d483f2f017",
+  },
+  [SMTPProvider.AMAZON]: {
+    provider: SMTPProvider.AMAZON,
+    host: "email-smtp.us-east-1.amazonaws.com",
+    port: "587",
+    username: "",
+    password: "",
+    requiresAuth: true,
+    supportsTLS: true,
+    maxSendRate: "1000",
+    documentation: "https://docs.aws.amazon.com/ses/latest/DeveloperGuide/smtp-connect.html",
+  },
+};
 
 export function SMTPSettings({
   isDialogOpen,
@@ -79,24 +92,25 @@ export function SMTPSettings({
 
   const openCreateSMTPDialog = () => {
     setEditConfig(null);
-    form.reset({ provider: "custom", isActive: true });
+    form.reset({ provider: SMTPProvider.CUSTOM, isActive: true });
     setIsDialogOpen(true);
   };
 
   const form = useForm<SMTPConfig>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      provider: "custom",
+      provider: SMTPProvider.CUSTOM,
       isActive: true,
     },
   });
 
   const onSubmit = async (data: SMTPConfig) => {
     try {
+      console.log(data, team.id, "team id");
       const response = await fetch("/api/smtp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ smtpConfig: data, teamId: team.id }),
+        body: JSON.stringify({ smtpConfigs: [data], teamId: team.id }),
       });
 
       if (!response.ok) throw new Error("Failed to save configuration");
@@ -156,10 +170,10 @@ export function SMTPSettings({
     }
   };
 
-  const onProviderChange = (value: string) => {
+  const onProviderChange = (value: SMTPProvider) => {
     form.setValue("provider", value);
-    if (value !== "custom") {
-      const provider = SMTP_PROVIDERS[value as keyof typeof SMTP_PROVIDERS];
+    if (value !== SMTPProvider.CUSTOM) {
+      const provider = DEFAULT_PROVIDERS[value];
       form.setValue("host", provider.host);
       form.setValue("port", provider.port);
     }
@@ -190,6 +204,46 @@ export function SMTPSettings({
     {
       accessorKey: "username",
       header: "Username",
+    },
+    {
+      accessorKey: "maxSendRate",
+      header: "Send Rate",
+    },
+    {
+      accessorKey: "documentation",
+      header: "Documentation",
+      cell: ({ row }) => {
+        const documentation = row.getValue("documentation") as string;
+        return (
+          <Link href={documentation} target="_blank">
+            Documentation
+          </Link>
+        );
+      },
+    },
+    {
+      accessorKey: "supportsTLS",
+      header: "TLS",
+      cell: ({ row }) => {
+        const supportsTLS = row.getValue("supportsTLS") as boolean;
+        return (
+          <Badge variant={supportsTLS ? "success" : "secondary"}>
+            {supportsTLS ? "Yes" : "No"}
+          </Badge>
+        );
+      },
+    },
+    {
+      accessorKey: "requiresAuth",
+      header: "Requires Auth",
+      cell: ({ row }) => {
+        const requiresAuth = row.getValue("requiresAuth") as boolean;
+        return (
+          <Badge variant={requiresAuth ? "success" : "secondary"}>
+            {requiresAuth ? "Yes" : "No"}
+          </Badge>
+        );
+      },
     },
     {
       accessorKey: "isActive",
@@ -253,88 +307,15 @@ export function SMTPSettings({
         filterColumn="provider"
       />
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{editConfig ? "Edit" : "Add"} SMTP Server</DialogTitle>
-            <DialogDescription>
-              Configure your SMTP server settings for sending emails
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="space-y-2">
-              <Label>Provider</Label>
-              <Select
-                value={form.watch("provider")}
-                onValueChange={onProviderChange}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select provider" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="custom">Custom SMTP</SelectItem>
-                  <SelectItem value="gmail">Gmail SMTP</SelectItem>
-                  <SelectItem value="outlook">Outlook SMTP</SelectItem>
-                  <SelectItem value="amazon">Amazon SES</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid gap-4 grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="host">Host</Label>
-                <Input
-                  id="host"
-                  placeholder="smtp.example.com"
-                  {...form.register("host")}
-                  disabled={form.watch("provider") !== "custom"}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="port">Port</Label>
-                <Input
-                  id="port"
-                  placeholder="587"
-                  {...form.register("port")}
-                  disabled={form.watch("provider") !== "custom"}
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
-              <Input
-                id="username"
-                type="email"
-                placeholder="smtp@example.com"
-                {...form.register("username")}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                {...form.register("password")}
-              />
-            </div>
-            <div className="flex justify-end space-x-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  setIsDialogOpen(false);
-                  setEditConfig(null);
-                  form.reset();
-                }}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? "Saving..." : "Save"}
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <SMTPProviders
+        onTestConnection={testConfiguration}
+        onSaveProvider={onSubmit}
+        isDialogOpen={isDialogOpen}
+        form={form}
+        onProviderChange={onProviderChange}
+        providers={DEFAULT_PROVIDERS}
+        setIsDialogOpen={setIsDialogOpen}
+      />
     </div>
   );
 }

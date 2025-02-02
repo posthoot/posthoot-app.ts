@@ -7,7 +7,13 @@ export const createRouteSpec = (
   return Object.entries(operations).reduce((acc, [method, operation]) => {
     acc[method] = {
       ...operation,
-      security: operation.security || [{ bearerAuth: [] }],
+      security: [{ bearerAuth: [], ApiKeyAuth: [
+        {
+          type: 'apiKey',
+          in: 'header',
+          name: 'x-api-key',
+        }
+      ] }],
       responses: {
         ...operation.responses,
         401: {

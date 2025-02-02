@@ -1,8 +1,29 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { prisma } from "@/app/lib/prisma";
 import { z } from "zod";
-import { WebhookEventType } from "@prisma/client";
+import { APIService } from "@/lib/services/api";
+import { logger } from "@/app/lib/logger";
+import { ApiError, WebhookEventType } from "@/types";
+
+const FILE_NAME = "app/api/webhooks/[webhookId]/route.ts";
+
+interface GetWebhookResponse {
+  id: string;
+  name: string;
+  url: string;
+  isActive: boolean;
+  events: WebhookEventType[];
+  teamId: string;
+}
+
+interface UpdateWebhookRequest {
+  name?: string;
+  url?: string;
+  isActive?: boolean;
+  events?: WebhookEventType[];
+}
+
+interface UpdateWebhookResponse extends GetWebhookResponse {}
 
 const updateWebhookSchema = z.object({
   name: z.string().min(1).optional(),
@@ -34,32 +55,56 @@ const updateWebhookSchema = z.object({
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ webhookId: string }> }
-) {
+): Promise<NextResponse<GetWebhookResponse | { error: string }>> {
   try {
     const session = await auth();
-    const { webhookId } = await params;
     if (!session?.user) {
-      return new NextResponse("Unauthorized", { status: 401 });
+      logger.warn({
+        fileName: FILE_NAME,
+        emoji: "🚫",
+        action: "get",
+        label: "webhook",
+        value: { webhookId: (await params).webhookId },
+        message: "Unauthorized access attempt",
+      });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const webhook = await prisma.webhook.findUnique({
-      where: {
-        id: webhookId,
+    const apiService = new APIService("webhooks", session);
+    const webhook = await apiService.get<GetWebhookResponse>(
+      `/${(await params).webhookId}`,
+      {
         teamId: session.user.teamId,
-      },
-      include: {
-        events: true,
-      },
-    });
+      }
+    );
 
     if (!webhook) {
-      return new NextResponse("Webhook not found", { status: 404 });
+      logger.warn({
+        fileName: FILE_NAME,
+        emoji: "❓",
+        action: "get",
+        label: "webhook",
+        value: { webhookId: (await params).webhookId },
+        message: "Webhook not found",
+      });
+      return NextResponse.json({ error: "Webhook not found" }, { status: 404 });
     }
 
-    return NextResponse.json(webhook);
+    return NextResponse.json({ data: webhook, error: null });
   } catch (error) {
-    console.error("[WEBHOOK_GET_ERROR]", error);
-    return new NextResponse("Internal Server Error", { status: 500 });
+    const apiError = error as ApiError;
+    logger.error({
+      fileName: FILE_NAME,
+      emoji: "❌",
+      action: "get",
+      label: "webhook",
+      value: { webhookId: (await params).webhookId },
+      message: apiError.message || "Failed to get webhook",
+    });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }
 
@@ -94,60 +139,60 @@ export async function GET(
 export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ webhookId: string }> }
-) {
+): Promise<NextResponse<UpdateWebhookResponse | { error: string }>> {
   try {
     const session = await auth();
     if (!session?.user) {
-      return new NextResponse("Unauthorized", { status: 401 });
+      logger.warn({
+        fileName: FILE_NAME,
+        emoji: "🚫",
+        action: "update",
+        label: "webhook",
+        value: { webhookId: (await params).webhookId },
+        message: "Unauthorized access attempt",
+      });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    const { webhookId } = await params;
 
     const json = await req.json();
-    const body = updateWebhookSchema.parse(json);
+    const body = updateWebhookSchema.parse(json) as UpdateWebhookRequest;
 
-    // First, check if webhook exists and belongs to team
-    const webhook = await prisma.webhook.findUnique({
-      where: {
-        id: webhookId,
+    const apiService = new APIService("webhooks", session);
+    const updatedWebhook = await apiService.post<UpdateWebhookResponse>(
+      `/${(await params).webhookId}/update`,
+      {
+        ...body,
         teamId: session.user.teamId,
-      },
-    });
+      }
+    );
 
-    if (!webhook) {
-      return new NextResponse("Webhook not found", { status: 404 });
+    if (!updatedWebhook) {
+      logger.warn({
+        fileName: FILE_NAME,
+        emoji: "❓",
+        action: "update",
+        label: "webhook",
+        value: { webhookId: (await params).webhookId },
+        message: "Webhook not found",
+      });
+      return NextResponse.json({ error: "Webhook not found" }, { status: 404 });
     }
 
-    // Update webhook
-    const updatedWebhook = await prisma.webhook.update({
-      where: {
-        id: webhookId,
-      },
-      data: {
-        name: body.name,
-        url: body.url,
-        isActive: body.isActive,
-        ...(body.events && {
-          events: {
-            deleteMany: {},
-            create: body.events.map((eventType) => ({
-              eventType,
-            })),
-          },
-        }),
-      },
-      include: {
-        events: true,
-      },
-    });
-
-    return NextResponse.json(updatedWebhook);
+    return NextResponse.json({ data: updatedWebhook, error: null });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.issues }, { status: 400 });
-    }
-    console.error("[WEBHOOK_UPDATE_ERROR]", error);
-    return new NextResponse("Internal Server Error", { status: 500 });
+    const apiError = error as ApiError;
+    logger.error({
+      fileName: FILE_NAME,
+      emoji: "❌",
+      action: "update",
+      label: "webhook",
+      value: { webhookId: (await params).webhookId },
+      message: apiError.message || "Failed to update webhook",
+    });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }
 
@@ -157,33 +202,63 @@ export async function DELETE(
 ) {
   try {
     const session = await auth();
-    const { webhookId } = await params;
     if (!session?.user) {
+      logger.warn({
+        fileName: FILE_NAME,
+        emoji: "🚫",
+        action: "delete",
+        label: "webhook",
+        value: { webhookId: (await params).webhookId },
+        message: "Unauthorized access attempt",
+      });
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    // Check if webhook exists and belongs to team
-    const webhook = await prisma.webhook.findUnique({
-      where: {
-        id: webhookId,
-        teamId: session.user.teamId,
-      },
+    logger.info({
+      fileName: FILE_NAME,
+      emoji: "🔍",
+      action: "delete",
+      label: "webhook",
+      value: { webhookId: (await params).webhookId },
+      message: "Attempting to delete webhook",
     });
 
-    if (!webhook) {
+    const deleted = await new APIService("webhooks", session).delete(
+      `/${(await params).webhookId}`
+    );
+
+    if (!deleted) {
+      logger.warn({
+        fileName: FILE_NAME,
+        emoji: "❓",
+        action: "delete",
+        label: "webhook",
+        value: { webhookId: (await params).webhookId },
+        message: "Webhook not found",
+      });
       return new NextResponse("Webhook not found", { status: 404 });
     }
 
-    // Delete webhook
-    await prisma.webhook.delete({
-      where: {
-        id: webhookId,
-      },
+    logger.info({
+      fileName: FILE_NAME,
+      emoji: "✅",
+      action: "delete",
+      label: "webhook",
+      value: { webhookId: (await params).webhookId },
+      message: "Successfully deleted webhook",
     });
 
     return new NextResponse(null, { status: 204 });
-  } catch (error) {
-    console.error("[WEBHOOK_DELETE_ERROR]", error);
+  } catch (error: unknown) {
+    const apiError = error as ApiError;
+    logger.error({
+      fileName: FILE_NAME,
+      emoji: "❌",
+      action: "delete",
+      label: "webhook",
+      value: { webhookId: (await params).webhookId },
+      message: apiError.message || "Failed to delete webhook",
+    });
     return new NextResponse("Internal Server Error", { status: 500 });
   }
-} 
+}

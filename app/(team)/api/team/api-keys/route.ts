@@ -1,73 +1,102 @@
-import { prisma } from "@/app/lib/prisma";
-import { auth } from "@/auth";
 import { NextResponse } from "next/server";
+import { auth } from "@/auth";
+import { APIService } from "@/lib/services/api";
+import { ApiError, APIKeyResponse } from "@/types";
+import { logger } from "@/app/lib/logger";
 
-export async function GET(request: Request) {
-  const session = await auth();
-
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const team = await prisma.team.findFirst({
-    where: {
-      users: {
-        some: {
-          id: session.user.id,
-        },
-      },
-    },
-    include: {
-      apiKeys: true,
-    },
-  });
-
-  if (!team) {
-    return NextResponse.json({ error: "Team not found" }, { status: 404 });
-  }
-
-  return NextResponse.json(team.apiKeys);
+// Response interfaces
+interface APIKey {
+  id: string;
+  name: string;
+  key: string;
+  createdAt: string;
 }
 
+interface GetAPIKeysResponse {
+  data: {
+    keys: APIKey[];
+  };
+  error?: string;
+}
+
+const FILE_NAME = "app/(team)/api/team/api-keys/route.ts";
+
+export async function GET(
+  request: Request
+): Promise<NextResponse<GetAPIKeysResponse | { error: string }>> {
+  try {
+    const session = await auth();
+
+    if (!session?.user) {
+      logger.warn({
+        fileName: FILE_NAME,
+        emoji: "🚫",
+        action: "authenticate",
+        label: "api-keys",
+        value: {},
+        message: "Unauthorized access attempt",
+      });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const apiService = new APIService("team/api-keys", session);
+    const data = await apiService.get<{ keys: APIKey[] }>("", {
+      userId: session.user.id,
+    });
+
+    return NextResponse.json({ data });
+  } catch (error) {
+    const apiError = error as ApiError;
+    logger.error({
+      fileName: FILE_NAME,
+      emoji: "❌",
+      action: "fetch",
+      label: "api-keys",
+      value: { error: apiError.message || "Unknown error" },
+      message: "Failed to fetch API keys",
+    });
+    return NextResponse.json(
+      { error: "Failed to fetch API keys" },
+      { status: 500 }
+    );
+  }
+}
 
 export async function POST(request: Request) {
-  const session = await auth();
+  try {
+    const session = await auth();
 
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!session) {
+      logger.warn({
+        fileName: FILE_NAME,
+        emoji: "🚫",
+        action: "authenticate",
+        label: "api-keys",
+        value: {},
+        message: "Unauthorized access attempt",
+      });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const apiService = new APIService("team/api-keys", session);
+    const data = await apiService.post<APIKeyResponse["data"]>(body, {
+      userId: session.user.id,
+    });
+
+    return NextResponse.json({ data });
+  } catch (error) {
+    logger.error({
+      fileName: FILE_NAME,
+      emoji: "❌",
+      action: "create",
+      label: "api-keys",
+      value: { error: "Failed to create API key" },
+      message: "Failed to create API key",
+    });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
-
-  const body = await request.json();
-
-  const team = await prisma.team.findFirst({
-    where: {
-      users: {
-        some: {
-          id: session.user.id,
-        },
-      },
-    },
-  });
-
-  if (!team) {
-    return NextResponse.json({ error: "Team not found" }, { status: 404 });
-  }
-
-  const apiKey = await prisma.apiKey.create({
-    data: {
-      team: {
-        connect: {
-          id: team.id,
-        },
-      },
-      name: body.name,
-      key: crypto.randomUUID(),
-      expiresAt: body.expiresAt || new Date(Date.now() + 1000 * 60 * 60 * 24 * 90), // 90 days,
-      lastUsedAt: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  });
-
-  return NextResponse.json(apiKey);
 }

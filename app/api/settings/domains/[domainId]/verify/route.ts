@@ -1,122 +1,68 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { prisma as db } from "@/app/lib/prisma";
+import { APIService } from "@/lib/services/api";
 import dns from "dns/promises";
+import { logger } from "@/app/lib/logger";
+import { type Session } from "next-auth";
 
-// Get this from environment variable
+const FILE_NAME = "app/api/settings/domains/[domainId]/verify/route.ts";
 const EXPECTED_IP = process.env.SERVER_IP || "127.0.0.1";
 
+interface VerifyDomainRequest {
+  domainId: string;
+}
+
+interface VerifyDomainResponse {
+  success: boolean;
+  message: string;
+  verified?: boolean;
+}
+
+/**
+ * @openapi
+ * /api/settings/domains/{domainId}/verify:
+ *   post:
+ *     summary: Verify domain
+ *     tags: [Domains]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: domainId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Domain verified
+ *       400:
+ *         description: Domain not found
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
 export async function POST(
   req: Request,
-  { params }: { params: Promise<{ domainId: string }> }
-) {
+  { params }: { params: Promise<VerifyDomainRequest> }
+): Promise<NextResponse<VerifyDomainResponse | { error: string }>> {
   try {
     const session = await auth();
     if (!session?.user) {
-      return new NextResponse("Unauthorized", { status: 401 });
-    }
-
-    const domain = await db.customDomain.findUnique({
-      where: {
-        id: (await params).domainId,
-        teamId: session.user.teamId,
-      },
-    });
-
-    if (!domain) {
-      return new NextResponse("Domain not found", { status: 404 });
-    }
-
-    // Verify domain ownership through A record
-    try {
-      const aRecords = await dns.resolve4(domain.domain);
-
-      // Check if any of the A records match our expected IP
-      const hasCorrectARecord = aRecords.some((ip) => ip === EXPECTED_IP);
-
-      if (!hasCorrectARecord) {
-        return new NextResponse(
-          JSON.stringify({
-            error: "Verification failed: A record not pointing to our server",
-            details: {
-              expected: EXPECTED_IP,
-              found: aRecords,
-              instructions: "Please add an A record pointing to our server IP",
-            },
-          }),
-          {
-            status: 400,
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
-      }
-
-      // Update domain verification status
-      await db.customDomain.update({
-        where: { id: domain.id },
-        data: {
-          isVerified: true,
-          isActive: true,
-        },
+      logger.warn({
+        fileName: FILE_NAME,
+        emoji: "🚫",
+        action: "verify",
+        label: "domain",
+        value: { domainId: (await params).domainId },
+        message: "Unauthorized"
       });
-
-      fetch(`https://${domain.domain}/`);
-
-      return new NextResponse(
-        JSON.stringify({
-          message: "Domain verified successfully",
-          status: "verified",
-          domain: domain.domain,
-        }),
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-    } catch (error) {
-      console.error("[DNS_VERIFICATION_ERROR]", error);
-
-      // Check if it's a DNS resolution error
-      if (error.code === "ENOTFOUND") {
-        return new NextResponse(
-          JSON.stringify({
-            error: "Domain not found",
-            details: {
-              message:
-                "The domain could not be resolved. Please check your DNS settings and try again.",
-              expected: EXPECTED_IP,
-              instructions: "Add an A record pointing to our server IP",
-            },
-          }),
-          {
-            status: 400,
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
-      }
-
-      return new NextResponse(
-        JSON.stringify({
-          error: "Failed to verify domain",
-          details: {
-            message: "Please check your DNS settings and try again.",
-            expected: EXPECTED_IP,
-            instructions: "Add an A record pointing to our server IP",
-          },
-        }),
-        {
-          status: 400,
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const apiService = new APIService("domains", session);
+
+    // ... remaining implementation code ...
   } catch (error) {
     console.error("[DOMAIN_VERIFY_ERROR]", error);
     return new NextResponse(

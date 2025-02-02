@@ -43,9 +43,9 @@ async function MainLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex max-h-screen overflow-hidden bg-background">
       <Sidebar />
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 h-screen overflow-y-auto">
         <div className="flex flex-col min-h-screen">{children}</div>
       </main>
     </div>
@@ -59,6 +59,13 @@ export default async function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link
+          type="text/css"
+          rel="stylesheet"
+          href="https://ui8-simple-social.vercel.app/_next/static/css/a1fbed414a2f617b.css"
+        />
+      </head>
       <body
         className={cn(
           inter.className,

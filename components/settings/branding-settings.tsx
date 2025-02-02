@@ -115,9 +115,9 @@ export function BrandingSettings() {
             <Label>Logo</Label>
             <div className="flex items-center gap-4">
               <div className="w-32 h-32 border rounded-lg flex items-center justify-center overflow-hidden">
-                {logoPreview || team?.logoUrl ? (
+                {logoPreview || team?.logo ? (
                   <img
-                    src={logoPreview || team?.logoUrl}
+                    src={logoPreview || team?.logo}
                     alt="Logo preview"
                     className="w-full h-full object-contain"
                   />

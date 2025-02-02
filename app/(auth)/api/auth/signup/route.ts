@@ -1,10 +1,27 @@
 import { NextResponse } from "next/server";
 import { logger } from "@/app/lib/logger";
-import { z } from "zod";
 import { SignupSchema } from "@/lib/validations/auth";
-import { register } from "@/app/actions/auth/register";
+import { ApiError } from "@/types";
+import { APIService } from '@/lib/services/api';
 
-const FILE_NAME = "app/api/auth/signup/route.ts";
+// Response interfaces
+interface SignUpResponse {
+  data: {
+    message: string;
+  };
+  error?: string;
+}
+
+// Request interfaces
+interface SignUpRequest {
+  email: string;
+  password: string;
+  name: string;
+  role: string;
+  teamId: string;
+}
+
+const FILE_NAME = "app/(auth)/api/auth/signup/route.ts";
 
 /**
  * @openapi
@@ -71,38 +88,76 @@ const FILE_NAME = "app/api/auth/signup/route.ts";
  *                 error:
  *                   type: string
  */
-export async function POST(req: Request) {
+export async function POST(
+  req: Request
+): Promise<NextResponse<SignUpResponse | { error: string }>> {
   try {
-    const json = await req.json();
-    const body = SignupSchema.parse(json);
-    const { user } = await register(body);
+    const json = await req.json().catch(() => {
+      logger.error({
+        fileName: FILE_NAME,
+        emoji: "❌",
+        action: "parse",
+        label: "signup_request",
+        value: {},
+        message: "Failed to parse request body"
+      });
+      throw new Error("Failed to parse request body");
+    });
 
     logger.info({
       fileName: FILE_NAME,
-      action: "POST",
-      label: "user",
-      value: user,
-      emoji: "✅",
-      message: "User created successfully",
+      emoji: "🔍",
+      action: "validate",
+      label: "signup",
+      value: { email: json.email },
+      message: "Validating new user signup data"
     });
 
-    return NextResponse.json({ user });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.issues }, { status: 422 });
+    const body = SignupSchema.safeParse(json);
+    if (!body.success) {
+      logger.warn({
+        fileName: FILE_NAME,
+        emoji: "❓",
+        action: "validate",
+        label: "signup",
+        value: { errors: body.error.errors },
+        message: "Invalid signup data provided"
+      });
+      return NextResponse.json(
+        { error: "Invalid input data", details: body.error.issues },
+        { status: 400 }
+      );
     }
 
-    logger.error({
+    // Use APIService for the registration
+    const result = await new APIService('auth', null).post("register", json)
+    
+    logger.info({
       fileName: FILE_NAME,
-      action: "POST",
-      label: "error",
-      value: error,
-      emoji: "❌",
-      message: "Error creating user",
+      emoji: "✅",
+      action: "create",
+      label: "user",
+      value: { email: json.email },
+      message: "User successfully registered"
     });
 
+    return NextResponse.json({ 
+      data: {
+        message: "User successfully registered"
+      }
+    });
+  } catch (error) {
+    const apiError = error as ApiError;
+    logger.error({
+      fileName: FILE_NAME,
+      emoji: "❌",
+      action: "signup",
+      label: "user",
+      value: { error: apiError.message || "Unknown error" },
+      message: "Failed to create user"
+    });
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: apiError.message || "Internal Server Error" }, 
       { status: 500 }
     );
   }

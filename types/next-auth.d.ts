@@ -1,43 +1,33 @@
 // next-auth.d.ts
-import NextAuth, { DefaultSession, User as NextAuthUser } from "next-auth";
+import { DefaultSession, DefaultUser } from "next-auth";
+import { JWT } from "next-auth/jwt";
 
-// Define user roles as an enum for better type safety
-export enum UserRole {
-  ADMIN = "ADMIN",
-  USER = "USER"
-}
-
-// Define user status as an enum
-export enum UserStatus {
-  ACTIVE = "ACTIVE",
-  INACTIVE = "INACTIVE"
-}
-
-// Custom auth user interface extending NextAuth's base user
-export interface CustomAuthUser extends NextAuthUser {
-  id: string;
-  email: string;
-  name: string;
-  role: UserRole;
-  teamId: string;
-  status: UserStatus;
-  lastLoginAt?: Date;
-}
-
-// Extend next-auth module
-export declare module "next-auth" {
+declare module "next-auth" {
   interface Session extends DefaultSession {
-    user?: CustomAuthUser;
+    accessToken?: string;
+    error?: string;
+    user: {
+      id: string;
+      role: string;
+      teamId: string;
+    } & DefaultSession["user"];
+  }
+
+  interface User extends DefaultUser {
+    role?: string;
+    teamId?: string;
+    accessToken?: string;
+    refreshToken?: string;
   }
 }
 
-// Extend JWT module
 declare module "next-auth/jwt" {
   interface JWT {
-    user?: CustomAuthUser;
     accessToken?: string;
     refreshToken?: string;
+    exp?: number;
+    role?: string;
+    teamId?: string;
     error?: string;
-    expiresAt?: number;
   }
 }

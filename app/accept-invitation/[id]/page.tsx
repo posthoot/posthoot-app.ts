@@ -17,7 +17,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { signIn, useSession } from "next-auth/react";
-import { Team, TeamInvite, User } from "@/@prisma/client";
+import { Team, TeamInvite, User } from "@/types";
 
 const acceptInviteSchema = z
   .object({
@@ -170,7 +170,7 @@ export default function AcceptInvitationPage() {
       <Card className="w-[400px]">
         <CardHeader>
           <img
-            src={inviteData.team.logoUrl}
+            src={inviteData.team.logo}
             alt={inviteData.inviter.name}
             width={40}
             height={40}

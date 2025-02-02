@@ -28,7 +28,7 @@ export function isEmpty(value: string | undefined | null | boolean): boolean {
 export function extractVariables(html: string): string[] {
   const regex = /{{([^}]+)}}/g;
   const variables = new Set<string>();
-  let match;
+  let match: string[];
   while ((match = regex.exec(html)) !== null) {
     variables.add(match[1].trim());
   }
@@ -47,4 +47,16 @@ export function createJwtFromSecret(
 ) {
   const jwt = require("jsonwebtoken");
   return jwt.sign(payload, secret);
+}
+
+export function deepCompare(a: any, b: any): boolean {
+  return JSON.stringify(a) === JSON.stringify(b);
+}
+
+export function encodeToBase64(str: string) {
+  return Buffer.from(str).toString("base64");
+}
+
+export function decodeFromBase64(str: string) {
+  return Buffer.from(str, "base64").toString("utf-8");
 }

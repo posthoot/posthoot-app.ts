@@ -3,14 +3,16 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { logger } from "@/app/lib/logger";
-import { Team, User, TeamInvite, CustomDomain } from "@/@prisma/client";
+import { Team, User, TeamInvite, Domain } from "@/types";
 
 interface TeamWithUsers extends Team {
   users: User[];
+  id: string;
   invites: (TeamInvite & {
     inviter: User;
   })[];
-  customDomains: CustomDomain[];
+  customDomains: Domain[];
+  emailTemplateId: string;
 }
 
 interface TeamContextType {
@@ -32,15 +34,21 @@ export function TeamProvider({ children }: { children: React.ReactNode }) {
   const fetchTeamData = async () => {
     try {
       console.log("fetchTeamData", session);
-      if (!session?.user?.id) {
+      if (!session?.user?.teamId) {
         setTeam(null);
         return;
       }
 
-      const response = await fetch(`/api/team/${session.user.id}`);
+      const response = await fetch(`/api/team`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
       if (!response.ok) throw new Error("Failed to fetch team data");
 
       const teamData = await response.json();
+        
       setTeam(teamData);
 
       logger.info({
@@ -74,6 +82,7 @@ export function TeamProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
+    console.log("useEffect", session?.user);
     fetchTeamData();
   }, [session?.user]);
 

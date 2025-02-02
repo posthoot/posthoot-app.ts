@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ColumnDef } from "@tanstack/react-table";
+import { ColumnDef, PaginationState } from "@tanstack/react-table";
 import { DataTable } from "@/components/ui/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Pencil, Trash } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash, Copy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useTeam } from "@/app/providers/team-provider";
 import {
@@ -18,6 +18,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { decodeFromBase64 } from "@/lib/utils";
+import { EmailTemplate } from "@/types";
 
 interface Template {
   id: string;
@@ -31,6 +33,13 @@ interface Template {
 
 export function TemplatesList() {
   const [templates, setTemplates] = useState<Template[]>([]);
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 1,
+    pageSize: 20,
+  });
+
+  const [totalCount, setTotalCount] = useState<number>(0);
+
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -39,10 +48,17 @@ export function TemplatesList() {
   const fetchTemplates = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`/api/templates?teamId=${team?.id}`);
-      if (!response.ok) throw new Error('Failed to fetch templates');
+      const response = await fetch(
+        `/api/templates?page=${pagination.pageIndex}&limit=${pagination.pageSize}`
+      );
+      if (!response.ok) throw new Error("Failed to fetch templates");
       const data = await response.json();
-      setTemplates(data);
+      setTemplates(data.data);
+      setTotalCount(data.total);
+      setPagination({
+        pageIndex: data.page,
+        pageSize: data.limit,
+      });
     } catch (error) {
       toast({
         title: "Error",
@@ -58,20 +74,55 @@ export function TemplatesList() {
     try {
       setIsLoading(true);
       const response = await fetch(`/api/templates/${id}?teamId=${team?.id}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
-      if (!response.ok) throw new Error('Failed to delete template');
-      
+      if (!response.ok) throw new Error("Failed to delete template");
+
       toast({
         title: "Success",
         description: "Template deleted successfully",
       });
-      
+
       await fetchTemplates();
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to delete template",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const duplicateTemplate = async (data: EmailTemplate) => {
+    try {
+      setIsLoading(true);
+      const createResponse = await fetch("/api/templates", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...data,
+          id: undefined,
+          name: `${data.name} - Copy`,
+          duplicate: true,
+        }),
+      });
+
+      if (!createResponse.ok) throw new Error("Failed to duplicate template");
+
+      toast({
+        title: "Success",
+        description: "Template duplicated successfully",
+      });
+
+      await fetchTemplates();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to duplicate template",
         variant: "destructive",
       });
     } finally {
@@ -85,7 +136,7 @@ export function TemplatesList() {
     }
   }, [team?.id]);
 
-  const columns: ColumnDef<Template>[] = [
+  const columns: ColumnDef<EmailTemplate>[] = [
     {
       id: "select",
       header: ({ table }) => (
@@ -112,7 +163,7 @@ export function TemplatesList() {
         <div className="flex flex-col">
           <span className="font-medium">{row.getValue("name")}</span>
           <span className="text-sm text-muted-foreground">
-            {row.original.description}
+            {row.original.subject}
           </span>
         </div>
       ),
@@ -121,31 +172,16 @@ export function TemplatesList() {
       accessorKey: "category",
       header: "Category",
       cell: ({ row }) => (
-        <div className="capitalize">{row.getValue("category")}</div>
+        <div className="capitalize">{row.getValue("category")?.["name"]}</div>
       ),
     },
     {
-      accessorKey: "status",
-      header: "Status",
-      cell: ({ row }) => {
-        const status = row.getValue("status") as string;
-        return (
-          <Badge
-            variant={status === "published" ? "default" : "secondary"}
-            className="capitalize"
-          >
-            {status}
-          </Badge>
-        );
-      },
-    },
-    {
-      accessorKey: "lastModified",
+      accessorKey: "updatedAt",
       header: "Last Modified",
       cell: ({ row }) => {
         return (
           <div className="font-medium">
-            {new Date(row.getValue("lastModified")).toLocaleDateString()}
+            {new Date(row.getValue("updatedAt")).toLocaleDateString()}
           </div>
         );
       },
@@ -171,11 +207,17 @@ export function TemplatesList() {
                 Copy template ID
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => router.push(`/templates/${template.id}/edit`)}>
+              <DropdownMenuItem
+                onClick={() => router.push(`/templates/${template.id}/edit`)}
+              >
                 <Pencil className="mr-2 h-4 w-4" />
                 Edit
               </DropdownMenuItem>
-              <DropdownMenuItem 
+              <DropdownMenuItem onClick={() => duplicateTemplate(template)}>
+                <Copy className="mr-2 h-4 w-4" />
+                Duplicate
+              </DropdownMenuItem>
+              <DropdownMenuItem
                 className="text-red-600"
                 onClick={() => deleteTemplate(template.id)}
               >
@@ -192,8 +234,12 @@ export function TemplatesList() {
   return (
     <DataTable
       columns={columns}
-      data={templates}
+      data={templates as unknown as EmailTemplate[]}
       filterColumn="name"
+      pagination={pagination}
+      enablePagination={true}
+      totalCount={totalCount}
+      onPaginationChange={setPagination}
     />
   );
 }

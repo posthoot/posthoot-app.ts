@@ -1,286 +1,231 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@/@prisma/client";
-import { logger } from "@/app/lib/logger";
 import { auth } from "@/auth";
-const prisma = new PrismaClient();
+import { APIService } from "@/lib/services/api";
+import { logger } from "@/app/lib/logger";
+import { ApiError } from "@/types";
+
+interface EmailCategory {
+  id: string;
+  name: string;
+}
+
+interface GetEmailCategoriesResponse {
+  data: EmailCategory[];
+  error?: string;
+}
+
+interface CreateEmailCategoryRequest {
+  name: string;
+}
+
+interface UpdateEmailCategoryRequest {
+  id: string;
+  name: string;
+}
+
+interface DeleteEmailCategoryRequest {
+  id: string;
+}
+
 const FILE_NAME = "app/(email-category)/api/email-category/route.ts";
 
-/**
- * @openapi
- * /api/email-category:
- *   get:
- *     summary: List all email categories
- *     tags: [Email Categories]
- *     security:
- *       - BearerAuth: []
- *     responses:
- *       200:
- *         description: List of email categories
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: string
- *                   name:
- *                     type: string
- *       401:
- *         description: Unauthorized
- *       500:
- *         description: Internal Server Error
- */
-export async function GET() {
+export async function GET(
+  request: Request
+): Promise<NextResponse<GetEmailCategoriesResponse>> {
   try {
     const session = await auth();
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!session?.user) {
+      logger.warn({
+        fileName: FILE_NAME,
+        emoji: "🚫",
+        action: "authenticate",
+        label: "email_category",
+        value: { userId: null },
+        message: "Unauthorized access attempt"
+      });
+      return NextResponse.json({ data: [], error: "Unauthorized" }, { status: 401 });
     }
 
-    const categories = await prisma.emailCategory.findMany();
+    const apiService = new APIService("categories", session);
+    const data: { data: EmailCategory[]; total: number } = await apiService.get<{
+      data: EmailCategory[];
+      total: number;
+    }>("", {
+      limit: 10,
+      page: 1,
+    });
+
+    console.log("data", data);
 
     logger.info({
       fileName: FILE_NAME,
-      emoji: "✅",
-      action: "GET",
-      label: "categories",
-      value: categories.length,
-      message: "Fetched email categories",
+      emoji: "🔍",
+      action: "fetch",
+      label: "email_category",
+      value: { count: data.total },
+      message: "Retrieved email categories"
     });
 
-    return NextResponse.json(categories);
+    return NextResponse.json({
+      ...data,
+      totalCount: data.total,
+    });
   } catch (error) {
+    const apiError = error as ApiError;
     logger.error({
       fileName: FILE_NAME,
       emoji: "❌",
-      action: "GET",
-      label: "error",
-      value: error,
-      message: "Error fetching email categories",
+      action: "fetch",
+      label: "email_category",
+      value: { error: apiError.message || "Unknown error" },
+      message: "Error fetching email categories"
     });
-
     return NextResponse.json(
-      { error: "Failed to fetch email categories" },
+      { data: [], error: "Failed to fetch email categories" },
       { status: 500 }
     );
   }
 }
 
-/**
- * @openapi
- * /api/email-category:
- *   post:
- *     summary: Create a new email category
- *     tags: [Email Categories]
- *     security:
- *       - BearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - name
- *             properties:
- *               name:
- *                 type: string
- *     responses:
- *       200:
- *         description: Email category created successfully
- *       401:
- *         description: Unauthorized - Requires admin role
- *       404:
- *         description: User not found
- *       500:
- *         description: Internal Server Error
- */
-export async function POST(req: Request) {
+export async function POST(
+  request: Request
+): Promise<NextResponse<{ data: EmailCategory; error?: string }>> {
   try {
-    const json = await req.json();
-
     const session = await auth();
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!session?.user) {
+      logger.warn({
+        fileName: FILE_NAME,
+        emoji: "🚫",
+        action: "authenticate",
+        label: "email_category",
+        value: { userId: null },
+        message: "Unauthorized access attempt"
+      });
+      return NextResponse.json({ data: null, error: "Unauthorized" }, { status: 401 });
     }
 
-    const getUser = await prisma.user.findUnique({
-      where: { id: session.user.id },
-    });
-
-    if (!getUser) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    if (getUser.role !== "ADMIN") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const category = await prisma.emailCategory.create({
-      data: json,
-    });
+    const body = await request.json();
+    const apiService = new APIService("email-category", session);
+    const data = await apiService.post<EmailCategory>("", body);
 
     logger.info({
       fileName: FILE_NAME,
       emoji: "✅",
-      action: "POST",
-      label: "category",
-      value: category.id,
-      message: "Created new email category",
+      action: "create",
+      label: "email_category",
+      value: { categoryId: data.id },
+      message: "Created email category"
     });
 
-    return NextResponse.json(category);
+    return NextResponse.json({ data });
   } catch (error) {
+    const apiError = error as ApiError;
     logger.error({
       fileName: FILE_NAME,
       emoji: "❌",
-      action: "POST",
-      label: "error",
-      value: error,
-      message: "Error creating email category",
+      action: "create",
+      label: "email_category",
+      value: { error: apiError.message || "Unknown error" },
+      message: "Error creating email category"
     });
-
     return NextResponse.json(
-      { error: "Failed to create email category" },
+      { data: null, error: "Failed to create email category" },
       { status: 500 }
     );
   }
 }
 
-/**
- * @openapi
- * /api/email-category:
- *   put:
- *     summary: Update an email category
- *     tags: [Email Categories]
- *     security:
- *       - BearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - id
- *               - name
- *             properties:
- *               id:
- *                 type: string
- *               name:
- *                 type: string
- *     responses:
- *       200:
- *         description: Email category updated successfully
- *       401:
- *         description: Unauthorized - Requires admin role
- *       404:
- *         description: User not found
- *       500:
- *         description: Internal Server Error
- */
-export async function PUT(req: Request) {
+export async function PUT(
+  request: Request
+): Promise<NextResponse<{ data: EmailCategory; error?: string }>> {
   try {
     const session = await auth();
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!session?.user) {
+      logger.warn({
+        fileName: FILE_NAME,
+        emoji: "🚫",
+        action: "authenticate",
+        label: "email_category",
+        value: { userId: null },
+        message: "Unauthorized access attempt"
+      });
+      return NextResponse.json({ data: null, error: "Unauthorized" }, { status: 401 });
     }
 
-    const getUser = await prisma.user.findUnique({
-      where: { id: session.user.id },
-    });
-
-    if (!getUser) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    if (getUser.role !== "ADMIN") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const json = await req.json();
-
-    const category = await prisma.emailCategory.update({
-      where: { id: json.id },
-      data: json,
-    });
+    const body = await request.json();
+    const apiService = new APIService("email-category", session);
+    const data = await apiService.post<EmailCategory>(`${body.id}/update`, body);
 
     logger.info({
       fileName: FILE_NAME,
       emoji: "✅",
-      action: "PUT",
-      label: "category",
-      value: category.id,
-      message: "Updated email category",
+      action: "update",
+      label: "email_category",
+      value: { categoryId: data.id },
+      message: "Updated email category"
     });
 
-    return NextResponse.json(category);
+    return NextResponse.json({ data });
   } catch (error) {
+    const apiError = error as ApiError;
     logger.error({
       fileName: FILE_NAME,
       emoji: "❌",
-      action: "PUT",
-      label: "error",
-      value: error,
-      message: "Error updating email category",
+      action: "update",
+      label: "email_category",
+      value: { error: apiError.message || "Unknown error" },
+      message: "Error updating email category"
     });
-
     return NextResponse.json(
-      { error: "Failed to update email category" },
+      { data: null, error: "Failed to update email category" },
       { status: 500 }
     );
   }
 }
 
-export async function DELETE(req: Request) {
+export async function DELETE(
+  request: Request
+): Promise<NextResponse<{ success: boolean; error?: string }>> {
   try {
     const session = await auth();
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!session?.user) {
+      logger.warn({
+        fileName: FILE_NAME,
+        emoji: "🚫",
+        action: "authenticate",
+        label: "email_category",
+        value: { userId: null },
+        message: "Unauthorized access attempt"
+      });
+      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
 
-    const getUser = await prisma.user.findUnique({
-      where: { id: session.user.id },
-    });
-
-    if (!getUser) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    if (getUser.role !== "ADMIN") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const json = await req.json();
-
-    const category = await prisma.emailCategory.delete({
-      where: { id: json.id },
-    });
+    const body = await request.json();
+    const apiService = new APIService("email-category", session);
+    await apiService.post<void>(`${body.id}/delete`, {});
 
     logger.info({
       fileName: FILE_NAME,
       emoji: "✅",
-      action: "DELETE",
-      label: "category",
-      value: category.id,
-      message: "Deleted email category",
+      action: "delete",
+      label: "email_category",
+      value: { categoryId: body.id },
+      message: "Deleted email category"
     });
 
-    return NextResponse.json({ message: "Email category deleted" });
+    return NextResponse.json({ success: true });
   } catch (error) {
+    const apiError = error as ApiError;
     logger.error({
       fileName: FILE_NAME,
       emoji: "❌",
-      action: "DELETE",
-      label: "error",
-      value: error,
-      message: "Error deleting email category",
+      action: "delete",
+      label: "email_category",
+      value: { error: apiError.message || "Unknown error" },
+      message: "Error deleting email category"
     });
-
     return NextResponse.json(
-      { error: "Failed to delete email category" },
+      { success: false, error: "Failed to delete email category" },
       { status: 500 }
     );
   }

@@ -111,7 +111,7 @@ export function Overview() {
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
-                tickFormatter={(value) => format(new Date(value), 'MMM dd')}
+                tickFormatter={(value) => format(new Date(), 'MMM dd')}
               />
               <YAxis
                 stroke="hsl(var(--muted-foreground))"

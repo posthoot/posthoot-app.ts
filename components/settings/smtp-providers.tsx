@@ -1,10 +1,16 @@
 "use client";
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
+import { useForm, UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,7 +18,14 @@ import { useToast } from "@/hooks/use-toast";
 import { DataTable } from "@/components/ui/data-table";
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, Pencil, Trash, TestTube, Settings, Link } from "lucide-react";
+import {
+  MoreHorizontal,
+  Pencil,
+  Trash,
+  TestTube,
+  Settings,
+  Link,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,77 +42,17 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
+import { formSchema, SMTPConfig } from "@/lib/validations/smtp-provider";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
+import { SMTPProvider } from "@/types";
 
-interface SMTPProvider {
-  id: string;
-  name: string;
-  host: string;
-  port: number;
-  requiresAuth: boolean;
-  supportsTLS: boolean;
-  maxSendRate: string;
-  status: "active" | "inactive";
-  documentation: string;
-}
-
-const providers: SMTPProvider[] = [
-  {
-    id: "1",
-    name: "Gmail SMTP",
-    host: "smtp.gmail.com",
-    port: 587,
-    requiresAuth: true,
-    supportsTLS: true,
-    maxSendRate: "2,000/day",
-    status: "active",
-    documentation: "https://support.google.com/mail/answer/7126229",
-  },
-  {
-    id: "2",
-    name: "Amazon SES",
-    host: "email-smtp.us-east-1.amazonaws.com",
-    port: 587,
-    requiresAuth: true,
-    supportsTLS: true,
-    maxSendRate: "50,000/day",
-    status: "active",
-    documentation: "https://docs.aws.amazon.com/ses/latest/dg/smtp-connect.html",
-  },
-  {
-    id: "3",
-    name: "SendGrid",
-    host: "smtp.sendgrid.net",
-    port: 587,
-    requiresAuth: true,
-    supportsTLS: true,
-    maxSendRate: "100,000/day",
-    status: "active",
-    documentation: "https://docs.sendgrid.com/for-developers/sending-email/getting-started-smtp",
-  },
-  {
-    id: "4",
-    name: "Mailgun",
-    host: "smtp.mailgun.org",
-    port: 587,
-    requiresAuth: true,
-    supportsTLS: true,
-    maxSendRate: "Varies by plan",
-    status: "inactive",
-    documentation: "https://documentation.mailgun.com/en/latest/quickstart-sending.html#send-via-smtp",
-  },
-];
-
-const formSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  host: z.string().min(1, "Host is required"),
-  port: z.coerce.number().min(1, "Port is required"),
-  requiresAuth: z.boolean().default(true),
-  supportsTLS: z.boolean().default(true),
-  maxSendRate: z.string().min(1, "Max send rate is required"),
-  documentation: z.string().url("Must be a valid URL"),
-});
-
-export const columns: ColumnDef<SMTPProvider>[] = [
+export const columns: ColumnDef<SMTPConfig>[] = [
   {
     accessorKey: "name",
     header: "Provider",
@@ -126,9 +79,7 @@ export const columns: ColumnDef<SMTPProvider>[] = [
           {provider.requiresAuth && (
             <Badge variant="secondary">Auth Required</Badge>
           )}
-          {provider.supportsTLS && (
-            <Badge variant="secondary">TLS</Badge>
-          )}
+          {provider.supportsTLS && <Badge variant="secondary">TLS</Badge>}
         </div>
       );
     },
@@ -189,144 +140,169 @@ export const columns: ColumnDef<SMTPProvider>[] = [
   },
 ];
 
-export function SMTPProviders() {
-  const { toast } = useToast();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-  });
-
-  const onSubmit = async (data: z.infer<typeof formSchema>) => {
-    try {
-      // API call to save SMTP provider
-      toast({
-        title: "Success",
-        description: "SMTP provider added successfully",
-      });
-      setIsDialogOpen(false);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to add SMTP provider",
-        variant: "destructive",
-      });
-    }
-  };
-
+export function SMTPProviders({
+  onTestConnection,
+  onSaveProvider,
+  isDialogOpen,
+  setIsDialogOpen,
+  form,
+  providers,
+  onProviderChange,
+}: {
+  onTestConnection: (data: z.infer<typeof formSchema>) => void;
+  onSaveProvider: (data: z.infer<typeof formSchema>) => void;
+  isDialogOpen: boolean;
+  setIsDialogOpen: (open: boolean) => void;
+  providers: Record<SMTPProvider, SMTPConfig>;
+  onProviderChange: (provider: SMTPProvider) => void;
+  form: UseFormReturn<z.infer<typeof formSchema>>;
+}) {
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle>SMTP Providers</CardTitle>
-            <CardDescription>
-              Configure and manage your SMTP service providers
-            </CardDescription>
+    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Add SMTP Provider</DialogTitle>
+          <DialogDescription>
+            Add a new SMTP service provider configuration
+          </DialogDescription>
+        </DialogHeader>
+        <form
+          onSubmit={form.handleSubmit(onSaveProvider)}
+          className="space-y-4"
+        >
+          <div className="space-y-2">
+            <Label htmlFor="provider">Provider Type</Label>
+            <Select
+              onValueChange={(value) => {
+                const provider = providers[value as SMTPProvider];
+                onProviderChange(provider.provider as SMTPProvider);
+              }}
+              defaultValue={Object.keys(providers)[0]}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select a provider" />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(providers).map(([provider, config]) => (
+                  <SelectItem key={provider} value={provider}>
+                    {provider}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-          <Button onClick={() => setIsDialogOpen(true)}>
-            Add Provider
-          </Button>
-        </CardHeader>
-        <CardContent>
-          <DataTable
-            columns={columns}
-            data={providers}
-            filterColumn="name"
-          />
-        </CardContent>
-      </Card>
-
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add SMTP Provider</DialogTitle>
-            <DialogDescription>
-              Add a new SMTP service provider configuration
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <div className="grid gap-4 grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="name">Provider Name</Label>
+              <Label htmlFor="host">Host</Label>
               <Input
-                id="name"
-                placeholder="Gmail SMTP"
-                {...form.register("name")}
+                id="host"
+                placeholder="smtp.example.com"
+                {...form.register("host")}
               />
             </div>
-            <div className="grid gap-4 grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="port">Port</Label>
+              <Input
+                id="port"
+                type="number"
+                placeholder="587"
+                {...form.register("port")}
+              />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="maxSendRate">Max Send Rate</Label>
+            <Input
+              id="maxSendRate"
+              placeholder="1,000/day"
+              {...form.register("maxSendRate")}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="documentation">Documentation URL</Label>
+            <Input
+              id="documentation"
+              type="url"
+              key={form.getValues("provider")}
+              defaultValue={
+                providers[form.getValues("provider")].documentation
+              }
+              placeholder="https://example.com/docs"
+              {...form.register("documentation")}
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label>Requires Authentication</Label>
+              <div className="text-sm text-muted-foreground">
+                Provider requires username and password
+              </div>
+            </div>
+            <Switch
+              checked={form.watch("requiresAuth")}
+              onCheckedChange={(checked) =>
+                form.setValue("requiresAuth", checked)
+              }
+            />
+          </div>
+          {form.watch("requiresAuth") && (
+            <>
               <div className="space-y-2">
-                <Label htmlFor="host">Host</Label>
+                <Label htmlFor="username">Username</Label>
                 <Input
-                  id="host"
-                  placeholder="smtp.example.com"
-                  {...form.register("host")}
+                  id="username"
+                  placeholder="john@example.com"
+                  {...form.register("username")}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="port">Port</Label>
+                <Label htmlFor="password">Password</Label>
                 <Input
-                  id="port"
-                  type="number"
-                  placeholder="587"
-                  {...form.register("port")}
+                  id="password"
+                  type="password"
+                  placeholder="********"
+                  {...form.register("password")}
                 />
               </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="maxSendRate">Max Send Rate</Label>
-              <Input
-                id="maxSendRate"
-                placeholder="1,000/day"
-                {...form.register("maxSendRate")}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="documentation">Documentation URL</Label>
-              <Input
-                id="documentation"
-                type="url"
-                placeholder="https://example.com/docs"
-                {...form.register("documentation")}
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Requires Authentication</Label>
-                <div className="text-sm text-muted-foreground">
-                  Provider requires username and password
-                </div>
+            </>
+          )}
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label>Supports TLS</Label>
+              <div className="text-sm text-muted-foreground">
+                Provider supports TLS encryption
               </div>
-              <Switch
-                checked={form.watch("requiresAuth")}
-                onCheckedChange={(checked) => form.setValue("requiresAuth", checked)}
-              />
             </div>
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Supports TLS</Label>
-                <div className="text-sm text-muted-foreground">
-                  Provider supports TLS encryption
-                </div>
-              </div>
-              <Switch
-                checked={form.watch("supportsTLS")}
-                onCheckedChange={(checked) => form.setValue("supportsTLS", checked)}
-              />
-            </div>
-            <div className="flex justify-end space-x-2">
+            <Switch
+              checked={form.watch("supportsTLS")}
+              onCheckedChange={(checked) =>
+                form.setValue("supportsTLS", checked)
+              }
+            />
+          </div>
+          <div className="flex justify-between items-center space-x-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <div className="flex items-center space-x-2">
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setIsDialogOpen(false)}
+                onClick={() => onTestConnection(form.getValues())}
               >
-                Cancel
+                Test Connection
               </Button>
-              <Button type="submit">Save Provider</Button>
+              <Button variant="default" type="submit">
+                Save Provider
+              </Button>
             </div>
-          </form>
-        </DialogContent>
-      </Dialog>
-    </div>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
-} 
+}

@@ -1,6 +1,20 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/app/lib/prisma";
+import { APIService } from "@/lib/services/api";
 import { logger } from "@/app/lib/logger";
+import { ApiError, DomainResponse } from "@/types";
+import { auth } from "@/auth";
+
+const FILE_NAME = "app/api/domains/route.ts";
+
+interface GetDomainsParams {
+  verified: boolean;
+  active: boolean;
+}
+
+interface GetDomainsResponse {
+  data: DomainResponse[];
+  error?: string;
+}
 
 /**
  * @swagger
@@ -22,36 +36,49 @@ import { logger } from "@/app/lib/logger";
  *       401:
  *         description: Unauthorized
  */
-export async function GET() {
+export async function GET(): Promise<NextResponse<GetDomainsResponse | { error: string }>> {
   try {
-    const domains = await prisma.customDomain.findMany({
-      where: {
-        isVerified: true,
-        isActive: true,
-      },
-      select: {
-        id: true,
-        domain: true,
-        isVerified: true,
-        isActive: true,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
+    const session = await auth();
+    if (!session?.user) {
+      logger.warn({
+        fileName: FILE_NAME,
+        emoji: "🚫",
+        action: "authenticate",
+        label: "domains",
+        value: {},
+        message: "Unauthorized"
+      });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    logger.info({
+      fileName: FILE_NAME,
+      emoji: "🔍",
+      action: "fetch",
+      label: "domains",
+      value: { verified: true, active: true },
+      message: "Fetching verified and active domains"
     });
 
-    return NextResponse.json(domains.map((domain) => domain.domain));
+    const apiService = new APIService("domains", session);
+    const params: GetDomainsParams = {
+      verified: true,
+      active: true
+    };
+
+    const data = await apiService.get<DomainResponse[]>("", params);
+    return NextResponse.json({ data });
 
   } catch (error) {
+    const apiError = error as ApiError;
     logger.error({
-      fileName: "domains/route.ts",
-      action: "GET",
-      label: "error",
-      value: error,
+      fileName: FILE_NAME,
       emoji: "❌",
-      message: "Error retrieving whitelisted domains",
+      action: "fetch",
+      label: "domains",
+      value: { error: apiError.message || "Unknown error" },
+      message: "Failed to fetch domains"
     });
-
-    return NextResponse.json([]);
+    return NextResponse.json({ error: "Failed to fetch domains" }, { status: 500 });
   }
 }

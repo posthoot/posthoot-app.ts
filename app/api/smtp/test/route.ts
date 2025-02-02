@@ -1,7 +1,12 @@
+const FILE_NAME = "app/api/smtp/test/route.ts";
+
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { logger } from "@/app/lib/logger";
 import nodemailer from "nodemailer";
+import { APIService } from "@/lib/services/api";
+import { z } from "zod";
+import { ApiError } from "@/types";
 
 /**
  * @openapi
@@ -56,14 +61,81 @@ import nodemailer from "nodemailer";
  *                 message:
  *                   type: string
  */
-export async function POST(request: Request) {
+
+interface SMTPTestRequest {
+  host: string;
+  port: string;
+  username: string;
+  password: string;
+}
+
+interface SMTPTestResponse {
+  message: string;
+  error?: string;
+}
+
+const SMTPConfigSchema = z.object({
+  host: z.string().min(1),
+  port: z.string().regex(/^\d+$/),
+  username: z.string().email(),
+  password: z.string().min(1),
+});
+
+type SMTPConfig = z.infer<typeof SMTPConfigSchema>;
+
+export async function POST(
+  request: Request
+): Promise<NextResponse<SMTPTestResponse>> {
   try {
     const session = await auth();
     if (!session?.user) {
-      return new NextResponse("Unauthorized", { status: 401 });
+      logger.warn({
+        fileName: FILE_NAME,
+        emoji: "🚫",
+        action: "authenticate",
+        label: "smtp-test",
+        value: { userId: null },
+        message: "Unauthorized access attempt to SMTP test endpoint",
+      });
+      return NextResponse.json(
+        {
+          error: "Unauthorized",
+          message: "Unauthorized access attempt to SMTP test endpoint",
+        },
+        { status: 401 }
+      );
     }
 
-    const config = await request.json();
+    const apiService = new APIService("smtp", session);
+
+    const rawConfig: SMTPTestRequest = await request.json();
+    const parseResult = SMTPConfigSchema.safeParse(rawConfig);
+
+    if (!parseResult.success) {
+      logger.error({
+        fileName: FILE_NAME,
+        emoji: "❌",
+        action: "validate",
+        label: "smtp-config",
+        value: { errors: parseResult.error.errors },
+        message: "Invalid SMTP configuration provided",
+      });
+      return NextResponse.json(
+        { message: "Invalid configuration" },
+        { status: 400 }
+      );
+    }
+
+    const config = parseResult.data;
+
+    logger.info({
+      fileName: FILE_NAME,
+      emoji: "🔍",
+      action: "test",
+      label: "smtp-connection",
+      value: { host: config.host, username: config.username },
+      message: "Testing SMTP configuration",
+    });
 
     // Create test transport
     const transport = nodemailer.createTransport({
@@ -80,27 +152,28 @@ export async function POST(request: Request) {
     await transport.verify();
 
     logger.info({
-      fileName: "route.ts",
+      fileName: FILE_NAME,
       emoji: "✅",
-      action: "POST",
-      label: "config",
+      action: "test",
+      label: "smtp-connection",
       value: { host: config.host, port: config.port },
-      message: "SMTP test successful",
+      message: "SMTP connection test successful",
     });
 
     return NextResponse.json({ message: "Test successful" });
   } catch (error) {
+    const apiError = error as ApiError;
     logger.error({
-      fileName: "route.ts",
+      fileName: FILE_NAME,
       emoji: "❌",
-      action: "POST",
-      label: "error",
-      value: error,
+      action: "smtp-test",
+      label: "smtp-config",
+      value: { error: apiError.message || "Unknown error" },
       message: "SMTP test failed",
     });
-    return new NextResponse(
-      error instanceof Error ? error.message : "Test failed",
+    return NextResponse.json(
+      { error: "Internal Server Error", message: "SMTP test failed" },
       { status: 500 }
     );
   }
-} 
+}

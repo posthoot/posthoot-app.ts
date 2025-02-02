@@ -1,8 +1,29 @@
+const FILE_NAME = "app/api/contacts/route.ts";
+
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { prisma } from "@/app/lib/prisma";
 import { logger } from "@/app/lib/logger";
 import { z } from "zod";
+import { APIService } from "@/lib/services/api";
+import { Contact, ApiError, MailingList } from "@/types";
+
+// Response interfaces
+interface CreateContactsResponse {
+  contacts: Contact[];
+  error?: string;
+}
+
+interface GetContactsResponse {
+  contacts: Contact[];
+  error?: string;
+}
+
+// Request interfaces
+interface CreateContactsRequest {
+  contacts: Contact[];
+  listId: string;
+  teamId: string;
+}
 
 const contactSchema = z.object({
   email: z.string().email(),
@@ -68,61 +89,71 @@ const contactSchema = z.object({
  *                 error:
  *                   type: string
  */
-export async function POST(request: Request) {
+export async function POST(
+  request: Request
+): Promise<NextResponse<CreateContactsResponse>> {
   try {
     const session = await auth();
     if (!session?.user) {
-      return new NextResponse("Unauthorized", { status: 401 });
+      logger.warn({
+        fileName: FILE_NAME,
+        emoji: "🚫",
+        action: "authenticate",
+        label: "contacts",
+        value: {},
+        message: "Unauthorized"
+      });
+      return NextResponse.json({ error: "Unauthorized", contacts: [] }, { status: 401 });
     }
 
-    const body = await request.json();
+    const apiService = new APIService("contacts", session);
+    const body = await request.json() as CreateContactsRequest;
     const { contacts, listId, teamId } = body;
 
     if (!teamId) {
-      return new NextResponse("Team ID is required", { status: 400 });
+      logger.warn({
+        fileName: FILE_NAME,
+        emoji: "❌",
+        action: "validate",
+        label: "contacts",
+        value: { teamId: null },
+        message: "Missing team ID"
+      });
+      return NextResponse.json({ error: "Team ID is required", contacts: [] }, { status: 400 });
     }
 
-    // Validate list ownership
-    const list = await prisma.mailingList.findFirst({
-      where: {
-        id: listId,
-        teamId,
-      },
-    });
-
+    const list = await apiService.get<MailingList>(`/mailing-lists/${listId}`, { teamId });
     if (!list) {
-      return new NextResponse("List not found", { status: 404 });
+      logger.warn({
+        fileName: FILE_NAME,
+        emoji: "❓",
+        action: "fetch",
+        label: "list",
+        value: { listId, teamId },
+        message: "List not found"
+      });
+      return NextResponse.json({ error: "List not found", contacts: [] }, { status: 404 });
     }
 
-    // Validate and create contacts
-    const createdContacts = await prisma.subscriber.createMany({
-      data: contacts.map((contact: any) => ({
-        ...contactSchema.parse({ ...contact, listId }),
-        status: "ACTIVE",
-      })),
-      skipDuplicates: true,
+    const createdContacts = await apiService.post<Contact[]>("/contacts", {
+      contacts: contacts.map(contact => contactSchema.parse({ ...contact, listId }))
     });
 
-    logger.info({
-      fileName: "route.ts",
-      emoji: "👥",
-      action: "POST",
-      label: "contacts",
-      value: createdContacts,
-      message: "Contacts created successfully",
-    });
-
-    return NextResponse.json(createdContacts);
+    return NextResponse.json({ contacts: createdContacts });
   } catch (error) {
+    const apiError = error as ApiError;
     logger.error({
-      fileName: "route.ts",
+      fileName: FILE_NAME,
       emoji: "❌",
-      action: "POST",
-      label: "error",
-      value: error,
-      message: "Failed to create contacts",
+      action: "create",
+      label: "contacts",
+      value: { error: apiError.message || "Unknown error" },
+      message: "Failed to create contacts"
     });
-    return new NextResponse("Internal Server Error", { status: 500 });
+    return NextResponse.json(
+      { error: apiError.message || "Internal Server Error", contacts: [] },
+      { status: 500 }
+    );
   }
 }
 
@@ -178,10 +209,20 @@ export async function POST(request: Request) {
  *                 error:
  *                   type: string
  */
-export async function GET(request: Request) {
+export async function GET(
+  request: Request
+): Promise<NextResponse<GetContactsResponse | { error: string }>> {
   try {
     const session = await auth();
     if (!session?.user) {
+      logger.warn({
+        fileName: "contacts/route.ts",
+        emoji: "🚫",
+        action: "authenticate",
+        label: "contacts",
+        value: null,
+        message: "Unauthorized access attempt"
+      });
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
@@ -189,39 +230,43 @@ export async function GET(request: Request) {
     const listId = searchParams.get("listId");
 
     if (!listId) {
+      logger.warn({
+        fileName: "contacts/route.ts",
+        emoji: "❌",
+        action: "validate",
+        label: "contacts",
+        value: { listId },
+        message: "Missing list ID"
+      });
       return new NextResponse("List ID is required", { status: 400 });
     }
 
-    // Validate list ownership
-    const list = await prisma.mailingList.findFirst({
-      where: {
-        id: listId,
-        teamId: session.user.teamId,
-      },
-    });
+    const apiService = new APIService("contacts", session);
+    const list = await apiService.get<MailingList>(`/mailing-lists/${listId}`, { teamId: session.user.teamId });
 
     if (!list) {
+      logger.warn({
+        fileName: "contacts/route.ts",
+        emoji: "❓",
+        action: "fetch",
+        label: "list",
+        value: { listId, teamId: session.user.teamId },
+        message: "List not found"
+      });
       return new NextResponse("List not found", { status: 404 });
     }
 
-    const contacts = await prisma.subscriber.findMany({
-      where: {
-        listId,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
+    const contacts = await apiService.get<Contact[]>(`/mailing-lists/${listId}/contacts`, { teamId: session.user.teamId });
 
-    return NextResponse.json(contacts);
+    return NextResponse.json({ contacts });
   } catch (error) {
     logger.error({
-      fileName: "route.ts",
+      fileName: "contacts/route.ts",
       emoji: "❌",
-      action: "GET",
-      label: "error",
+      action: "fetch",
+      label: "contacts",
       value: error,
-      message: "Failed to fetch contacts",
+      message: "Failed to fetch contacts"
     });
     return new NextResponse("Internal Server Error", { status: 500 });
   }

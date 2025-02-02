@@ -4,6 +4,7 @@ import * as React from "react";
 import {
   ColumnDef,
   ColumnFiltersState,
+  PaginationState,
   SortingState,
   VisibilityState,
   flexRender,
@@ -31,20 +32,26 @@ interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   toolbar?: boolean;
-  pagination?: boolean;
+  pagination?: PaginationState;
+  enablePagination?: boolean;
   filterColumn?: string;
   isLoading?: boolean;
   searchKey?: string;
+  onPaginationChange?: (pagination: PaginationState) => void;
+  totalCount?: number;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
   toolbar = true,
-  pagination = true,
+  enablePagination = true,
   filterColumn,
   isLoading,
   searchKey,
+  pagination,
+  onPaginationChange,
+  totalCount,
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
@@ -62,14 +69,21 @@ export function DataTable<TData, TValue>({
       columnVisibility,
       rowSelection,
       columnFilters,
+      pagination: {
+        pageIndex: pagination?.pageIndex ?? 1,
+        pageSize: pagination?.pageSize ?? 20,
+      },
     },
+    manualPagination: true,
+    pageCount: totalCount ? Math.ceil(totalCount / (pagination?.pageSize ?? 20)) : undefined,
     filterFns: {
       globalFilter: (row, id, value) => {
-        const rowValue = row.getValue(id) ?? '';
+        const rowValue = row.getValue(id) ?? "";
         return rowValue ? rowValue.toString().toLowerCase().includes(value.toLowerCase()) : false;
       },
     },
     enableRowSelection: true,
+    onPaginationChange: onPaginationChange,
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,

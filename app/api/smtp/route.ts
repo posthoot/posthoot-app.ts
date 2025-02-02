@@ -1,258 +1,251 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { prisma } from "@/app/lib/prisma";
 import { logger } from "@/app/lib/logger";
 import { z } from "zod";
+import { SMTPProvider } from "@/types";
+import { APIService } from "@/lib/services/api";
+import { ApiError } from "@/types";
+
+const FILE_NAME = "app/api/smtp/route.ts";
+
+// Request/Response interfaces
+interface SMTPConfigRequest {
+  smtpConfigs: SMTPConfig[];
+  teamId: string;
+}
+
+// Response interfaces
+interface GetSMTPResponse {
+  data: SMTPConfig[];
+  error?: string;
+}
+
+interface SMTPConfigResponse {
+  data?: { message: string };
+  error?: string;
+}
+
+interface SMTPConfig {
+  id?: string;
+  provider: SMTPProvider;
+  host: string;
+  port: string;
+  username: string;
+  password: string;
+  isActive: boolean;
+  supportsTLS?: boolean;
+  requiresAuth?: boolean;
+  supportsStartTLS?: boolean;
+  maxSendRate?: string;
+  documentation?: string;
+}
 
 const smtpConfigSchema = z.object({
-  id: z.string(),
-  provider: z.string(),
+  id: z.string().optional(),
+  provider: z.nativeEnum(SMTPProvider),
   host: z.string().min(1),
   port: z.string().regex(/^\d+$/),
   username: z.string().email(),
   password: z.string().min(8),
   isActive: z.boolean(),
+  supportsTLS: z.boolean().optional(),
+  requiresAuth: z.boolean().optional(),
+  supportsStartTLS: z.boolean().optional(),
+  maxSendRate: z.string().min(1).optional(),
+  documentation: z.string().url().optional(),
 });
 
-/**
- * @openapi
- * /api/smtp:
- *   get:
- *     summary: Get SMTP configurations
- *     tags: [SMTP]
- *     security:
- *       - BearerAuth: []
- *     parameters:
- *       - in: query
- *         name: teamId
- *         required: true
- *         schema:
- *           type: string
- *         description: ID of the team
- *     responses:
- *       200:
- *         description: List of SMTP configurations
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: string
- *                   host:
- *                     type: string
- *                   port:
- *                     type: number
- *                   username:
- *                     type: string
- *                   isDefault:
- *                     type: boolean
- *       401:
- *         description: Unauthorized
- *       400:
- *         description: Bad Request - Team ID required
- *       500:
- *         description: Internal Server Error
- */
-export async function GET(request: Request) {
+export async function GET(
+  request: Request
+): Promise<NextResponse<GetSMTPResponse>> {
   try {
     const session = await auth();
     if (!session?.user) {
-      return new NextResponse("Unauthorized", { status: 401 });
+      logger.warn({
+        fileName: FILE_NAME,
+        emoji: "🚫",
+        action: "fetch",
+        label: "smtp",
+        value: { userId: null },
+        message: "Unauthorized access attempt",
+      });
+      return NextResponse.json(
+        { error: "Unauthorized", data: [] },
+        { status: 401 }
+      );
     }
 
     const { searchParams } = new URL(request.url);
     const teamId = searchParams.get("teamId");
 
     if (!teamId) {
-      return new NextResponse("Team ID is required", { status: 400 });
+      logger.warn({
+        fileName: FILE_NAME,
+        emoji: "❓",
+        action: "fetch",
+        label: "smtp",
+        value: { teamId },
+        message: "Missing team ID parameter",
+      });
+      return NextResponse.json(
+        { error: "Team ID is required", data: [] },
+        { status: 400 }
+      );
     }
 
-    const configs = await prisma.smtpConfig.findMany({
-      where: { teamId },
-    });
+    const apiService = new APIService("smtp", session);
+    const data = await apiService.get<SMTPConfig[]>("", { teamId });
 
     logger.info({
-      fileName: "route.ts",
-      emoji: "📨",
-      action: "GET",
-      label: `smtpConfigs: ${teamId}`,
-      value: configs,
-      message: "SMTP configurations fetched successfully",
+      fileName: FILE_NAME,
+      emoji: "🔍",
+      action: "fetch",
+      label: "smtp",
+      value: { teamId, configCount: data.length },
+      message: "SMTP configurations retrieved successfully",
     });
 
-    return NextResponse.json(configs);
+    return NextResponse.json({ data });
   } catch (error) {
+    const apiError = error as ApiError;
     logger.error({
-      fileName: "route.ts",
+      fileName: FILE_NAME,
       emoji: "❌",
-      action: "GET",
-      label: "error",
-      value: error,
+      action: "fetch",
+      label: "smtp",
+      value: { error: apiError.message || "Unknown error" },
       message: "Failed to fetch SMTP configurations",
     });
-    return new NextResponse("Internal Server Error", { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch SMTP configurations", data: [] },
+      { status: 500 }
+    );
   }
 }
 
-/**
- * @openapi
- * /api/smtp:
- *   post:
- *     summary: Create SMTP configurations
- *     tags: [SMTP]
- *     security:
- *       - BearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - smtpConfigs
- *               - teamId
- *             properties:
- *               smtpConfigs:
- *                 type: array
- *                 items:
- *                   type: object
- *                   required:
- *                     - host
- *                     - port
- *                     - username
- *                     - password
- *                   properties:
- *                     host:
- *                       type: string
- *                     port:
- *                       type: number
- *                     username:
- *                       type: string
- *                     password:
- *                       type: string
- *                     isDefault:
- *                       type: boolean
- *               teamId:
- *                 type: string
- *     responses:
- *       200:
- *         description: SMTP configurations created successfully
- *       401:
- *         description: Unauthorized
- *       400:
- *         description: Bad Request - Invalid configuration
- *       500:
- *         description: Internal Server Error
- */
-export async function POST(request: Request) {
+export async function POST(
+  request: Request
+): Promise<NextResponse<SMTPConfigResponse>> {
   try {
     const session = await auth();
     if (!session?.user) {
-      return new NextResponse("Unauthorized", { status: 401 });
+      logger.warn({
+        fileName: FILE_NAME,
+        emoji: "🚫",
+        action: "create",
+        label: "smtp",
+        value: { userId: session?.user?.id },
+        message: "Unauthorized access attempt",
+      });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await request.json();
+    const body = (await request.json()) as SMTPConfigRequest;
     const { smtpConfigs, teamId } = body;
 
     // Validate configurations
-    smtpConfigs.forEach((config: any) => {
-      smtpConfigSchema.parse(config);
-    });
+    const validatedConfigs = smtpConfigs.map((config: unknown) =>
+      smtpConfigSchema.parse(config)
+    );
 
-    // Delete existing configs for this team
-    await prisma.smtpConfig.deleteMany({
-      where: { teamId },
-    });
-
-    // Create new configs
-    const createdConfigs = await prisma.smtpConfig.createMany({
-      data: smtpConfigs.map((config: any) => ({
-        ...config,
-        teamId,
-      })),
+    const apiService = new APIService("smtp", session);
+    const createdConfigs = await apiService.post<SMTPConfig[]>("", {
+      teamId,
+      smtpConfigs: validatedConfigs,
     });
 
     logger.info({
-      fileName: "route.ts",
-      emoji: "📨",
-      action: "POST",
-      label: "smtpConfigs",
-      value: createdConfigs,
-      message: "SMTP configurations saved successfully",
+      fileName: FILE_NAME,
+      emoji: "📝",
+      action: "create",
+      label: "smtp",
+      value: { teamId, count: createdConfigs.length },
+      message: "SMTP configurations created successfully",
     });
 
-    return NextResponse.json({ message: "Configurations saved successfully" });
-  } catch (error) {
-    logger.error({
-      fileName: "route.ts",
-      emoji: "❌",
-      action: "POST",
-      label: "error",
-      value: error,
-      message: "Failed to save SMTP configurations",
+    return NextResponse.json({
+      data: { message: "Configurations saved successfully" },
     });
-    return new NextResponse("Internal Server Error", { status: 500 });
+  } catch (error) {
+    const apiError = error as ApiError;
+    logger.error({
+      fileName: FILE_NAME,
+      emoji: "❌",
+      action: "create",
+      label: "smtp",
+      value: { error: apiError.message || "Unknown error" },
+      message: "Failed to create SMTP configurations",
+    });
+    return NextResponse.json(
+      { error: "Failed to create SMTP configurations" },
+      { status: 500 }
+    );
   }
 }
 
-/**
- * @openapi
- * /api/smtp:
- *   delete:
- *     summary: Delete SMTP configuration
- *     tags: [SMTP]
- *     security:
- *       - BearerAuth: []
- *     parameters:
- *       - in: query
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: ID of the SMTP configuration to delete
- *     responses:
- *       200:
- *         description: SMTP configuration deleted successfully
- *       401:
- *         description: Unauthorized
- *       400:
- *         description: Bad Request - Config ID required
- *       500:
- *         description: Internal Server Error
- */
-export async function DELETE(request: Request) {
+export async function DELETE(
+  request: Request
+): Promise<NextResponse<SMTPConfigResponse>> {
   try {
     const session = await auth();
     if (!session?.user) {
-      return new NextResponse("Unauthorized", { status: 401 });
+      logger.warn({
+        fileName: FILE_NAME,
+        emoji: "🚫",
+        action: "delete",
+        label: "smtp",
+        value: { userId: session?.user?.id },
+        message: "Unauthorized access attempt",
+      });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
 
     if (!id) {
-      return new NextResponse("Config ID is required", { status: 400 });
+      logger.warn({
+        fileName: FILE_NAME,
+        emoji: "❓",
+        action: "delete",
+        label: "smtp",
+        value: { id },
+        message: "Missing configuration ID",
+      });
+      return NextResponse.json(
+        { error: "Config ID is required" },
+        { status: 400 }
+      );
     }
 
-    await prisma.smtpConfig.delete({
-      where: { id },
+    const apiService = new APIService("smtp", session);
+    await apiService.post<void>("delete", { id });
+
+    logger.info({
+      fileName: FILE_NAME,
+      emoji: "✅",
+      action: "delete",
+      label: "smtp",
+      value: { id },
+      message: "SMTP configuration deleted successfully",
     });
 
     return NextResponse.json({
-      message: "SMTP configuration deleted successfully",
+      data: { message: "SMTP configuration deleted successfully" },
     });
   } catch (error) {
+    const apiError = error as ApiError;
     logger.error({
-      fileName: "route.ts",
+      fileName: FILE_NAME,
       emoji: "❌",
-      action: "DELETE",
-      label: "error",
-      value: error,
+      action: "delete",
+      label: "smtp",
+      value: { error: apiError.message || "Unknown error" },
       message: "Failed to delete SMTP configuration",
     });
-    return new NextResponse("Internal Server Error", { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to delete SMTP configuration" },
+      { status: 500 }
+    );
   }
 }

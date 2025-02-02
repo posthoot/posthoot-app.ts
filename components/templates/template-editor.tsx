@@ -7,9 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { EmailTemplate } from "@/types";
+import { EmailCategory, EmailTemplate, TemplateEditorProps } from "@/types";
 import { useTeam } from "@/app/providers/team-provider";
-import { EmailCategory } from "@/@prisma/client";
 import {
   Select,
   SelectContent,
@@ -23,10 +22,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Settings, Mail, Send } from "lucide-react";
+import { deepCompare } from "@/lib/utils";
 
-interface TemplateEditorProps {
-  templateId: string;
-}
 
 const testEmailSchema = z.object({
   email: z.string().email(),
@@ -42,14 +39,14 @@ export function TemplateEditor({ templateId }: TemplateEditorProps) {
     id: "",
     name: "",
     subject: "",
-    content: "",
     variables: [],
     teamId: team?.id || "some-team-id",
     html: "",
     design: {},
     createdAt: new Date(),
     updatedAt: new Date(),
-    emailCategoryId: "Transactional",
+    categoryId: "Transactional",
+    designJson: "",
   });
   const [activeTab, setActiveTab] = useState("settings");
   const [emailCategories, setEmailCategories] = useState<EmailCategory[]>([]);
@@ -60,7 +57,10 @@ export function TemplateEditor({ templateId }: TemplateEditorProps) {
     try {
       const response = await fetch("/api/email-category");
       const data = await response.json();
-      setEmailCategories(data);
+      setEmailCategories(data.data);
+      if (template.categoryId === "Transactional") {
+        template.categoryId = data.data[0].id;
+      }
     } catch (error) {
       toast({
         title: "Error",
@@ -91,7 +91,8 @@ export function TemplateEditor({ templateId }: TemplateEditorProps) {
     try {
       const response = await fetch(`/api/templates/${templateId}`);
       const data = await response.json();
-      setTemplate(data);
+      console.log("data", data);
+      setTemplate(data.data);
     } catch (error) {
       toast({
         title: "Error",
@@ -107,7 +108,7 @@ export function TemplateEditor({ templateId }: TemplateEditorProps) {
   }));
 
   const selectedCategory = templateCategories.find(
-    (category) => category.value === template.emailCategoryId
+    (category) => category.value === template.categoryId
   );
 
   const handleSave = async () => {
@@ -118,11 +119,10 @@ export function TemplateEditor({ templateId }: TemplateEditorProps) {
 
         const updatedTemplate = {
           ...template,
-          content: "This is a HTML ",
           html: html,
-          teamId: team.id,
-          design: design,
-          emailCategoryId: selectedCategory?.value,
+          designJson: design,
+          changed: !deepCompare(template.designJson, design),
+          categoryId: selectedCategory?.value,
         };
 
         const response = await fetch(
@@ -159,9 +159,7 @@ export function TemplateEditor({ templateId }: TemplateEditorProps) {
         body: JSON.stringify({
           email,
           html,
-          teamId: team.id,
-          subject: template.subject,
-          provider: "gmail",
+          test: true,
         }),
       });
 
@@ -207,42 +205,58 @@ export function TemplateEditor({ templateId }: TemplateEditorProps) {
               </TabsTrigger>
             </TabsList>
             <div className="flex items-center gap-2">
-              <Button
-                variant="secondary"
-                onClick={() => setShowTestEmailDialog(true)}
-                className="flex items-center gap-2"
-              >
-                <Send className="h-4 w-4" />
-                {isSendingTestEmail ? "Sending..." : "Send Test"}
-              </Button>
-              <Button onClick={handleSave}>Save Template</Button>
+              {activeTab !== "settings" && (
+                <Button
+                  variant="secondary"
+                  onClick={() => setShowTestEmailDialog(true)}
+                  className="flex items-center gap-2"
+                >
+                  <Send className="h-4 w-4" />
+                  {isSendingTestEmail ? "Sending..." : "Send Test"}
+                </Button>
+              )}
+              {activeTab !== "settings" && (
+                <Button onClick={handleSave}>Save Template</Button>
+              )}
             </div>
           </div>
 
-          <Dialog open={showTestEmailDialog} onOpenChange={setShowTestEmailDialog}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Send Test Email</DialogTitle>
-              </DialogHeader>
-              <form className="flex flex-col space-y-4" onSubmit={handleSubmit(onSubmit)}>
-                <Input
-                  name="email"
-                  required
-                  type="email"
-                  placeholder="Email"
-                  {...register("email")}
-                />
-                {errors.email && (
-                  <span className="text-red-500">{errors.email.message as string}</span>
-                )}
-                {isSendingTestEmail ? (
-                  <Button type="submit" disabled>Sending...</Button>
-                ) : (
-                  <Button type="submit">Send</Button>
-                )}
-              </form>
-            </DialogContent>
-          </Dialog>
+          {
+            <Dialog
+              open={showTestEmailDialog}
+              onOpenChange={setShowTestEmailDialog}
+            >
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Send Test Email</DialogTitle>
+                </DialogHeader>
+                <form
+                  className="flex flex-col space-y-4"
+                  onSubmit={handleSubmit(onSubmit)}
+                >
+                  <Input
+                    name="email"
+                    required
+                    type="email"
+                    placeholder="Email"
+                    {...register("email")}
+                  />
+                  {errors.email && (
+                    <span className="text-red-500">
+                      {errors.email.message as string}
+                    </span>
+                  )}
+                  {isSendingTestEmail ? (
+                    <Button type="submit" disabled>
+                      Sending...
+                    </Button>
+                  ) : (
+                    <Button type="submit">Send</Button>
+                  )}
+                </form>
+              </DialogContent>
+            </Dialog>
+          }
 
           <div className="flex-1 overflow-hidden">
             <TabsContent value="settings" className="h-full">
@@ -252,7 +266,9 @@ export function TemplateEditor({ templateId }: TemplateEditorProps) {
                   <Input
                     id="name"
                     value={template.name}
-                    onChange={(e) => setTemplate({ ...template, name: e.target.value })}
+                    onChange={(e) =>
+                      setTemplate({ ...template, name: e.target.value })
+                    }
                     placeholder="Enter template name"
                   />
                 </div>
@@ -261,7 +277,9 @@ export function TemplateEditor({ templateId }: TemplateEditorProps) {
                   <Input
                     id="subject"
                     value={template.subject}
-                    onChange={(e) => setTemplate({ ...template, subject: e.target.value })}
+                    onChange={(e) =>
+                      setTemplate({ ...template, subject: e.target.value })
+                    }
                     placeholder="Enter email subject"
                   />
                 </div>
@@ -269,7 +287,9 @@ export function TemplateEditor({ templateId }: TemplateEditorProps) {
                   <Label htmlFor="emailCategory">Email Category</Label>
                   <Select
                     value={selectedCategory?.value}
-                    onValueChange={(value) => setTemplate({ ...template, emailCategoryId: value })}
+                    onValueChange={(value) =>
+                      setTemplate({ ...template, categoryId: value })
+                    }
                     defaultValue={selectedCategory?.value}
                   >
                     <SelectTrigger>
@@ -292,6 +312,9 @@ export function TemplateEditor({ templateId }: TemplateEditorProps) {
                 <EmailEditor
                   ref={emailEditorRef}
                   onReady={onReady}
+                  options={{
+                    locale: "en",
+                  }}
                   minHeight="calc(100vh - 120px)"
                 />
               </div>

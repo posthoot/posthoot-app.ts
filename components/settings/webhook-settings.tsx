@@ -26,8 +26,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { WebhookEventType } from "@prisma/client";
-import { Webhook } from "@prisma/client";
+import { WebhookEventType } from "@/types";
+import { Webhook } from "@/types";
 import {
   Table,
   TableBody,
@@ -43,7 +43,7 @@ import { toast } from "@/hooks/use-toast";
 import Link from "next/link";
 
 interface WebhookWithEvents extends Webhook {
-  events: { eventType: WebhookEventType }[];
+  events: WebhookEventType[];
 }
 
 export function WebhookSettings() {
@@ -167,7 +167,7 @@ export function WebhookSettings() {
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
-                      {webhook.events.map(({ eventType }) => (
+                      {webhook.events.map((eventType) => (
                         <Badge key={eventType} variant="secondary">
                           {eventType}
                         </Badge>
@@ -176,7 +176,7 @@ export function WebhookSettings() {
                   </TableCell>
                   <TableCell>
                     <Switch
-                      checked={webhook.isActive}
+                      checked={webhook.active}
                       onCheckedChange={(checked) =>
                         toggleWebhookActive(webhook.id, checked)
                       }

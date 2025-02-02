@@ -43,7 +43,7 @@ import { cn, isEmpty } from "@/lib/utils";
 import { useTeam } from "@/app/providers/team-provider";
 import { toast } from "@/hooks/use-toast";
 import { useCampaigns } from "@/app/providers/campaigns-provider";
-import { Campaign, CampaignStatus } from "@/@prisma/client";
+import { Campaign, CampaignStatus } from "@/types";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -53,7 +53,7 @@ import {
 } from "../ui/dropdown-menu";
 import { useState } from "react";
 
-const createCampaignSchema = z.object({
+export const createCampaignSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(1),
   status: z.enum(Object.values(CampaignStatus) as [string, ...string[]]),
@@ -103,8 +103,8 @@ function CreateCampaignDialog({
       description: prefilledData?.description || "",
       templateId: prefilledData?.templateId || "",
       listId: prefilledData?.listId || "",
-      schedule: prefilledData?.schedule || "ONE_TIME",
-      recurringSchedule: prefilledData?.recurringSchedule || "DAILY",
+      schedule: prefilledData?.schedule as "ONE_TIME" | "RECURRING" || "ONE_TIME",
+      recurringSchedule: prefilledData?.recurringSchedule as "DAILY" | "WEEKLY" | "MONTHLY" | "CUSTOM" || "DAILY",
       cronExpression: prefilledData?.cronExpression || "",
       scheduledFor: prefilledData?.scheduledFor
         ? new Date(prefilledData.scheduledFor)
@@ -474,7 +474,12 @@ export function CampaignsList({
                 onClick={() =>
                   createCampaign({
                     ...row.original,
-                    status: "SCHEDULED",
+                    status: CampaignStatus.SCHEDULED,
+                    schedule: row.original.schedule as "ONE_TIME" | "RECURRING",
+                    recurringSchedule: row.original.recurringSchedule as "DAILY" | "WEEKLY" | "MONTHLY" | "CUSTOM",
+                    cronExpression: row.original.cronExpression,
+                    scheduledFor: row.original.scheduledFor,
+                    smtpConfigId: row.original.smtpConfigId,
                   })
                 }
               >

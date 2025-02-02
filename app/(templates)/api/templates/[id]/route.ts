@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/app/lib/prisma";
 import { logger } from "@/app/lib/logger";
-
-const FILE_NAME = 'app/api/templates/[id]/route.ts';
+import { APIService } from "@/lib/services/api";
+import { ApiError } from "@/types";
+import { auth } from "@/auth";
+import { EmailTemplate } from "@/types";
+import { encodeToBase64 } from "@/lib/utils";
+const FILE_NAME = "app/(templates)/api/templates/[id]/route.ts";
 
 /**
  * @openapi
@@ -44,44 +47,77 @@ const FILE_NAME = 'app/api/templates/[id]/route.ts';
  *       500:
  *         description: Internal Server Error
  */
+interface GetTemplateResponse {
+  data?: EmailTemplate;
+  error?: string;
+}
+
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const template = await prisma.emailTemplate.findUnique({
-      where: { id: (await params).id },
-    });
+): Promise<NextResponse<GetTemplateResponse>> {
+  const { id } = await params;
 
-    if (!template) {
+  try {
+    const session = await auth();
+    if (!session?.user) {
+      logger.warn({
+        fileName: FILE_NAME,
+        emoji: "🚫",
+        action: "authenticate",
+        label: "template",
+        value: {},
+        message: "Unauthorized",
+      });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const apiService = new APIService("templates", session);
+    const data = await apiService.get<EmailTemplate>(`${id}`);
+
+    if (!data) {
+      logger.warn({
+        fileName: FILE_NAME,
+        emoji: "❓",
+        action: "fetch",
+        label: "template",
+        value: { templateId: id },
+        message: "Template not found",
+      });
       return NextResponse.json(
         { error: "Template not found" },
         { status: 404 }
       );
     }
 
+    // @ts-ignore
+    data.design = JSON.parse(
+      Buffer.from(data.designJson, "base64").toString("utf-8")
+    );
+
     logger.info({
       fileName: FILE_NAME,
       emoji: "📧",
-      action: "GET",
+      action: "fetch",
       label: "template",
-      value: template.id,
+      value: { templateId: data.id },
       message: "Retrieved email template",
     });
 
-    return NextResponse.json(template);
+    return NextResponse.json({ data });
   } catch (error) {
+    const apiError = error as ApiError;
+    console.log("error", apiError);
     logger.error({
       fileName: FILE_NAME,
       emoji: "❌",
-      action: "GET",
-      label: "error",
-      value: error,
+      action: "fetch",
+      label: "template",
+      value: { error: apiError.message || "Unknown error" },
       message: "Error retrieving template",
     });
-
     return NextResponse.json(
-      { error: "Failed to fetch template" },
+      { error: "Internal Server Error" },
       { status: 500 }
     );
   }
@@ -133,75 +169,128 @@ export async function GET(
  *       500:
  *         description: Internal Server Error
  */
+interface UpdateTemplateRequest {
+  name: string;
+  subject: string;
+  html: string;
+  variables: string[];
+  categoryId: string;
+  htmlFileId: string;
+  designJson: string;
+}
+
+interface UpdateTemplateResponse {
+  data?: EmailTemplate;
+  error?: string;
+}
+
 export async function PUT(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
-) {
+): Promise<NextResponse<UpdateTemplateResponse>> {
   try {
-    const json = await req.json();
-    const template = await prisma.emailTemplate.update({
-      where: { id: (await params).id },
-      data: {
-        name: json.name,
-        subject: json.subject,
-        content: json.content,
-        variables: json.variables,
-      },
+    const { id } = await params;
+    const session = await auth();
+    if (!session?.user) {
+      logger.warn({
+        fileName: FILE_NAME,
+        emoji: "🚫",
+        action: "authenticate",
+        label: "template",
+        value: {},
+        message: "Unauthorized",
+      });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // create a file from body.html
+    const json: UpdateTemplateRequest = await req.json();
+
+    // @ts-ignore
+    if (json.changed) {
+      const uploadService = new APIService("files", session);
+      const createTempFile = require("@/lib/email").createTempFile;
+      const { file } = await uploadService.upload(
+        await createTempFile(json.html, `${id}.html`)
+      );
+
+      // @ts-ignore
+      json.htmlFileId = file;
+    }
+
+    const apiService = new APIService("templates", session);
+    const data = await apiService.update<EmailTemplate>(`${id}`, {
+      categoryId: json.categoryId,
+      name: json.name,
+      subject: json.subject,
+      variables: json.variables,
+      htmlFileId: json.htmlFileId,
+      designJson: encodeToBase64(JSON.stringify(json.designJson)),
     });
 
     logger.info({
       fileName: FILE_NAME,
       emoji: "✅",
-      action: "PUT",
+      action: "update",
       label: "template",
-      value: template.id,
+      value: { templateId: data.id },
       message: "Updated email template",
     });
 
-    return NextResponse.json(template);
+    return NextResponse.json({ data });
   } catch (error) {
+    const apiError = error as ApiError;
     logger.error({
       fileName: FILE_NAME,
       emoji: "❌",
-      action: "PUT",
-      label: "error",
-      value: error,
+      action: "update",
+      label: "template",
+      value: { error: apiError.message || "Unknown error" },
       message: "Error updating template",
     });
-
     return NextResponse.json(
-      { error: "Failed to update template" },
+      { error: "Internal Server Error" },
       { status: 500 }
     );
   }
 }
 
+interface DeleteTemplateResponse {
+  error?: string;
+}
+
 export async function DELETE(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
-) {
+): Promise<NextResponse<DeleteTemplateResponse>> {
+  const id = (await params).id;
+
   try {
-    await prisma.emailTemplate.delete({
-      where: { id: (await params).id },
-    });
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const apiService = new APIService("templates", session);
+    await apiService.delete(`${id}`);
 
     logger.info({
       fileName: FILE_NAME,
-      emoji: "🗑️",
-      action: "DELETE",
-      label: "templateId",
-      value: (await params).id,
+      emoji: "✅",
+      action: "delete",
+      label: "template",
+      value: { templateId: id },
       message: "Deleted email template",
     });
 
-    return new NextResponse(null, { status: 204 });
+    return NextResponse.json({});
   } catch (error) {
     logger.error({
       fileName: FILE_NAME,
       emoji: "❌",
-      action: "DELETE",
-      label: "error",
-      value: error,
+      action: "delete",
+      label: "template",
+      value: { error, templateId: id },
       message: "Error deleting template",
     });
 

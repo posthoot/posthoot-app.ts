@@ -53,7 +53,7 @@ export default function Home() {
       }
     };
 
-    fetchCampaignMetrics();
+    // fetchCampaignMetrics();
   }, [team?.id]);
 
   const handleDownloadReport = async (period: 'week' | 'month' | 'all', format: 'csv' | 'json') => {

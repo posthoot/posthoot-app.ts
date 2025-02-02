@@ -1,7 +1,36 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { prisma as db } from "@/app/lib/prisma";
+import { APIService } from "@/lib/services/api";
 import { z } from "zod";
+import { logger } from "@/app/lib/logger";
+import { ApiError } from "@/types";
+
+const FILE_NAME = "api/settings/domains/route.ts";
+
+// Response interfaces
+interface DomainResponse {
+  id: string;
+  domain: string;
+  sslStatus: string;
+  isVerified: boolean;
+  isActive: boolean;
+  verificationToken: string;
+  sslExpiresAt?: string;
+}
+
+interface GetDomainsResponse {
+  data: DomainResponse[];
+  error?: string;
+}
+
+interface CreateDomainRequest {
+  domain: string;
+}
+
+interface CreateDomainResponse {
+  data: DomainResponse;
+  error?: string;
+}
 
 const domainSchema = z.object({
   domain: z
@@ -93,59 +122,88 @@ const domainSchema = z.object({
  *                   type: string
  */
 
-export async function POST(req: Request) {
+export async function GET(
+  request: Request
+): Promise<NextResponse<GetDomainsResponse | { error: string }>> {
   try {
     const session = await auth();
     if (!session?.user) {
-      return new NextResponse("Unauthorized", { status: 401 });
+      logger.warn({
+        fileName: FILE_NAME,
+        emoji: "🚫",
+        action: "list",
+        label: "domains",
+        value: {},
+        message: "Unauthorized access attempt"
+      });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const json = await req.json();
-    const { domain } = domainSchema.parse(json);
+    const apiService = new APIService("domains", session);
+    const data = await apiService.get<DomainResponse[]>("");
 
-    // Check if domain already exists
-    const existingDomain = await db.customDomain.findUnique({
-      where: { domain },
-    });
-
-    if (existingDomain) {
-      return new NextResponse("Domain already exists", { status: 400 });
-    }
-
-    // Create new domain
-    const customDomain = await db.customDomain.create({
-      data: {
-        domain,
-        teamId: session.user.teamId,
-      },
-    });
-
-    return NextResponse.json(customDomain);
+    return NextResponse.json({ data });
   } catch (error) {
-    console.error("[DOMAIN_CREATE_ERROR]", error);
-    return new NextResponse("Internal Server Error", { status: 500 });
+    const apiError = error as ApiError;
+    logger.error({
+      fileName: FILE_NAME,
+      emoji: "❌",
+      action: "list",
+      label: "domains",
+      value: { error: apiError.message || "Unknown error" },
+      message: "Failed to fetch domains"
+    });
+    return NextResponse.json({ error: "Failed to fetch domains" }, { status: 500 });
   }
 }
 
-export async function GET(req: Request) {
+export async function POST(
+  req: Request
+): Promise<NextResponse<CreateDomainResponse | { error: string }>> {
   try {
     const session = await auth();
     if (!session?.user) {
-      return new NextResponse("Unauthorized", { status: 401 });
+      logger.warn({
+        fileName: FILE_NAME,
+        emoji: "🚫",
+        action: "create",
+        label: "domain",
+        value: { userId: session?.user?.id || 'unknown' },
+        message: "Unauthorized access attempt"
+      });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const domains = await db.customDomain.findMany({
-      where: {
-        teamId: session.user.teamId,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
+    const json = await req.json();
+    const result = domainSchema.safeParse(json);
+    
+    if (!result.success) {
+      logger.warn({
+        fileName: FILE_NAME,
+        emoji: "❌",
+        action: "validate",
+        label: "domain",
+        value: { error: result.error.message },
+        message: "Invalid domain format"
+      });
+      return NextResponse.json({ error: "Invalid domain format" }, { status: 400 });
+    }
 
-    return NextResponse.json(domains);
-  } catch (error) {
-    console.error("[DOMAIN_GET_ERROR]", error);
-    return new NextResponse("Internal Server Error", { status: 500 });
+    const { domain } = result.data;
+    const apiService = new APIService("domains", session);
+    const data = await apiService.post<DomainResponse>("", { domain });
+
+    return NextResponse.json({ data });
+  } catch (error: unknown) {
+    const apiError = error as ApiError;
+    logger.error({
+      fileName: FILE_NAME,
+      emoji: "❌",
+      action: "create",
+      label: "domain",
+      value: { error: apiError.message || "Unknown error" },
+      message: "Failed to create domain"
+    });
+    return NextResponse.json({ error: "Failed to create domain" }, { status: 500 });
   }
-} 
+}

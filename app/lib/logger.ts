@@ -1,34 +1,63 @@
-export type LogLevel = 'info' | 'error' | 'warn' | 'debug';
-
-interface LoggerOptions {
+export interface LoggerOptions {
   fileName: string;
   emoji: string;
   action: string;
   label: string;
-  value: any;
+  value: Record<string, any> | string | number;
   message: string;
 }
 
+enum LogLevel {
+  INFO = "INFO",
+  WARN = "WARN",
+  ERROR = "ERROR",
+  DEBUG = "DEBUG"
+}
+
 class Logger {
-  private log(level: LogLevel, options: LoggerOptions) {
+  private getCallerInfo(): { functionName: string; lineNumber: number } {
+    const error = new Error();
+    const stackLines = error.stack?.split('\n') || [];
+    // Skip first 3 lines (Error, getCallerInfo, log method)
+    const callerLine = stackLines[3] || '';
+    
+    // Extract function name and line number
+    const functionMatch = callerLine.match(/at\s+(\w+)\s+\(/);
+    const lineMatch = callerLine.match(/:(\d+):\d+\)/);
+    
+    return {
+      functionName: functionMatch?.[1] || 'anonymous',
+      lineNumber: lineMatch ? parseInt(lineMatch[1], 10) : 0
+    };
+  }
+
+  private formatLogMessage(options: LoggerOptions, level: LogLevel): string {
     const { fileName, emoji, action, label, value, message } = options;
-    console[level](`${fileName}: ${emoji}, ${action}; ${label}=${JSON.stringify(value)} - ${message}`);
+    const { functionName, lineNumber } = this.getCallerInfo();
+
+    return `[${level}] ${emoji} ${fileName}:${lineNumber} ${functionName}() - [${action}][${label}] ${message} ${
+      typeof value === 'string' ? value : JSON.stringify(value)
+    }`;
   }
 
-  info(options: LoggerOptions) {
-    this.log('info', options);
+  info(options: LoggerOptions): void {
+    const formattedMessage = this.formatLogMessage(options, LogLevel.INFO);
+    console.log(formattedMessage);
   }
 
-  error(options: LoggerOptions) {
-    this.log('error', options);
+  warn(options: LoggerOptions): void {
+    const formattedMessage = this.formatLogMessage(options, LogLevel.WARN);
+    console.warn(formattedMessage);
   }
 
-  warn(options: LoggerOptions) {
-    this.log('warn', options);
+  error(options: LoggerOptions): void {
+    const formattedMessage = this.formatLogMessage(options, LogLevel.ERROR);
+    console.error(formattedMessage);
   }
 
-  debug(options: LoggerOptions) {
-    this.log('debug', options);
+  debug(options: LoggerOptions): void {
+    const formattedMessage = this.formatLogMessage(options, LogLevel.DEBUG);
+    console.debug(formattedMessage);
   }
 }
 

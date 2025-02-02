@@ -1,6 +1,6 @@
 import { useTeam } from "@/app/providers/team-provider";
 import { cn } from "@/lib/utils";
-import { ShipWheel } from "lucide-react";
+import { Bird } from "lucide-react";
 
 interface LogoProps {
   className?: string;
@@ -12,14 +12,14 @@ export function Logo({ className, onlyLogo }: LogoProps) {
 
   return (
     <div className={cn("flex items-center gap-2", className)}>
-      {team?.logoUrl ? (
+      {team?.logo ? (
         <img
-          src={team.logoUrl}
+          src={team.logo}
           alt={team.name}
           className="h-8 w-8 object-contain rounded-full"
         />
       ) : (
-        <ShipWheel className="h-6 w-6" />
+        <Bird className="h-6 w-6" />
       )}
       {!onlyLogo && (
         <span className="font-semibold">{team?.name || "kori 🦆"}</span>

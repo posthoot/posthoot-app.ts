@@ -1,20 +1,38 @@
-import emailService from "@/lib/services/email";
+import { APIService } from "@/lib/services/api";
+import { logger } from "@/app/lib/logger";
 import { z } from "zod";
 import { NextResponse } from "next/server";
-import { getEmailSmtpConfig, getEmailTemplate } from "@/app/lib/smtp";
 import { isEmpty } from "@/lib/utils";
-import { getSubscriber } from "@/lib/services/email/subscriber";
-import prisma from "@/app/lib/prisma";
 import { auth } from "@/auth";
+import { EmailTemplate } from "@/types";
+
+// Response interfaces
+interface SendEmailResponse {
+  success: boolean;
+  message: string;
+  error?: string;
+}
+
+// Request interfaces
+interface SendEmailRequest {
+  email: string;
+  html?: string;
+  templateId?: string;
+  subject: string;
+  provider: string;
+  teamId: string;
+  data?: Record<string, any>;
+}
+
+const FILE_NAME = "app/(email)/api/email/route.ts";
 
 const zodSchema = z.object({
   email: z.string().email(),
   html: z.string().optional(),
   templateId: z.string().optional(),
-  subject: z.string(),
-  provider: z.string(),
-  teamId: z.string(),
+  provider: z.string().optional(),
   data: z.record(z.string(), z.any()).optional(),
+  test: z.boolean().optional(),
 });
 
 /**
@@ -24,11 +42,7 @@ const zodSchema = z.object({
  *     summary: Send an email
  *     tags: [Email]
  *     security:
- *       - ApiKeyAuth: [
- *         type: apiKey
- *         in: header
- *         name: x-api-key
- *       ]
+ *       - BearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -67,60 +81,76 @@ const zodSchema = z.object({
  *       500:
  *         description: Internal Server Error
  */
-export async function POST(request: Request) {
+export async function POST(
+  request: Request
+): Promise<NextResponse<SendEmailResponse | { error: string }>> {
   try {
-    const body = await request.json();
-    const session = await auth();
-
-    const team = await prisma.team.findFirst({
-      where: {
-        users: {
-          some: {
-            id: session?.user.id,
-          },
-        },
-      },
+    console.log("🔍", "Starting email send process");
+    logger.info({
+      fileName: FILE_NAME,
+      emoji: "🔍",
+      action: "initialize",
+      label: "email",
+      value: {},
+      message: "Starting email send process",
     });
 
-    if (!team) {
-      return new NextResponse("Team not found", { status: 404 });
+    const session = await auth();
+    if (!session?.user) {
+      logger.warn({
+        fileName: FILE_NAME,
+        emoji: "🚫",
+        action: "authenticate",
+        label: "email",
+        value: {},
+        message: "Unauthorized access attempt",
+      });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const teamId = team.id;
+    const apiService = new APIService("emails", session);
 
-    let { email, html, templateId, subject, provider, data } =
-      zodSchema.parse(body);
+    logger.info({
+      fileName: FILE_NAME,
+      emoji: "🔍",
+      action: "parse",
+      label: "email_request",
+      value: { userId: session.user.id },
+      message: "Parsing email request body",
+    });
 
-    if (isEmpty(templateId) && isEmpty(html)) {
+    const body = (await request.json()) as SendEmailRequest;
+    let { email, html, provider = undefined, data, test = false } = zodSchema.parse(body);
+
+    if (isEmpty(html)) {
+      logger.warn({
+        fileName: FILE_NAME,
+        emoji: "❌",
+        action: "validate",
+        label: "email",
+        value: {},
+        message: "Missing HTML content",
+      });
       return new NextResponse("Missing required fields", { status: 400 });
     }
 
-    const emailSmtpConfig = await getEmailSmtpConfig(teamId, provider);
-
-    if (!isEmpty(templateId)) {
-      const template = await getEmailTemplate(templateId, data);
-      html = template.html;
-      subject = subject || template.subject;
-    }
-
-    const subscriber = await getSubscriber(email, teamId, null, "Generic List");
+    logger.info({
+      fileName: FILE_NAME,
+      emoji: "🔍",
+      action: "fetch",
+      label: "smtp_config",
+      value: provider,
+      message: "Fetching SMTP configuration",
+    });
 
     try {
-      const result = await emailService.sendEmail(
-        email,
+      const result = await apiService.post("", {
+        to: email,
         html,
-        subject,
-        emailSmtpConfig.host,
-        parseInt(emailSmtpConfig.port),
-        emailSmtpConfig.username,
-        emailSmtpConfig.password,
-        emailSmtpConfig.username,
-        [],
-        teamId,
-        subscriber.id,
-        null,
-        templateId
-      );
+        provider,
+        data,
+        test,
+      });
       console.log(
         `File name: route.ts, 📧, line no: 10, function name: handler, variable name: result, value: ${result}`
       );
@@ -129,12 +159,12 @@ export async function POST(request: Request) {
       console.error(
         `File name: route.ts, ❌, line no: 10, function name: handler, variable name: error, value: ${error}`
       );
-      return new NextResponse("Failed to send email", { status: 500 });
+      return new NextResponse("Failed to send email due to: " + error, { status: 400 });
     }
   } catch (error) {
     console.error(
       `File name: route.ts, ❌, line no: 10, function name: handler, variable name: error, value: ${error}`
     );
-    return new NextResponse("Failed to send email", { status: 500 });
+    return new NextResponse("Failed to send email due to: " + error, { status: 400 });
   }
 }
