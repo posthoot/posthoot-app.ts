@@ -11,6 +11,7 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
+import { toast } from "@/hooks/use-toast";
 
 export default function ForgotPasswordPage() {
   // 🔐 Form schema for forgot password
@@ -30,6 +31,24 @@ export default function ForgotPasswordPage() {
   const handleForgotPassword = async (data: z.infer<typeof forgotPasswordSchema>) => {
     // TODO: Implement forgot password logic
     console.log("Reset password for:", data.email);
+    try {
+      const response = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
+      const result = await response.json();
+      console.log(result);
+      toast({
+        title: "Password reset email sent",
+        description: "Please check your email for instructions",
+      });
+    } catch (error) {
+      toast({
+        title: "Error sending reset email",
+        variant: "destructive",
+        description: "Please try again later",
+      });
+    }
   };
 
   return (

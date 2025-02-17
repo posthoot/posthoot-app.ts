@@ -14,14 +14,6 @@ const VerifyResetSchema = z.object({
   path: ["confirmPassword"]
 });
 
-// 📝 Response interface
-interface VerifyResetResponse {
-  data: {
-    message: string;
-  };
-  error?: string;
-}
-
 const FILE_NAME = "app/(auth)/api/auth/forgot-password/verify/route.ts";
 
 /**
@@ -49,7 +41,7 @@ const FILE_NAME = "app/(auth)/api/auth/forgot-password/verify/route.ts";
  */
 export async function POST(
   req: Request
-): Promise<NextResponse<VerifyResetResponse | { error: string }>> {
+): Promise<NextResponse> {
   try {
     const json = await req.json().catch(() => {
       logger.error({
@@ -100,11 +92,8 @@ export async function POST(
       message: "Password reset successful"
     });
 
-    return NextResponse.json({
-      data: {
-        message: "Password has been reset successfully"
-      }
-    });
+    // redirect to login page
+    return NextResponse.redirect(new URL("/auth/login", req.url));
 
   } catch (error) {
     const apiError = error as ApiError;

@@ -1,3 +1,4 @@
+'use client'
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -8,13 +9,17 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
-import { useSession } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
 import { Input } from "@/components/ui/input";
+import { toast } from "@/hooks/use-toast";
+import Link from "next/link";
 
 export default function RegisterPage() {
   const registerFormSchema = z.object({
     email: z.string().email(),
+    firstName: z.string().min(1),
+    lastName: z.string().min(1),
     password: z.string().min(8),
     confirmPassword: z.string().min(8),
   }).refine(data => data.password === data.confirmPassword, {
@@ -25,6 +30,8 @@ export default function RegisterPage() {
   const registerForm = useForm<z.infer<typeof registerFormSchema>>({
     defaultValues: {
       email: "",
+      firstName: "",
+      lastName: "",
       password: "",
       confirmPassword: "",
     },
@@ -42,15 +49,89 @@ export default function RegisterPage() {
     // Handle registration logic here
     // For example, call an API to register the user
     console.log("Registering user:", data);
+    try {
+      const response = await fetch("/api/auth/signup", {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) {
+        throw new Error("Registration failed");
+      }
+      toast({
+        title: "Registration successful",
+        description: "Please check your email for verification",
+      });
+      await signIn("credentials", {
+        email: data.email,
+        password: data.password,
+        redirect: true,
+        callbackUrl: "/",
+      });
+    } catch (error) {
+      console.error("Registration error:", error);
+      toast({
+        title: "Registration error",
+        variant: "destructive",
+        description: "Please try again later",
+      });
+    }
   };
 
   return (
-    <div className="relative z-[9999] gap-8 p-8 text-center">
+    <div className="relative z-[9999] w-96 gap-8 p-8 text-center">
+      <div className="EntryScreen_logo__qjIqU">
+        <img
+          alt=""
+          loading="lazy"
+          width="24"
+          height="24"
+          decoding="async"
+          data-nimg="1"
+          className="Image_image__5RgVm Image_loaded__qmdFe"
+          src="/assets/star.svg"
+        />
+      </div>
       <span className="text-3xl">
+        Hey 👋🏻, <br />
         Create an Account
       </span>
       <Form {...registerForm}>
         <form className="mt-8" onSubmit={registerForm.handleSubmit(handleRegister)}>
+
+          <FormField
+            control={registerForm.control}
+            name="firstName"
+            render={({ field }) => (
+              <FormItem className="my-4">
+                <FormControl>
+                  <Input
+                    placeholder="First Name"
+                    className="Field_input__1L5wD h-[50px]"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={registerForm.control}
+            name="lastName"
+            render={({ field }) => (
+              <FormItem className="my-4">
+                <FormControl>
+                  <Input
+                    placeholder="Last Name"
+                    className="Field_input__1L5wD h-[50px]"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           <FormField
             control={registerForm.control}
             name="email"
@@ -109,6 +190,11 @@ export default function RegisterPage() {
           </button>
         </form>
       </Form>
+      <div className="flex flex-col gap-2 mt-4">
+        <Link href="/auth/login" className="text-sm hover:underline text-gray-400">
+          Already have an account? Login
+        </Link>
+      </div>
     </div>
   );
 }

@@ -12,15 +12,6 @@ interface SignUpResponse {
   error?: string;
 }
 
-// Request interfaces
-interface SignUpRequest {
-  email: string;
-  password: string;
-  name: string;
-  role: string;
-  teamId: string;
-}
-
 const FILE_NAME = "app/(auth)/api/auth/signup/route.ts";
 
 /**
