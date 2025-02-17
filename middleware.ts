@@ -4,7 +4,7 @@ import { auth } from "@/auth";
 
 export const config = {
   runtime: "experimental-edge",
-  matcher: ["/((?!accept-invitation|_next/static|_next/image|favicon.ico|auth/login|api/auth|public|assets).*)"],
+  matcher: ["/((?!accept-invitation|_next/static|_next/image|favicon.ico|auth/login|auth/register|auth/forgot-password|api/auth|public|assets).*)"],
 };
 
 export async function middleware(request: NextRequest) {
@@ -15,6 +15,8 @@ export async function middleware(request: NextRequest) {
       /^\/accept-invitation$/,
       /^\/api\/team\/invite\/[^/]+$/,
       /^\/login$/,
+      /^\/register$/,
+      /^\/forgot-password$/,
       /^\/api\/auth\/callback\/api-key$/,
       /^\/api\/auth\//,
       /^\/api\/email\/track\/[^/]+\/blank-image\/[^/]+$/,
