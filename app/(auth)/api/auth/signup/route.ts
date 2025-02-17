@@ -121,8 +121,13 @@ export async function POST(
     }
 
     // Use APIService for the registration
-    const result = await new APIService('auth', null).post("register", json)
-    
+    await new APIService('auth', null).post("register", {
+      email: json.email,
+      first_name: json.firstName,
+      last_name: json.lastName,
+      password: json.password
+    })
+
     logger.info({
       fileName: FILE_NAME,
       emoji: "✅",
@@ -132,7 +137,7 @@ export async function POST(
       message: "User successfully registered"
     });
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       data: {
         message: "User successfully registered"
       }
@@ -148,7 +153,7 @@ export async function POST(
       message: "Failed to create user"
     });
     return NextResponse.json(
-      { error: apiError.message || "Internal Server Error" }, 
+      { error: apiError.message || "Internal Server Error" },
       { status: 500 }
     );
   }
