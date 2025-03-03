@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import { logger } from "@/app/lib/logger";
 import { ApiError } from "@/types";
 
-const FILE_NAME = "app/(team)/api/team/api-keys/[id]/route.ts";
+const FILE_NAME = "app/(team)/api/team/api-keys/[id]/stats/route.ts";
 
 interface APIKeyParams {
   params: Promise<{
@@ -12,16 +12,24 @@ interface APIKeyParams {
   }>;
 }
 
-interface DeleteAPIKeyResponse {
-  success: boolean;
-  error?: string;
+interface APIKeyUsageStats {
+  totalRequests: number;
+  successRate: number;
+  topEndpoints: {
+    endpoint: string;
+    count: number;
+  }[];
+  recentErrors: {
+    timestamp: string;
+    error: string;
+  }[];
 }
 
 /**
  * @openapi
- * /api/team/api-keys/{id}:
- *   delete:
- *     summary: Delete an API key
+ * /api/team/api-keys/{id}/stats:
+ *   get:
+ *     summary: Get API key usage statistics
  *     tags: [API Keys]
  *     parameters:
  *       - in: path
@@ -31,14 +39,14 @@ interface DeleteAPIKeyResponse {
  *           type: string
  *     responses:
  *       200:
- *         description: API key deleted successfully
+ *         description: API key usage statistics retrieved successfully
  *       401:
  *         description: Unauthorized
  */
-export async function DELETE(
+export async function GET(
   request: Request,
   { params }: APIKeyParams
-): Promise<NextResponse<DeleteAPIKeyResponse | { error: string }>> {
+): Promise<NextResponse<APIKeyUsageStats | { error: string }>> {
   const id = (await params).id;
 
   try {
@@ -49,29 +57,40 @@ export async function DELETE(
         fileName: FILE_NAME,
         emoji: "🚫",
         action: "authenticate",
-        label: "api-key",
+        label: "api-key-stats",
         value: { id },
         message: "Unauthorized",
       });
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const apiService = new APIService("api-keys", session);
-    await apiService.delete<void>(`/${id}`);
+    const apiService = new APIService("api-key-usage", session);
+    const stats = await apiService.get<APIKeyUsageStats>(``, {
+      api_key_id: id,
+    });
 
-    return NextResponse.json({ success: true });
+    logger.info({
+      fileName: FILE_NAME,
+      emoji: "✅",
+      action: "get-stats",
+      label: "api-key",
+      value: { id, stats },
+      message: "API key stats retrieved successfully",
+    });
+
+    return NextResponse.json(stats);
   } catch (error) {
     const apiError = error as ApiError;
     logger.error({
       fileName: FILE_NAME,
       emoji: "❌",
-      action: "delete",
+      action: "get-stats",
       label: "api-key",
-      value: { id, error: apiError.message || "Unknown error" },
-      message: "Failed to delete API key",
+      value: { id },
+      message: apiError.message || "Failed to get API key stats",
     });
     return NextResponse.json(
-      { error: "Failed to delete API key" },
+      { error: apiError.message || "Failed to get API key stats" },
       { status: 500 }
     );
   }

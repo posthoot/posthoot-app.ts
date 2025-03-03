@@ -93,8 +93,8 @@ export async function GET(
       );
     }
 
-    const apiService = new APIService("smtp", session);
-    const data = await apiService.get<SMTPConfig[]>("", { teamId });
+    const apiService = new APIService("smtp-configs", session);
+    const data = await apiService.get<SMTPConfig[]>("");
 
     logger.info({
       fileName: FILE_NAME,
@@ -105,7 +105,10 @@ export async function GET(
       message: "SMTP configurations retrieved successfully",
     });
 
-    return NextResponse.json({ data });
+    return NextResponse.json({
+      data,
+      message: "SMTP configurations retrieved successfully",
+    });
   } catch (error) {
     const apiError = error as ApiError;
     logger.error({
@@ -148,10 +151,9 @@ export async function POST(
       smtpConfigSchema.parse(config)
     );
 
-    const apiService = new APIService("smtp", session);
+    const apiService = new APIService("smtp-configs", session);
     const createdConfigs = await apiService.post<SMTPConfig[]>("", {
-      teamId,
-      smtpConfigs: validatedConfigs,
+      ...validatedConfigs,
     });
 
     logger.info({

@@ -39,10 +39,8 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const apiService = new APIService("team/api-keys", session);
-    const data = await apiService.get<{ keys: APIKey[] }>("", {
-      userId: session.user.id,
-    });
+    const apiService = new APIService("api-keys", session);
+    const data = await apiService.get<{ keys: APIKey[] }>("");
 
     return NextResponse.json({ data });
   } catch (error) {
@@ -79,9 +77,10 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const apiService = new APIService("team/api-keys", session);
-    const data = await apiService.post<APIKeyResponse["data"]>(body, {
-      userId: session.user.id,
+    const apiService = new APIService("api-keys", session);
+    const data = await apiService.post<APIKeyResponse["data"]>("", {
+      name: body.name,
+      expiresAt: body.expiresAt,
     });
 
     return NextResponse.json({ data });

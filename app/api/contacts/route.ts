@@ -101,13 +101,16 @@ export async function POST(
         action: "authenticate",
         label: "contacts",
         value: {},
-        message: "Unauthorized"
+        message: "Unauthorized",
       });
-      return NextResponse.json({ error: "Unauthorized", contacts: [] }, { status: 401 });
+      return NextResponse.json(
+        { error: "Unauthorized", contacts: [] },
+        { status: 401 }
+      );
     }
 
     const apiService = new APIService("contacts", session);
-    const body = await request.json() as CreateContactsRequest;
+    const body = (await request.json()) as CreateContactsRequest;
     const { contacts, listId, teamId } = body;
 
     if (!teamId) {
@@ -117,12 +120,18 @@ export async function POST(
         action: "validate",
         label: "contacts",
         value: { teamId: null },
-        message: "Missing team ID"
+        message: "Missing team ID",
       });
-      return NextResponse.json({ error: "Team ID is required", contacts: [] }, { status: 400 });
+      return NextResponse.json(
+        { error: "Team ID is required", contacts: [] },
+        { status: 400 }
+      );
     }
 
-    const list = await apiService.get<MailingList>(`/mailing-lists/${listId}`, { teamId });
+    const list = await apiService.get<MailingList>(
+      `${listId}?include=Contacts`,
+      { teamId }
+    );
     if (!list) {
       logger.warn({
         fileName: FILE_NAME,
@@ -130,13 +139,18 @@ export async function POST(
         action: "fetch",
         label: "list",
         value: { listId, teamId },
-        message: "List not found"
+        message: "List not found",
       });
-      return NextResponse.json({ error: "List not found", contacts: [] }, { status: 404 });
+      return NextResponse.json(
+        { error: "List not found", contacts: [] },
+        { status: 404 }
+      );
     }
 
     const createdContacts = await apiService.post<Contact[]>("/contacts", {
-      contacts: contacts.map(contact => contactSchema.parse({ ...contact, listId }))
+      contacts: contacts.map((contact) =>
+        contactSchema.parse({ ...contact, listId })
+      ),
     });
 
     return NextResponse.json({ contacts: createdContacts });
@@ -148,7 +162,7 @@ export async function POST(
       action: "create",
       label: "contacts",
       value: { error: apiError.message || "Unknown error" },
-      message: "Failed to create contacts"
+      message: "Failed to create contacts",
     });
     return NextResponse.json(
       { error: apiError.message || "Internal Server Error", contacts: [] },
@@ -221,13 +235,15 @@ export async function GET(
         action: "authenticate",
         label: "contacts",
         value: null,
-        message: "Unauthorized access attempt"
+        message: "Unauthorized access attempt",
       });
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
     const listId = searchParams.get("listId");
+    const page = searchParams.get("page");
+    const limit = searchParams.get("limit");
 
     if (!listId) {
       logger.warn({
@@ -236,29 +252,20 @@ export async function GET(
         action: "validate",
         label: "contacts",
         value: { listId },
-        message: "Missing list ID"
+        message: "Missing list ID",
       });
       return new NextResponse("List ID is required", { status: 400 });
     }
 
     const apiService = new APIService("contacts", session);
-    const list = await apiService.get<MailingList>(`/mailing-lists/${listId}`, { teamId: session.user.teamId });
+    const contacts = await apiService.get<Contact[]>("", {
+      list_id: listId,
+      page: page ? parseInt(page) : 0,
+      limit: limit ? parseInt(limit) : 20,
+    });
 
-    if (!list) {
-      logger.warn({
-        fileName: "contacts/route.ts",
-        emoji: "❓",
-        action: "fetch",
-        label: "list",
-        value: { listId, teamId: session.user.teamId },
-        message: "List not found"
-      });
-      return new NextResponse("List not found", { status: 404 });
-    }
-
-    const contacts = await apiService.get<Contact[]>(`/mailing-lists/${listId}/contacts`, { teamId: session.user.teamId });
-
-    return NextResponse.json({ contacts });
+    // @ts-ignore
+    return NextResponse.json(contacts);
   } catch (error) {
     logger.error({
       fileName: "contacts/route.ts",
@@ -266,8 +273,8 @@ export async function GET(
       action: "fetch",
       label: "contacts",
       value: error,
-      message: "Failed to fetch contacts"
+      message: "Failed to fetch contacts",
     });
     return new NextResponse("Internal Server Error", { status: 500 });
   }
-} 
+}

@@ -77,8 +77,9 @@ interface SMTPTestResponse {
 const SMTPConfigSchema = z.object({
   host: z.string().min(1),
   port: z.string().regex(/^\d+$/),
-  username: z.string().email(),
+  username: z.string(),
   password: z.string().min(1),
+  fromEmail: z.string(),
 });
 
 type SMTPConfig = z.infer<typeof SMTPConfigSchema>;
@@ -137,19 +138,14 @@ export async function POST(
       message: "Testing SMTP configuration",
     });
 
-    // Create test transport
-    const transport = nodemailer.createTransport({
+    const response = await apiService.post<SMTPTestResponse>("test", {
       host: config.host,
       port: parseInt(config.port),
-      secure: config.port === "465",
-      auth: {
-        user: config.username,
-        pass: config.password,
-      },
+      username: config.username,
+      password: config.password,
+      from: config.fromEmail,
+      requireTls: config.port === "587",
     });
-
-    // Verify connection
-    await transport.verify();
 
     logger.info({
       fileName: FILE_NAME,
@@ -160,7 +156,7 @@ export async function POST(
       message: "SMTP connection test successful",
     });
 
-    return NextResponse.json({ message: "Test successful" });
+    return NextResponse.json({ message: response.message });
   } catch (error) {
     const apiError = error as ApiError;
     logger.error({
