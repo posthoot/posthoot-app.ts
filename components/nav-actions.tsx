@@ -5,6 +5,7 @@ import {
   ArrowDown,
   ArrowUp,
   Bell,
+  Copy,
   CornerUpLeft,
   CornerUpRight,
   FileText,
