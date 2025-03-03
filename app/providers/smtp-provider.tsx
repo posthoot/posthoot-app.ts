@@ -42,11 +42,13 @@ export function SMTPProvider({ children }: { children: React.ReactNode }) {
       if (!response.ok) {
         throw new Error("Failed to fetch SMTP configuration");
       }
-      const data = await response.json();
+      const { data } = await response.json();
       setConfigs(data);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err : new Error("Unknown error occurred"));
+      setError(
+        err instanceof Error ? err : new Error("Unknown error occurred")
+      );
     } finally {
       setIsLoading(false);
     }
@@ -74,7 +76,9 @@ export function SMTPProvider({ children }: { children: React.ReactNode }) {
       setConfigs(data);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err : new Error("Unknown error occurred"));
+      setError(
+        err instanceof Error ? err : new Error("Unknown error occurred")
+      );
       throw err;
     } finally {
       setIsLoading(false);

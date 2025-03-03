@@ -1,8 +1,12 @@
 "use client";
 
+import { MailingListProvider } from "@/app/providers/mailinglist-provider";
 import { ContactLists } from "@/components/contacts/contact-lists";
-import { PageHeader } from "@/components/page-header";
 
 export default function ContactListsPage() {
-  return <ContactLists />;
+  return (
+    <MailingListProvider>
+      <ContactLists />
+    </MailingListProvider>
+  );
 }

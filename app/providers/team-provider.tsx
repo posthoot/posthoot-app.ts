@@ -8,6 +8,8 @@ import { Team, User, TeamInvite, Domain } from "@/types";
 interface TeamWithUsers extends Team {
   users: User[];
   id: string;
+  firstName: string;
+  lastName: string;
   invites: (TeamInvite & {
     inviter: User;
   })[];

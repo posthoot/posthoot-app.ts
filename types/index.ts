@@ -1,8 +1,8 @@
 export enum SMTPProvider {
-  GMAIL = "gmail",
-  CUSTOM = "custom",
-  OUTLOOK = "outlook",
-  AMAZON = "amazon",
+  GMAIL = "GMAIL",
+  CUSTOM = "CUSTOM",
+  OUTLOOK = "OUTLOOK",
+  AMAZON = "AMAZON",
 }
 
 export enum DomainStatus {

@@ -114,8 +114,11 @@ function CreateCampaignDialog({
   });
 
   const { lists } = useMailingLists();
-  const { templates } = useTemplates();
+  const { templates, pagination, isLoading: isLoadingTemplates } = useTemplates();
   const { configs: smtpConfigs } = useSMTP();
+
+  console.log(smtpConfigs, 'smtpConfigs for team');
+
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

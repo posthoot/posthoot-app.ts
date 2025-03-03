@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ColumnDef } from "@tanstack/react-table";
+import { ColumnDef, PaginationState } from "@tanstack/react-table";
 import { DataTable } from "@/components/ui/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -24,16 +24,23 @@ interface Contact {
   email: string;
   firstName: string | null;
   lastName: string | null;
-  status: "ACTIVE" | "UNSUBSCRIBED";
+  isDeleted: boolean;
   metadata: Record<string, any>;
+  tags: string[] | null;
   createdAt: string;
   updatedAt: string;
   listId: string;
   teamId: string;
+  importId: string | null;
 }
 
 export function ContactsList({ listId }: { listId: string }) {
   const [contacts, setContacts] = useState<Contact[]>([]);
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 10,
+  });
+  const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const { team } = useTeam();
@@ -43,10 +50,15 @@ export function ContactsList({ listId }: { listId: string }) {
     
     try {
       setIsLoading(true);
-      const response = await fetch(`/api/contacts?listId=${listId}&teamId=${team?.id}`);
+      const response = await fetch(`/api/contacts?listId=${listId}&teamId=${team?.id}&page=${pagination.pageIndex}&limit=${pagination.pageSize}`);
       if (!response.ok) throw new Error("Failed to fetch contacts");
       const data = await response.json();
-      setContacts(data);
+      setContacts(data.data);
+      setPagination({
+        pageIndex: data.page,
+        pageSize: data.limit,
+      });
+      setTotal(data.total);
     } catch (error) {
       toast({
         title: "Error",
@@ -170,7 +182,7 @@ export function ContactsList({ listId }: { listId: string }) {
       id: "actions",
       cell: ({ row }) => {
         const contact = row.original;
-        const isSubscribed = contact.status === "ACTIVE";
+        const isSubscribed = contact.isDeleted === false;
 
         return (
           <DropdownMenu>

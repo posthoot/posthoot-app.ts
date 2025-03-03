@@ -17,6 +17,8 @@ import {
 } from "@/components/ui/form";
 import Image from "next/image";
 import Link from "next/link";
+import { EyeIcon, EyeOffIcon } from "lucide-react";
+import { useState } from "react";
 
 export default function LoginPage() {
   const loginFormScheam = z.object({
@@ -34,6 +36,7 @@ export default function LoginPage() {
   });
 
   const { data: session } = useSession();
+  const [showPassword, setShowPassword] = useState(false);
 
   if (session) {
     redirect("/");
@@ -62,7 +65,7 @@ export default function LoginPage() {
           src="/assets/star.svg"
         />
       </div>
-      <span className="text-3xl">
+      <span className="text-3xl text-white">
         Hey 👋🏻, <br />
         Welcome Back
       </span>
@@ -90,15 +93,28 @@ export default function LoginPage() {
             control={loginForm.control}
             name="password"
             render={({ field }) => (
-              <FormItem className="mb-4">
+              <FormItem className="mb-4 relative">
                 <FormControl>
                   <Input
                     placeholder="Password"
                     className="Field_input__1L5wD h-[50px]"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     {...field}
                   />
                 </FormControl>
+                {!showPassword ? (
+                  <EyeIcon
+                    size={20}
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-2 top-4 -translate-y-1/2 text-gray-400"
+                  />
+                ) : (
+                  <EyeOffIcon
+                    size={20}
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-2 top-4 -translate-y-1/2 text-gray-400"
+                  />
+                )}
                 <FormMessage className="text-red-100" />
               </FormItem>
             )}

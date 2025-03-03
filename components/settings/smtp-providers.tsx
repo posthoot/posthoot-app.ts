@@ -25,6 +25,8 @@ import {
   TestTube,
   Settings,
   Link,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -114,12 +116,6 @@ export const columns: ColumnDef<SMTPConfig>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => window.open(provider.documentation, "_blank")}
-            >
-              <Link className="mr-2 h-4 w-4" />
-              Documentation
-            </DropdownMenuItem>
             <DropdownMenuItem>
               <Settings className="mr-2 h-4 w-4" />
               Configure
@@ -157,6 +153,7 @@ export function SMTPProviders({
   onProviderChange: (provider: SMTPProvider) => void;
   form: UseFormReturn<z.infer<typeof formSchema>>;
 }) {
+  const [showPassword, setShowPassword] = useState(false);
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogContent>
@@ -190,6 +187,16 @@ export function SMTPProviders({
                 ))}
               </SelectContent>
             </Select>
+            <span className="text-sm text-muted-foreground flex items-center gap-1">
+              Need help? Check out our documentation.{" "}
+              <a
+                href="https://docs.posthoot.com/docs/smtp-providers"
+                target="_blank"
+                className="text-blue-500 hover:text-blue-600"
+              >
+                Click here
+              </a>
+            </span>
           </div>
           <div className="grid gap-4 grid-cols-2">
             <div className="space-y-2">
@@ -210,33 +217,12 @@ export function SMTPProviders({
               />
             </div>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="maxSendRate">Max Send Rate</Label>
-            <Input
-              id="maxSendRate"
-              placeholder="1,000/day"
-              {...form.register("maxSendRate")}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="documentation">Documentation URL</Label>
-            <Input
-              id="documentation"
-              type="url"
-              key={form.getValues("provider")}
-              defaultValue={
-                providers[form.getValues("provider")].documentation
-              }
-              placeholder="https://example.com/docs"
-              {...form.register("documentation")}
-            />
-          </div>
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label>Requires Authentication</Label>
-              <div className="text-sm text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Provider requires username and password
-              </div>
+              </p>
             </div>
             <Switch
               checked={form.watch("requiresAuth")}
@@ -255,29 +241,81 @@ export function SMTPProviders({
                   {...form.register("username")}
                 />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2 relative">
                 <Label htmlFor="password">Password</Label>
                 <Input
                   id="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="********"
                   {...form.register("password")}
                 />
+                {!showPassword ? (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-1 top-6"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-1 top-6"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    <EyeOff className="h-4 w-4" />
+                  </Button>
+                )}
               </div>
             </>
           )}
+          <div className="space-y-2">
+            <Label htmlFor="fromEmail">From Email</Label>
+            <Input
+              id="fromEmail"
+              type="email"
+              placeholder="noreply@example.com"
+              {...form.register("fromEmail")}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="maxSendRate">Max Send Rate</Label>
+            <Input
+              id="maxSendRate"
+              placeholder="1,000"
+              type="number"
+              {...form.register("maxSendRate")}
+            />
+            <p className="text-xs text-muted-foreground">
+              This is the maximum number of emails that can be sent per second.
+            </p>
+          </div>
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label>Supports TLS</Label>
-              <div className="text-sm text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Provider supports TLS encryption
-              </div>
+              </p>
             </div>
             <Switch
               checked={form.watch("supportsTLS")}
               onCheckedChange={(checked) =>
                 form.setValue("supportsTLS", checked)
               }
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label>Default Provider</Label>
+              <p className="text-xs text-muted-foreground">
+                Make this the default provider
+              </p>
+            </div>
+            <Switch
+              checked={form.watch("isDefault")}
+              onCheckedChange={(checked) => form.setValue("isDefault", checked)}
             />
           </div>
           <div className="flex justify-between items-center space-x-2">

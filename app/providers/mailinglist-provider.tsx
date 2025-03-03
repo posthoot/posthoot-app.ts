@@ -22,7 +22,11 @@ export function useMailingLists() {
   return useContext(MailingListContext);
 }
 
-export function MailingListProvider({ children }: { children: React.ReactNode }) {
+export function MailingListProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [lists, setLists] = useState<MailingList[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -35,12 +39,13 @@ export function MailingListProvider({ children }: { children: React.ReactNode })
       if (!response.ok) {
         throw new Error("Failed to fetch mailing lists");
       }
-      const data = await response.json();
+      const { data } = await response.json();
       setLists(data);
-      console.log(data);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err : new Error("Unknown error occurred"));
+      setError(
+        err instanceof Error ? err : new Error("Unknown error occurred")
+      );
     } finally {
       setIsLoading(false);
     }
@@ -58,7 +63,7 @@ export function MailingListProvider({ children }: { children: React.ReactNode })
         lists,
         isLoading,
         error,
-        refetch: fetchLists
+        refetch: fetchLists,
       }}
     >
       {children}

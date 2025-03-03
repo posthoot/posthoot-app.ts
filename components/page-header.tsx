@@ -56,13 +56,13 @@ export function PageHeader({
     <div
       className={cn(
         "sticky top-0 z-10 backdrop-blur",
-        "border-b py-4 px-6 shadow-sm",
+        "border-b py-2 px-4 shadow-sm",
         className
       )}
     >
       <div className="flex items-center justify-between max-w-screen-2xl mx-auto">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">{heading}</h1>
+          <h1 className="text-xl font-bold tracking-tight">{heading}</h1>
           {description && (
             <p className="text-muted-foreground">{description}</p>
           )}

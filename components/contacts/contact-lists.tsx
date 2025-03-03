@@ -33,43 +33,29 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { PageHeader } from "../page-header";
+import { useMailingLists } from "@/app/providers/mailinglist-provider";
 
 interface MailingList {
   id: string;
   name: string;
   description: string | null;
   createdAt: string;
-  _count: {
-    subscribers: number;
-  };
 }
 
 export function ContactLists() {
-  const [lists, setLists] = useState<MailingList[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [newList, setNewList] = useState({ name: "", description: "" });
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
   const { team } = useTeam();
-
-  const fetchLists = async () => {
-    try {
-      const response = await fetch(`/api/mailing-list?teamId=${team?.id}`);
-      const data = await response.json();
-      setLists(data);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch contact lists",
-        variant: "destructive",
-      });
-    }
-  };
-
+  const { 
+    lists,
+    isLoading,
+    error,
+    refetch
+   } = useMailingLists();
   const createList = async () => {
     try {
-      setIsLoading(true);
       const response = await fetch("/api/mailing-list", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -78,7 +64,7 @@ export function ContactLists() {
 
       if (!response.ok) throw new Error("Failed to create list");
 
-      await fetchLists();
+      await refetch();
       setNewList({ name: "", description: "" });
       setIsDialogOpen(false);
       toast({
@@ -91,14 +77,11 @@ export function ContactLists() {
         description: "Failed to create contact list",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const deleteList = async (id: string) => {
     try {
-      setIsLoading(true);
       const response = await fetch(
         `/api/mailing-list/${id}?teamId=${team?.id}`,
         {
@@ -108,7 +91,7 @@ export function ContactLists() {
 
       if (!response.ok) throw new Error("Failed to delete list");
 
-      await fetchLists();
+      await refetch();
       toast({
         title: "Success",
         description: "Contact list deleted successfully",
@@ -119,14 +102,8 @@ export function ContactLists() {
         description: "Failed to delete contact list",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchLists();
-  }, []);
 
   return (
     <div className="space-y-4">
@@ -208,11 +185,11 @@ export function ContactLists() {
                 <TableCell>
                   <div className="flex items-center">
                     <Users className="h-4 w-4 mr-1" />
-                    {list._count.subscribers}
+                    {/* {list._count.subscribers} */}
                   </div>
                 </TableCell>
                 <TableCell>
-                  {format(new Date(list.createdAt), "MMM d, yyyy")}
+                  {/* {format(new Date(list.createdAt), "MMM d, yyyy")} */}
                 </TableCell>
                 <TableCell>
                   <DropdownMenu>

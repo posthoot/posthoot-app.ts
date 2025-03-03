@@ -9,6 +9,8 @@ import { NextAuthProvider } from "./providers/NextAuthProvider";
 import { TeamProvider } from "@/app/providers/team-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
+import { AppSidebar } from "@/components/app-sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -43,12 +45,14 @@ async function MainLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex max-h-screen overflow-hidden bg-background">
-      <Sidebar />
-      <main className="flex-1 h-screen overflow-y-auto">
-        <div className="flex flex-col min-h-screen">{children}</div>
-      </main>
-    </div>
+    <SidebarProvider>
+      <div className="flex max-h-screen w-full overflow-hidden bg-background">
+        <AppSidebar />
+        <main className="flex-1 h-screen overflow-y-auto w-full">
+          <div className="flex flex-col min-h-screen">{children}</div>
+        </main>
+      </div>
+    </SidebarProvider>
   );
 }
 
@@ -65,11 +69,14 @@ export default async function RootLayout({
           rel="stylesheet"
           href="https://ui8-simple-social.vercel.app/_next/static/css/a1fbed414a2f617b.css"
         />
+        <link
+          href="https://api.fontshare.com/v2/css?f[]=sentient@400&display=swap"
+          rel="stylesheet"
+        />
       </head>
       <body
         className={cn(
-          inter.className,
-          "antialiased bg-background text-foreground"
+          "antialiased bg-background text-foreground font-sentient"
         )}
       >
         <ThemeProvider attribute="class" defaultTheme="dark">

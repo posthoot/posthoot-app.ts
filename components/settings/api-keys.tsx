@@ -61,7 +61,9 @@ const AVAILABLE_SCOPES = Object.values(API_SCOPES)
   .flat()
   .reduce((acc, scope) => {
     const [resource, action] = scope.split(":");
-    acc[scope] = `${action.charAt(0).toUpperCase() + action.slice(1)} ${resource}`;
+    acc[scope] = `${
+      action?.charAt(0).toUpperCase() + action?.slice(1)
+    } ${resource}`;
     return acc;
   }, {} as Record<string, string>);
 
@@ -69,12 +71,12 @@ interface ApiKey {
   id: string;
   name: string;
   key: string;
+  teamId: string;
   createdAt: string;
-  lastUsedAt?: string;
-  expiresAt?: string;
-  scopes: string[];
-  rateLimit: number;
-  isActive: boolean;
+  lastUsedAt: string;
+  updatedAt: string;
+  expiresAt: string;
+  isDeleted: boolean;
 }
 
 interface ApiKeyUsageStats {
@@ -114,11 +116,12 @@ export function ApiKeys() {
   const fetchApiKeys = async () => {
     try {
       const response = await fetch("/api/team/api-keys");
-      const data = await response.json();
-      setApiKeys(data);
-      if (data.length > 0) {
-        setSelectedKey(data[0].id);
+      const { data } = await response.json();
+      setApiKeys(data.data);
+      if (data.total > 0) {
+        setSelectedKey(data.data[0].id);
       }
+      console.log(apiKeys, "FETCHED");
     } catch (error) {
       toast({
         title: "Error",
@@ -220,7 +223,7 @@ export function ApiKeys() {
       if (!response.ok) throw new Error("Failed to update API key");
 
       setApiKeys(
-        apiKeys.map((key) => (key.id === id ? { ...key, isActive } : key))
+        apiKeys?.map((key) => (key.id === id ? { ...key, isActive } : key))
       );
       toast({
         title: "Success",
@@ -414,71 +417,81 @@ export function ApiKeys() {
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
-              <TableBody>
-                {apiKeys.map((apiKey) => (
-                  <TableRow key={apiKey.id}>
-                    <TableCell>
-                      <div className="space-y-1">
-                        <div>{apiKey.name}</div>
-                        <div className="text-sm text-muted-foreground">
-                          Created {format(new Date(apiKey.createdAt), "PP")}
+              {apiKeys?.length > 0 ? (
+                <TableBody>
+                  {apiKeys?.map((apiKey) => (
+                    <TableRow key={apiKey.id}>
+                      <TableCell>
+                        <div className="space-y-1">
+                          <div>{apiKey.name}</div>
+                          <div className="text-sm text-muted-foreground">
+                            Created {format(new Date(apiKey.createdAt), "PP")}
+                          </div>
                         </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              onClick={() =>
-                                navigator.clipboard.writeText(apiKey.key)
-                              }
-                            >
-                              {apiKey.key.slice(0, 10)}...
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>Click to copy</TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={apiKey.isActive ? "success" : "destructive"}
-                      >
-                        {apiKey.isActive ? "Active" : "Inactive"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="space-x-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setSelectedKey(apiKey.id)}
+                      </TableCell>
+                      <TableCell>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                onClick={() =>
+                                  navigator.clipboard.writeText(apiKey.key)
+                                }
+                              >
+                                {apiKey.key.slice(0, 10)}...
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Click to copy</TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={apiKey.isDeleted ? "destructive" : "success"}
                         >
-                          Stats
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() =>
-                            toggleApiKey(apiKey.id, !apiKey.isActive)
-                          }
-                        >
-                          {apiKey.isActive ? "Disable" : "Enable"}
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => deleteApiKey(apiKey.id)}
-                        >
-                          Delete
-                        </Button>
-                      </div>
+                          {apiKey.isDeleted ? "Deleted" : "Active"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="space-x-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setSelectedKey(apiKey.id)}
+                          >
+                            Stats
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() =>
+                              toggleApiKey(apiKey.id, !apiKey.isDeleted)
+                            }
+                          >
+                            {apiKey.isDeleted ? "Enable" : "Disable"}
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => deleteApiKey(apiKey.id)}
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              ) : (
+                <TableBody>
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center">
+                      No API keys found
                     </TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
+                </TableBody>
+              )}
             </Table>
           </CardContent>
         </Card>
@@ -508,32 +521,38 @@ export function ApiKeys() {
                   </div>
                 </div>
 
-                <div>
-                  <div className="text-sm font-medium mb-2">Top Endpoints</div>
-                  <div className="space-y-2">
-                    {usageStats.topEndpoints.map((endpoint) => (
-                      <div
-                        key={endpoint.endpoint}
-                        className="flex justify-between items-center"
-                      >
-                        <div className="text-sm">{endpoint.endpoint}</div>
-                        <Badge variant="secondary">{endpoint.count}</Badge>
-                      </div>
-                    ))}
+                {usageStats?.topEndpoints?.length > 0 && (
+                  <div>
+                    <div className="text-sm font-medium mb-2">
+                      Top Endpoints
+                    </div>
+                    <div className="space-y-2">
+                      {usageStats.topEndpoints.map((endpoint) => (
+                        <div
+                          key={endpoint.endpoint}
+                          className="flex justify-between items-center"
+                        >
+                          <div className="text-sm">{endpoint.endpoint}</div>
+                          <Badge variant="secondary">{endpoint.count}</Badge>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
-                <div>
-                  <div className="text-sm font-medium mb-2">Recent Errors</div>
-                  <div className="space-y-2">
-                    {usageStats.recentErrors.map((error, index) => (
+                {usageStats?.recentErrors?.length > 0 && (
+                  <div>
+                    <div className="text-sm font-medium mb-2">Recent Errors</div>
+                    <div className="space-y-2">
+                    {usageStats?.recentErrors?.map((error, index) => (
                       <div key={index} className="text-sm text-destructive">
                         {format(new Date(error.timestamp), "PP")} -{" "}
                         {error.error}
                       </div>
                     ))}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </CardContent>
           </Card>

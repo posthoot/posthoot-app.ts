@@ -9,6 +9,11 @@ type TemplatesContextType = {
   isLoading: boolean;
   error: Error | null;
   refetch: () => Promise<void>;
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+  };
 };
 
 const TemplatesContext = createContext<TemplatesContextType>({
@@ -16,6 +21,11 @@ const TemplatesContext = createContext<TemplatesContextType>({
   isLoading: true,
   error: null,
   refetch: async () => {},
+  pagination: {
+    page: 1,
+    limit: 10,
+    total: 0,
+  },
 });
 
 export function useTemplates() {
@@ -27,6 +37,11 @@ export function TemplatesProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const { team } = useTeam();
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+  });
 
   const fetchTemplates = async () => {
     try {
@@ -36,7 +51,12 @@ export function TemplatesProvider({ children }: { children: React.ReactNode }) {
         throw new Error("Failed to fetch templates");
       }
       const data = await response.json();
-      setTemplates(data);
+      setTemplates(data.data);
+      setPagination({
+        page: data.pagination.page,
+        limit: data.pagination.limit,
+        total: data.pagination.total,
+      });
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err : new Error("Unknown error occurred"));
@@ -55,6 +75,7 @@ export function TemplatesProvider({ children }: { children: React.ReactNode }) {
     <TemplatesContext.Provider 
       value={{
         templates,
+        pagination,
         isLoading,
         error,
         refetch: fetchTemplates
