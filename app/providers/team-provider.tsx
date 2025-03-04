@@ -35,7 +35,6 @@ export function TeamProvider({ children }: { children: React.ReactNode }) {
 
   const fetchTeamData = async () => {
     try {
-      console.log("fetchTeamData", session);
       if (!session?.user?.teamId) {
         setTeam(null);
         return;
