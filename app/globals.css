@@ -132,7 +132,10 @@
     src: url(/fonts/geist-mono.woff2) format("woff2");
   }
 
-  p, span {
+  p,
+  span,
+  input,
+  textarea {
     @apply font-sans;
   }
 }

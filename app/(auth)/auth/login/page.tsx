@@ -65,7 +65,7 @@ export default function LoginPage() {
           src="/assets/star.svg"
         />
       </div>
-      <span className="text-3xl text-white">
+      <span className="text-3xl font-sentient text-white">
         Hey 👋🏻, <br />
         Welcome Back
       </span>
@@ -127,13 +127,13 @@ export default function LoginPage() {
       <div className="flex flex-col gap-2 mt-4">
         <Link
           href="/auth/forgot-password"
-          className="text-sm hover:underline text-gray-400"
+          className="text-sm font-sans hover:underline text-gray-400"
         >
           Forgot Password?
         </Link>
         <Link
           href="/auth/register"
-          className="text-sm hover:underline text-gray-400"
+          className="text-sm font-sans hover:underline text-gray-400"
         >
           Don't have an account? Register
         </Link>
