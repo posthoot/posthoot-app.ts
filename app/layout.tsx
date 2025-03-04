@@ -11,8 +11,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
-
-const inter = Inter({ subsets: ["latin"] });
+import { QueryProvider } from "./providers/query-provider";
 
 export const metadata: Metadata = {
   title: "kori 🦆",
@@ -81,9 +80,11 @@ export default async function RootLayout({
       >
         <ThemeProvider attribute="class" defaultTheme="dark">
           <NextAuthProvider>
-            <TeamProvider>
-              <MainLayout>{children}</MainLayout>
-            </TeamProvider>
+            <QueryProvider>
+              <TeamProvider>
+                <MainLayout>{children}</MainLayout>
+              </TeamProvider>
+            </QueryProvider>
           </NextAuthProvider>
         </ThemeProvider>
         <Toaster />

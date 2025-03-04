@@ -18,8 +18,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { decodeFromBase64 } from "@/lib/utils";
 import { EmailTemplate } from "@/types";
+import { useQuery } from "@tanstack/react-query";
 
 interface Template {
   id: string;
@@ -35,7 +35,7 @@ export function TemplatesList() {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 1,
-    pageSize: 20,
+    pageSize: 50,
   });
 
   const [totalCount, setTotalCount] = useState<number>(0);
@@ -69,6 +69,11 @@ export function TemplatesList() {
       setIsLoading(false);
     }
   };
+
+  const { data, isLoading: isLoadingQuery } = useQuery({
+    queryKey: ["templates", pagination.pageIndex, pagination.pageSize],
+    queryFn: fetchTemplates,
+  });
 
   const deleteTemplate = async (id: string) => {
     try {
@@ -239,6 +244,7 @@ export function TemplatesList() {
       pagination={pagination}
       enablePagination={true}
       totalCount={totalCount}
+      isLoading={isLoading}
       onPaginationChange={setPagination}
     />
   );
