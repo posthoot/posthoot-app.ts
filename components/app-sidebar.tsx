@@ -255,9 +255,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     <Sidebar className="border-r-0" {...props}>
       <SidebarHeader>
         <TeamSwitcher
+          key={team?.id}
           teams={[
             {
-              name: team?.firstName + " " + team?.lastName || "Untitled Team",
+              name: team?.name ?? "Sleeping Team",
               logo: Command,
               plan: "Free",
             },
