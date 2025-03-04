@@ -81,7 +81,7 @@ export const columns: ColumnDef<SMTPConfig>[] = [
           {provider.requiresAuth && (
             <Badge variant="secondary">Auth Required</Badge>
           )}
-          {provider.supportsTLS && <Badge variant="secondary">TLS</Badge>}
+          {provider.supportsTls && <Badge variant="secondary">TLS</Badge>}
         </div>
       );
     },
@@ -300,9 +300,9 @@ export function SMTPProviders({
               </p>
             </div>
             <Switch
-              checked={form.watch("supportsTLS")}
+              checked={form.watch("supportsTls")}
               onCheckedChange={(checked) =>
-                form.setValue("supportsTLS", checked)
+                form.setValue("supportsTls", checked)
               }
             />
           </div>

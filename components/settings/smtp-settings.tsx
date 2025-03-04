@@ -33,7 +33,7 @@ const DEFAULT_PROVIDERS: Record<SMTPProvider, SMTPConfig> = {
     username: "",
     password: "",
     requiresAuth: true,
-    supportsTLS: true,
+    supportsTls: true,
     maxSendRate: "1000",
     documentation: "",
   },
@@ -44,7 +44,7 @@ const DEFAULT_PROVIDERS: Record<SMTPProvider, SMTPConfig> = {
     username: "",
     password: "",
     requiresAuth: true,
-    supportsTLS: true,
+    supportsTls: true,
     maxSendRate: "1000",
     documentation: "https://support.google.com/mail/answer/7126229?hl=en",
   },
@@ -55,9 +55,10 @@ const DEFAULT_PROVIDERS: Record<SMTPProvider, SMTPConfig> = {
     username: "",
     password: "",
     requiresAuth: true,
-    supportsTLS: true,
+    supportsTls: true,
     maxSendRate: "1000",
-    documentation: "https://support.microsoft.com/en-us/office/set-up-a-connection-to-an-smtp-server-for-outlook-com-d088d509-d54c-4036-a5c3-21d483f2f017",
+    documentation:
+      "https://support.microsoft.com/en-us/office/set-up-a-connection-to-an-smtp-server-for-outlook-com-d088d509-d54c-4036-a5c3-21d483f2f017",
   },
   [SMTPProvider.AMAZON]: {
     provider: SMTPProvider.AMAZON,
@@ -66,9 +67,10 @@ const DEFAULT_PROVIDERS: Record<SMTPProvider, SMTPConfig> = {
     username: "",
     password: "",
     requiresAuth: true,
-    supportsTLS: true,
+    supportsTls: true,
     maxSendRate: "1000",
-    documentation: "https://docs.aws.amazon.com/ses/latest/DeveloperGuide/smtp-connect.html",
+    documentation:
+      "https://docs.aws.amazon.com/ses/latest/DeveloperGuide/smtp-connect.html",
   },
 };
 
@@ -191,23 +193,38 @@ export function SMTPSettings({
       accessorKey: "provider",
       header: "Provider",
       cell: ({ row }) => (
-        <div className="flex flex-col">
-          <span className="font-medium capitalize">
+        <div className="flex flex-col gap-1.5">
+          <Badge
+            variant="secondary"
+            className="w-max bg-violet-500/10 text-violet-500 font-medium capitalize"
+          >
             {row.getValue("provider")}
-          </span>
-          <span className="text-sm text-muted-foreground">
+          </Badge>
+          <Badge variant="outline" className="text-sm w-max">
             {row.original.host}:{row.original.port}
-          </span>
+          </Badge>
         </div>
       ),
     },
     {
       accessorKey: "username",
       header: "Username",
+      cell: ({ row }) => {
+        const username = row.getValue("username") as string;
+        return (
+          <Badge variant="secondary">
+            {username.slice(0, 5)}...{username.slice(-5)}
+          </Badge>
+        );
+      },
     },
     {
       accessorKey: "maxSendRate",
       header: "Send Rate",
+      cell: ({ row }) => {
+        const maxSendRate = row.getValue("maxSendRate") as string;
+        return <Badge variant="secondary">{maxSendRate}/sec</Badge>;
+      },
     },
     {
       accessorKey: "documentation",
@@ -215,17 +232,24 @@ export function SMTPSettings({
       cell: ({ row }) => {
         const documentation = row.getValue("documentation") as string;
         return (
-          <Link href={documentation} target="_blank">
-            Documentation
+          <Link
+            href={
+              documentation ||
+              DEFAULT_PROVIDERS[row.original.provider].documentation
+            }
+            className="text-sm rounded-full bg-muted-foreground/10 px-2 py-1 text-blue-500 hover:text-blue-600"
+            target="_blank"
+          >
+            Read Docs
           </Link>
         );
       },
     },
     {
-      accessorKey: "supportsTLS",
+      accessorKey: "supportsTls",
       header: "TLS",
       cell: ({ row }) => {
-        const supportsTLS = row.getValue("supportsTLS") as boolean;
+        const supportsTLS = row.getValue("supportsTls") as boolean;
         return (
           <Badge variant={supportsTLS ? "success" : "secondary"}>
             {supportsTLS ? "Yes" : "No"}

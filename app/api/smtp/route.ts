@@ -33,7 +33,7 @@ interface SMTPConfig {
   username: string;
   password: string;
   isActive: boolean;
-  supportsTLS?: boolean;
+  supportsTls?: boolean;
   requiresAuth?: boolean;
   supportsStartTLS?: boolean;
   maxSendRate?: string;
@@ -48,7 +48,7 @@ const smtpConfigSchema = z.object({
   username: z.string().email(),
   password: z.string().min(8),
   isActive: z.boolean(),
-  supportsTLS: z.boolean().optional(),
+  supportsTls: z.boolean().optional(),
   requiresAuth: z.boolean().optional(),
   supportsStartTLS: z.boolean().optional(),
   maxSendRate: z.string().min(1).optional(),
@@ -94,7 +94,10 @@ export async function GET(
     }
 
     const apiService = new APIService("smtp-configs", session);
-    const data = await apiService.get<SMTPConfig[]>("");
+    const { data } = await apiService.get<{
+      data: SMTPConfig[];
+      error?: string;
+    }>("");
 
     logger.info({
       fileName: FILE_NAME,

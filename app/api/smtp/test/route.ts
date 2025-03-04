@@ -76,7 +76,12 @@ interface SMTPTestResponse {
 
 const SMTPConfigSchema = z.object({
   host: z.string().min(1),
-  port: z.string().regex(/^\d+$/),
+  port: z.union([
+    z.string().regex(/^\d+$/).refine((val) => parseInt(val) > 0, {
+      message: "Port must be a positive integer",
+    }),
+    z.number().int().positive()
+  ]),
   username: z.string(),
   password: z.string().min(1),
   fromEmail: z.string(),
@@ -140,11 +145,11 @@ export async function POST(
 
     const response = await apiService.post<SMTPTestResponse>("test", {
       host: config.host,
-      port: parseInt(config.port),
+      port: config.port,
       username: config.username,
       password: config.password,
       from: config.fromEmail,
-      requireTls: config.port === "587",
+      requireTls: config.port === "587" || config.port === 587,
     });
 
     logger.info({
