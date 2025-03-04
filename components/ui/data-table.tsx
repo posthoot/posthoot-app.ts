@@ -70,16 +70,20 @@ export function DataTable<TData, TValue>({
       rowSelection,
       columnFilters,
       pagination: {
-        pageIndex: pagination?.pageIndex ?? 1,
-        pageSize: pagination?.pageSize ?? 20,
+        pageIndex: (pagination?.pageIndex ?? 1) - 1,
+        pageSize: pagination?.pageSize ?? 50,
       },
     },
     manualPagination: true,
-    pageCount: totalCount ? Math.ceil(totalCount / (pagination?.pageSize ?? 20)) : undefined,
+    pageCount: totalCount
+      ? Math.ceil(totalCount / (pagination?.pageSize ?? 50))
+      : -1,
     filterFns: {
       globalFilter: (row, id, value) => {
         const rowValue = row.getValue(id) ?? "";
-        return rowValue ? rowValue.toString().toLowerCase().includes(value.toLowerCase()) : false;
+        return rowValue
+          ? rowValue.toString().toLowerCase().includes(value.toLowerCase())
+          : false;
       },
     },
     enableRowSelection: true,
