@@ -14,6 +14,7 @@ import { toast } from "@/hooks/use-toast";
 import React, { use, useState } from "react";
 import { EyeIcon } from "lucide-react";
 import { EyeOffIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const resetPasswordSchema = z
   .object({
@@ -35,7 +36,8 @@ export default function ResetPasswordPage({
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { token } = use(params);
-
+  const router = useRouter();
+  
   const resetPasswordForm = useForm<z.infer<typeof resetPasswordSchema>>({
     defaultValues: {
       password: "",
@@ -48,21 +50,26 @@ export default function ResetPasswordPage({
   const handleResetPassword = async (
     data: z.infer<typeof resetPasswordSchema>
   ) => {
-    console.log("Resetting password for user");
     try {
-      const response = await fetch("/api/auth/reset-password", {
+      const response = await fetch("/api/auth/forgot-password/verify", {
         method: "POST",
         body: JSON.stringify({
           token,
           password: data.password,
+          confirmPassword: data.confirmPassword,
         }),
       });
-      const result = await response.json();
-      console.log(result);
+
+      if (!response.ok) {
+        throw new Error("Failed to reset password");
+      }
+
       toast({
         title: "Password reset successful",
         description: "Your password has been reset successfully",
       });
+
+      router.push("/auth/login");
     } catch (error) {
       toast({
         title: "Error resetting password",
