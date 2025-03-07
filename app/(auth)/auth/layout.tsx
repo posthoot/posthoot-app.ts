@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-export default async function RootLayout({
+export default async function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -8,16 +8,19 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <head>
-          <link
-            href="https://api.fontshare.com/v2/css?f[]=sentient@400&display=swap"
-            rel="stylesheet"
-          />
-        </head>
+        <meta
+          name="format-detection"
+          content="telephone=no, date=no, email=no, address=no"
+        />
+        <link
+          href="https://api.fontshare.com/v2/css?f[]=sentient@400&display=swap"
+          rel="stylesheet"
+        />
+        <link type="text/css" rel="stylesheet" href="/auth/style.css" />
       </head>
-      <body className="font-sentient">
-        <div className="min-h-screen flex items-center justify-center bg-[#444] relative overflow-hidden">
-          <div className="outline-0 EntryScreen_background__56DGp fixed inset-0 bg-[#202020]">
+      <body className="antialiased font-sentient">
+        <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
+          <div className="outline-0 fixed inset-0 bg-white">
             <div className="EntryScreen_stars__Gte0A">
               <Image
                 alt=""
@@ -62,7 +65,6 @@ export default async function RootLayout({
                   />
                 </div>
               </div>
-
               {children}
             </div>
           </div>

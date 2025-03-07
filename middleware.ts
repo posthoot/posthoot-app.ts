@@ -4,7 +4,9 @@ import { auth } from "@/auth";
 
 export const config = {
   runtime: "experimental-edge",
-  matcher: ["/((?!accept-invitation|_next/static|_next/image|favicon.ico|auth/login|auth/register|auth/forgot-password|api/auth|public|assets).*)"],
+  matcher: [
+    "/((?!accept-invitation|_next/static|_next/image|favicon.ico|auth/login|auth/register|auth/forgot-password|auth/reset-password|api/auth|public|assets|auth).*)",
+  ],
 };
 
 export async function middleware(request: NextRequest) {

@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -14,18 +14,23 @@ import { redirect } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import Link from "next/link";
+import { useState } from "react";
+import { EyeOffIcon } from "lucide-react";
+import { EyeIcon } from "lucide-react";
 
 export default function RegisterPage() {
-  const registerFormSchema = z.object({
-    email: z.string().email(),
-    firstName: z.string().min(1),
-    lastName: z.string().min(1),
-    password: z.string().min(8),
-    confirmPassword: z.string().min(8),
-  }).refine(data => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ["confirmPassword"],
-  });
+  const registerFormSchema = z
+    .object({
+      email: z.string().email(),
+      firstName: z.string().min(1),
+      lastName: z.string().min(1),
+      password: z.string().min(8),
+      confirmPassword: z.string().min(8),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: "Passwords don't match",
+      path: ["confirmPassword"],
+    });
 
   const registerForm = useForm<z.infer<typeof registerFormSchema>>({
     defaultValues: {
@@ -40,7 +45,8 @@ export default function RegisterPage() {
   });
 
   const { data: session } = useSession();
-
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   if (session) {
     redirect("/");
   }
@@ -91,13 +97,15 @@ export default function RegisterPage() {
           src="/assets/star.svg"
         />
       </div>
-      <span className="text-3xl">
+      <span className="text-3xl font-sentient text-gray-500">
         Hey 👋🏻, <br />
         Create an Account
       </span>
       <Form {...registerForm}>
-        <form className="mt-8" onSubmit={registerForm.handleSubmit(handleRegister)}>
-
+        <form
+          className="mt-8"
+          onSubmit={registerForm.handleSubmit(handleRegister)}
+        >
           <FormField
             control={registerForm.control}
             name="firstName"
@@ -154,15 +162,28 @@ export default function RegisterPage() {
             control={registerForm.control}
             name="password"
             render={({ field }) => (
-              <FormItem className="mb-4">
+              <FormItem className="mb-4 relative">
                 <FormControl>
                   <Input
                     placeholder="Password"
                     className="Field_input__1L5wD h-[50px]"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     {...field}
                   />
                 </FormControl>
+                {!showPassword ? (
+                  <EyeIcon
+                    size={20}
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-2 top-4 -translate-y-1/2 text-gray-400"
+                  />
+                ) : (
+                  <EyeOffIcon
+                    size={20}
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-2 top-4 -translate-y-1/2 text-gray-400"
+                  />
+                )}
                 <FormMessage />
               </FormItem>
             )}
@@ -172,15 +193,28 @@ export default function RegisterPage() {
             control={registerForm.control}
             name="confirmPassword"
             render={({ field }) => (
-              <FormItem className="mb-4">
+              <FormItem className="mb-4 relative">
                 <FormControl>
                   <Input
                     placeholder="Confirm Password"
                     className="Field_input__1L5wD h-[50px]"
-                    type="password"
+                    type={showConfirmPassword ? "text" : "password"}
                     {...field}
                   />
                 </FormControl>
+                {!showConfirmPassword ? (
+                  <EyeIcon
+                    size={20}
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-2 top-4 -translate-y-1/2 text-gray-400"
+                  />
+                ) : (
+                  <EyeOffIcon
+                    size={20}
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-2 top-4 -translate-y-1/2 text-gray-400"
+                  />
+                )}
                 <FormMessage />
               </FormItem>
             )}
@@ -191,7 +225,10 @@ export default function RegisterPage() {
         </form>
       </Form>
       <div className="flex flex-col gap-2 mt-4">
-        <Link href="/auth/login" className="text-sm hover:underline text-gray-400">
+        <Link
+          href="/auth/login"
+          className="text-sm hover:underline text-gray-400"
+        >
           Already have an account? Login
         </Link>
       </div>

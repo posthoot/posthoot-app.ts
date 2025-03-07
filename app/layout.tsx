@@ -14,7 +14,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { QueryProvider } from "./providers/query-provider";
 
 export const metadata: Metadata = {
-  title: "kori 🦆",
+  title: "Posthoot ❇",
   description: "A powerful email automation and management platform",
   keywords: [
     "email",
@@ -29,9 +29,9 @@ export const metadata: Metadata = {
   robots: "index, follow",
   openGraph: {
     type: "website",
-    title: "kori 🦆",
+    title: "Posthoot ❇",
     description: "A powerful email automation and management platform",
-    siteName: "kori 🦆",
+    siteName: "Posthoot ❇",
   },
 };
 
@@ -63,10 +63,9 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link
-          type="text/css"
-          rel="stylesheet"
-          href="https://ui8-simple-social.vercel.app/_next/static/css/a1fbed414a2f617b.css"
+        <meta
+          name="format-detection"
+          content="telephone=no, date=no, email=no, address=no"
         />
         <link
           href="https://api.fontshare.com/v2/css?f[]=sentient@400&display=swap"

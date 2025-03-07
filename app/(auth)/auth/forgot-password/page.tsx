@@ -12,6 +12,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { toast } from "@/hooks/use-toast";
+import Link from "next/link";
 
 export default function ForgotPasswordPage() {
   // 🔐 Form schema for forgot password
@@ -28,7 +29,9 @@ export default function ForgotPasswordPage() {
   });
 
   // 📧 Handle forgot password submission
-  const handleForgotPassword = async (data: z.infer<typeof forgotPasswordSchema>) => {
+  const handleForgotPassword = async (
+    data: z.infer<typeof forgotPasswordSchema>
+  ) => {
     // TODO: Implement forgot password logic
     console.log("Reset password for:", data.email);
     try {
@@ -52,7 +55,7 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="relative z-[9999] w-96 gap-8 p-8 text-center">
+    <div className="relative z-[9999] text-white py-20 w-96 gap-8 p-8 text-center">
       <div className="EntryScreen_logo__qjIqU">
         <img
           alt=""
@@ -65,12 +68,15 @@ export default function ForgotPasswordPage() {
           src="/assets/star.svg"
         />
       </div>
-      <span className="text-3xl">
+      <span className="text-3xl font-sentient text-gray-500">
         Forgot Password? 🔑 <br />
         No worries!
       </span>
       <Form {...forgotPasswordForm}>
-        <form className="mt-8" onSubmit={forgotPasswordForm.handleSubmit(handleForgotPassword)}>
+        <form
+          className="mt-8"
+          onSubmit={forgotPasswordForm.handleSubmit(handleForgotPassword)}
+        >
           <FormField
             control={forgotPasswordForm.control}
             name="email"
@@ -84,13 +90,21 @@ export default function ForgotPasswordPage() {
                     {...field}
                   />
                 </FormControl>
-                <FormMessage className="text-red-100" />
+                <FormMessage className="text-red-400" />
               </FormItem>
             )}
           />
           <button className="button w-full" type="submit">
             Reset Password
           </button>
+          <div className="flex flex-col gap-2 mt-4">
+            <Link
+              href="/auth/login"
+              className="text-sm font-sans hover:underline text-gray-400"
+            >
+              Back to login
+            </Link>
+          </div>
         </form>
       </Form>
     </div>

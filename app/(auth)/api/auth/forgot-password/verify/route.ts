@@ -1,18 +1,20 @@
 import { NextResponse } from "next/server";
 import { logger } from "@/app/lib/logger";
 import { z } from "zod";
-import { APIService } from '@/lib/services/api';
+import { APIService } from "@/lib/services/api";
 import { ApiError } from "@/types";
 
 // 🔒 Schema for password reset verification
-const VerifyResetSchema = z.object({
-  token: z.string().min(1, "Token is required"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-  confirmPassword: z.string()
-}).refine(data => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"]
-});
+const VerifyResetSchema = z
+  .object({
+    token: z.string().min(1, "Token is required"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
 
 const FILE_NAME = "app/(auth)/api/auth/forgot-password/verify/route.ts";
 
@@ -39,9 +41,7 @@ const FILE_NAME = "app/(auth)/api/auth/forgot-password/verify/route.ts";
  *                 type: string
  *                 description: Confirm new password
  */
-export async function POST(
-  req: Request
-): Promise<NextResponse> {
+export async function POST(req: Request): Promise<NextResponse> {
   try {
     const json = await req.json().catch(() => {
       logger.error({
@@ -50,7 +50,7 @@ export async function POST(
         action: "parse",
         label: "verify_reset_request",
         value: {},
-        message: "Failed to parse request body"
+        message: "Failed to parse request body",
       });
       throw new Error("Failed to parse request body");
     });
@@ -61,7 +61,7 @@ export async function POST(
       action: "validate",
       label: "verify_reset",
       value: { token: json.token },
-      message: "Validating password reset verification"
+      message: "Validating password reset verification",
     });
 
     const body = VerifyResetSchema.safeParse(json);
@@ -72,7 +72,7 @@ export async function POST(
         action: "validate",
         label: "verify_reset",
         value: { errors: body.error.errors },
-        message: "Invalid verification data provided"
+        message: "Invalid verification data provided",
       });
       return NextResponse.json(
         { error: "Invalid input data", details: body.error.issues },
@@ -81,7 +81,10 @@ export async function POST(
     }
 
     // 🔄 Verify token and reset password through API service
-    await new APIService('auth/password-reset', null).post("verify", json);
+    await new APIService("auth/password-reset", null).post("verify", {
+      new_password: body.data.password,
+      code: json.token,
+    });
 
     logger.info({
       fileName: FILE_NAME,
@@ -89,12 +92,11 @@ export async function POST(
       action: "reset",
       label: "password",
       value: { token: json.token },
-      message: "Password reset successful"
+      message: "Password reset successful",
     });
 
     // redirect to login page
     return NextResponse.redirect(new URL("/auth/login", req.url));
-
   } catch (error) {
     const apiError = error as ApiError;
     logger.error({
@@ -103,7 +105,7 @@ export async function POST(
       action: "verify_reset",
       label: "request",
       value: { error: apiError.message || "Unknown error" },
-      message: "Failed to verify password reset"
+      message: "Failed to verify password reset",
     });
     return NextResponse.json(
       { error: apiError.message || "Internal Server Error" },

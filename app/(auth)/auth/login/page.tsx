@@ -65,7 +65,7 @@ export default function LoginPage() {
           src="/assets/star.svg"
         />
       </div>
-      <span className="text-3xl font-sentient text-white">
+      <span className="text-3xl font-sentient text-gray-500">
         Hey 👋🏻, <br />
         Welcome Back
       </span>
@@ -84,7 +84,7 @@ export default function LoginPage() {
                     {...field}
                   />
                 </FormControl>
-                <FormMessage className="text-red-100" />
+                <FormMessage className="text-red-400" />
               </FormItem>
             )}
           />
@@ -115,7 +115,7 @@ export default function LoginPage() {
                     className="absolute right-2 top-4 -translate-y-1/2 text-gray-400"
                   />
                 )}
-                <FormMessage className="text-red-100" />
+                <FormMessage className="text-red-400" />
               </FormItem>
             )}
           />
