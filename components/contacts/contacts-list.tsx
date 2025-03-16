@@ -47,10 +47,12 @@ export function ContactsList({ listId }: { listId: string }) {
 
   const fetchContacts = async () => {
     if (!listId) return;
-    
+
     try {
       setIsLoading(true);
-      const response = await fetch(`/api/contacts?listId=${listId}&teamId=${team?.id}&page=${pagination.pageIndex}&limit=${pagination.pageSize}`);
+      const response = await fetch(
+        `/api/contacts?listId=${listId}&teamId=${team?.id}&page=${pagination.pageIndex}&limit=${pagination.pageSize}`
+      );
       if (!response.ok) throw new Error("Failed to fetch contacts");
       const data = await response.json();
       setContacts(data.data);
@@ -70,13 +72,16 @@ export function ContactsList({ listId }: { listId: string }) {
     }
   };
 
-  const updateContactStatus = async (contactId: string, newStatus: "ACTIVE" | "UNSUBSCRIBED") => {
+  const updateContactStatus = async (
+    contactId: string,
+    newStatus: "ACTIVE" | "UNSUBSCRIBED"
+  ) => {
     try {
       setIsLoading(true);
       const response = await fetch(`/api/contacts/${contactId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           status: newStatus,
           teamId: team?.id,
         }),
@@ -86,7 +91,9 @@ export function ContactsList({ listId }: { listId: string }) {
 
       toast({
         title: "Success",
-        description: `Contact ${newStatus === "ACTIVE" ? "resubscribed" : "unsubscribed"} successfully`,
+        description: `Contact ${
+          newStatus === "ACTIVE" ? "resubscribed" : "unsubscribed"
+        } successfully`,
       });
 
       await fetchContacts();
@@ -128,13 +135,25 @@ export function ContactsList({ listId }: { listId: string }) {
       enableHiding: false,
     },
     {
+      id: "avatar",
+      header: "Avatar",
+      cell: ({ row }) => (
+        <div className="h-14 w-14 flex items-center justify-center">
+          <img
+            src={`https://api.dicebear.com/9.x/lorelei/svg?seed=${row.original.email}`}
+            className="w-full h-full object-cover rounded-full"
+          />
+        </div>
+      ),
+    },
+    {
       accessorKey: "email",
       header: "Email",
       cell: ({ row }) => (
         <div className="flex flex-col">
           <span className="font-medium">{row.getValue("email")}</span>
           <span className="text-sm text-muted-foreground">
-            {row.original.firstName && row.original.lastName 
+            {row.original.firstName && row.original.lastName
               ? `${row.original.firstName} ${row.original.lastName}`
               : "No name"}
           </span>
@@ -147,8 +166,8 @@ export function ContactsList({ listId }: { listId: string }) {
       cell: ({ row }) => {
         const status = row.getValue("status") as string;
         return (
-          <Badge 
-            variant={status === "ACTIVE" ? "default" : "outline"} 
+          <Badge
+            variant={status === "ACTIVE" ? "default" : "outline"}
             className="capitalize"
           >
             {status === "ACTIVE" ? "Subscribed" : "Unsubscribed"}
@@ -199,11 +218,13 @@ export function ContactsList({ listId }: { listId: string }) {
                 Send Email
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem 
-                onClick={() => updateContactStatus(
-                  contact.id, 
-                  isSubscribed ? "UNSUBSCRIBED" : "ACTIVE"
-                )}
+              <DropdownMenuItem
+                onClick={() =>
+                  updateContactStatus(
+                    contact.id,
+                    isSubscribed ? "UNSUBSCRIBED" : "ACTIVE"
+                  )
+                }
               >
                 {isSubscribed ? (
                   <>
@@ -225,16 +246,37 @@ export function ContactsList({ listId }: { listId: string }) {
   ];
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-end">
-        <ContactImport listId={listId} onImportComplete={fetchContacts} />
+    <div className="space-y-4 pb-20">
+      <div className="w-full overflow-visible">
+        <h1 className="inline-block text-2xl font-semibold mb-4" id="header">
+          Audience
+        </h1>
+        <div className="pt-3 pb-4">
+          <div className="hidden mb-4">
+            <div>
+              <p className="font-bold inline">Current audience</p>
+              <span className="ml-1 hidden bg-green-500 text-white px-2 py-1 rounded-full"></span>
+            </div>
+            <div className="pt-2"></div>
+          </div>
+          <h3 className="text-xl font-medium">{team?.name}</h3>
+          <h4 className="text-sm text-gray-600">
+            <a
+              href="/audience/contacts?clear_segment=true&id=899295"
+              className="font-bold text-[#007C89] hover:underline"
+              title="Your contacts"
+            >
+              {contacts.length}
+            </a>{" "}
+            total contacts.{" "}
+            <a className="font-bold text-[#007C89] hover:underline" href="#">
+              {contacts.filter((contact) => contact.isDeleted === false).length}
+            </a>{" "}
+            email subscribers.
+          </h4>
+        </div>
       </div>
-
-      <DataTable
-        columns={columns}
-        data={contacts}
-        filterColumn="email"
-      />
+      <DataTable columns={columns} data={contacts} filterColumn="email" />
     </div>
   );
 }

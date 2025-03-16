@@ -3,8 +3,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { User, Bell, Key, Palette, Globe, Webhook } from "lucide-react";
-import { ApiKeys } from "./api-keys";
+import { User, Bell, Palette, Globe } from "lucide-react";
 import { ProfileSettings } from "./profile-settings";
 import { BrandingSettings } from "./branding-settings";
 import { CustomDomains } from "./custom-domains";
@@ -41,13 +40,6 @@ export function SettingsTabs() {
         >
           <Bell className="h-4 w-4" />
           Notifications
-        </TabsTrigger>
-        <TabsTrigger
-          value="api"
-          className="flex items-center gap-2 data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-12 px-4"
-        >
-          <Key className="h-4 w-4" />
-          API Keys
         </TabsTrigger>
       </TabsList>
 
@@ -107,10 +99,6 @@ export function SettingsTabs() {
             </div>
           </div>
         </div>
-      </TabsContent>
-
-      <TabsContent value="api" className="space-y-4">
-        <ApiKeys />
       </TabsContent>
     </Tabs>
   );

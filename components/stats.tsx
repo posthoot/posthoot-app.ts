@@ -86,7 +86,7 @@ export function Stats() {
   return (
     <>
       {stats.map((stat) => (
-        <Card key={stat.name} className="relative overflow-hidden">
+        <Card key={stat.name} className="shadow-none rounded-lg relative overflow-hidden">
           <CardContent className="p-6">
             <div className="flex items-center justify-between space-x-4">
               <div className="flex flex-col space-y-1">

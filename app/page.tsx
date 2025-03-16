@@ -10,7 +10,6 @@ import {
 import { Overview } from "@/components/overview";
 import { RecentActivity } from "@/components/recent-activity";
 import { Stats } from "@/components/stats";
-import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Download, Plus } from "lucide-react";
 import { DataTable } from "@/components/ui/data-table";
@@ -56,14 +55,18 @@ export default function Home() {
     // fetchCampaignMetrics();
   }, [team?.id]);
 
-  const handleDownloadReport = async (period: 'week' | 'month' | 'all', format: 'csv' | 'json') => {
+  const handleDownloadReport = async (
+    period: "week" | "month" | "all",
+    format: "csv" | "json"
+  ) => {
     if (!team?.id || isDownloading) return;
-    
+
     setIsDownloading(true);
     try {
-      const startDate = period === 'week' 
-        ? subDays(new Date(), 7)
-        : period === 'month'
+      const startDate =
+        period === "week"
+          ? subDays(new Date(), 7)
+          : period === "month"
           ? subDays(new Date(), 30)
           : subDays(new Date(), 90);
 
@@ -71,10 +74,10 @@ export default function Home() {
         teamId: team.id,
         startDate,
         format,
-        groupBy: 'day',
+        groupBy: "day",
       });
     } catch (error) {
-      console.error('Failed to download report:', error);
+      console.error("Failed to download report:", error);
     } finally {
       setIsDownloading(false);
     }
@@ -125,11 +128,6 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <PageHeader
-        heading="Dashboard"
-        description="Welcome back to your email management dashboard"
-      />
-
       <div className="flex-1 space-y-8 p-8 pt-6">
         <div className="flex items-center justify-between space-y-2">
           <div>
@@ -147,22 +145,34 @@ export default function Home() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-[200px]">
-                <DropdownMenuItem onClick={() => handleDownloadReport('week', 'csv')}>
+                <DropdownMenuItem
+                  onClick={() => handleDownloadReport("week", "csv")}
+                >
                   This Week (CSV)
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleDownloadReport('week', 'json')}>
+                <DropdownMenuItem
+                  onClick={() => handleDownloadReport("week", "json")}
+                >
                   This Week (JSON)
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleDownloadReport('month', 'csv')}>
+                <DropdownMenuItem
+                  onClick={() => handleDownloadReport("month", "csv")}
+                >
                   This Month (CSV)
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleDownloadReport('month', 'json')}>
+                <DropdownMenuItem
+                  onClick={() => handleDownloadReport("month", "json")}
+                >
                   This Month (JSON)
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleDownloadReport('all', 'csv')}>
+                <DropdownMenuItem
+                  onClick={() => handleDownloadReport("all", "csv")}
+                >
                   All Time (CSV)
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleDownloadReport('all', 'json')}>
+                <DropdownMenuItem
+                  onClick={() => handleDownloadReport("all", "json")}
+                >
                   All Time (JSON)
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -179,47 +189,33 @@ export default function Home() {
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-          <Card className="col-span-4">
-            <CardHeader>
-              <CardTitle>Overview</CardTitle>
-              <CardDescription>
-                Campaign performance over time
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pl-2">
+          <div className="col-span-4">
+            <h2 className="text-2xl font-semibold mb-2">Overview</h2>
+            <p className="text-muted-foreground mb-4">Campaign performance over time</p>
+            <div className="pl-2 bg-primary/5 p-4 rounded-lg">
               <Overview />
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          <Card className="col-span-3">
-            <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
-              <CardDescription>
-                Your latest email campaign activities
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
+          <div className="col-span-3">
+            <h2 className="text-2xl font-semibold mb-2">Recent Activity</h2>
+            <p className="text-muted-foreground mb-4">Your latest email campaign activities</p>
+            <div>
               <RecentActivity />
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
 
         <div className="grid gap-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Campaign Performance</CardTitle>
-              <CardDescription>
-                Detailed metrics for all your email campaigns
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <DataTable 
-                columns={columns} 
-                data={campaignMetrics} 
-                searchKey="name"
-              />
-            </CardContent>
-          </Card>
+          <span className="text-2xl font-semibold">📊 Campaign Performance</span>
+          <span className="text-muted-foreground">
+            📈 Detailed metrics for all your email campaigns
+          </span>
+          <DataTable
+            columns={columns}
+            data={campaignMetrics}
+            searchKey="name"
+          />
         </div>
       </div>
     </div>

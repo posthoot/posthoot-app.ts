@@ -127,10 +127,7 @@ export async function GET(
     }
 
     const apiService = new APIService("campaigns", session);
-    const campaigns = await apiService.get<Campaign[]>("", {
-      teamId,
-      userId: session.user.id,
-    });
+    const campaigns = await apiService.get<Campaign[]>("");
 
     logger.info({
       fileName: FILE_NAME,

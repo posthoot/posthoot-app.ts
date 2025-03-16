@@ -36,7 +36,7 @@ export function TeamInvites() {
     }
   };
 
-  const pendingInvites = team?.invites.filter(
+  const pendingInvites = team?.invites?.filter(
     (invite) => invite.status === "PENDING"
   );
 

@@ -1,75 +1,68 @@
-import Image from "next/image";
+"use client";
+import { Logo } from "@/components/logo";
+import { usePathname } from "next/navigation";
+import { useEffect } from "react";
+import { useState } from "react";
 
-export default async function AuthLayout({
+export default function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const images = [
+    "https://openwebui.com/assets/images/adam.jpg",
+    "https://openwebui.com/assets/images/galaxy.jpg",
+    "https://openwebui.com/assets/images/earth.jpg",
+  ];
+
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex(Math.floor(Math.random() * images.length));
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <meta
-          name="format-detection"
-          content="telephone=no, date=no, email=no, address=no"
-        />
-        <link
-          href="https://api.fontshare.com/v2/css?f[]=sentient@400&display=swap"
-          rel="stylesheet"
-        />
-        <link type="text/css" rel="stylesheet" href="/auth/style.css" />
-      </head>
-      <body className="antialiased font-sentient">
-        <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
-          <div className="outline-0 fixed inset-0 bg-white">
-            <div className="EntryScreen_stars__Gte0A">
-              <Image
-                alt=""
-                width="1132"
-                height="396"
-                data-nimg="1"
-                className="Image_image__5RgVm Image_loaded__qmdFe"
-                src="/assets/stars.svg"
-              />
-            </div>
-            <Image
-              alt=""
-              data-nimg="fill"
-              className="absolute h-full w-full inline-block object-cover inset-0 text-transparent Image_image__5RgVm Image_loaded__qmdFe"
-              sizes="100vw"
-              width={100}
-              height={100}
-              src="/assets/bg-entry.png"
-            />
+    <div className="grid min-h-screen lg:grid-cols-2">
+      <div className="flex flex-col gap-4 p-6 md:p-10">
+        <div className="flex flex-1 items-center justify-center">
+          <div className="w-14 h-14 absolute top-4 text-foreground left-4">
+            <Logo />
           </div>
-          <div className="relative z-[3] flex flex-col justify-center items-center min-h-[100svh] p-12">
-            <div className="relative EntryScreen_body__YQg8x w-full max-w-lg rounded-3xl">
-              <div>
-                <div className="EntryScreen_line__o9UiD">
-                  <Image
-                    alt=""
-                    width="401"
-                    height="256"
-                    data-nimg="1"
-                    className="Image_image__5RgVm Image_loaded__qmdFe"
-                    src="/assets/entry-lines-left.svg"
-                  />
-                </div>
-                <div className="EntryScreen_line__o9UiD">
-                  <Image
-                    alt=""
-                    width="401"
-                    height="256"
-                    data-nimg="1"
-                    className="Image_image__5RgVm Image_loaded__qmdFe"
-                    src="/assets/entry-lines-right.svg"
-                  />
-                </div>
-              </div>
-              {children}
-            </div>
+          <div className="w-full max-w-lg">{children}</div>
+        </div>
+      </div>
+      <div className="relative hidden flex-1 justify-center items-center lg:block">
+        <div className="inset-0 flex h-screen relative gap-8 flex-col justify-center p-16">
+          {images.map((image, index) => (
+            <img
+              key={index}
+              src={image}
+              alt="Auth Background"
+              className={`w-full absolute top-0 z-[-1] left-0 right-0 h-screen object-cover transition-opacity duration-1000 ${
+                index === currentImageIndex ? "opacity-100" : "opacity-0"
+              }`}
+            />
+          ))}
+          <div className="absolute top-0 left-0 h-full w-full bg-linear-to-t from-black from-40% to-transparent"></div>
+          <div className="absolute top-0 left-0 h-full w-full bg-black/40 backdrop-blur-sm"></div>
+          <div className="space-y-8 absolute bottom-10 z-10 text-center w-full left-1/2 -translate-x-1/2">
+            <h1 className="text-2xl text-white lg:text-6xl md:text-5xl font-instrument font-light">
+              Enter the Future
+              <br />
+              <span className="font-normal">of Email, today ✨</span>
+            </h1>
+            <span className="mx-auto text-white text-lg font-inter font-light text-center">
+              Posthoot is a powerful email platform that helps you deliver{" "}
+              <br />
+              messages at scale with reliable inbox delivery, customizable{" "}
+              <br />
+              templates, and advanced analytics for your domain.
+            </span>
           </div>
         </div>
-      </body>
-    </html>
+      </div>
+    </div>
   );
 }

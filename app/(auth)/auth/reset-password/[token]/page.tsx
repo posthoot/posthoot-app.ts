@@ -8,6 +8,7 @@ import {
   FormControl,
   FormField,
   FormItem,
+  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { toast } from "@/hooks/use-toast";
@@ -15,6 +16,8 @@ import React, { use, useState } from "react";
 import { EyeIcon } from "lucide-react";
 import { EyeOffIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 const resetPasswordSchema = z
   .object({
@@ -37,7 +40,7 @@ export default function ResetPasswordPage({
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { token } = use(params);
   const router = useRouter();
-  
+
   const resetPasswordForm = useForm<z.infer<typeof resetPasswordSchema>>({
     defaultValues: {
       password: "",
@@ -80,93 +83,103 @@ export default function ResetPasswordPage({
   };
 
   return (
-    <div className="relative z-[9999] w-96 gap-8 p-8 text-center">
-      <div className="EntryScreen_logo__qjIqU">
-        <img
-          alt=""
-          loading="lazy"
-          width="24"
-          height="24"
-          decoding="async"
-          data-nimg="1"
-          className="Image_image__5RgVm Image_loaded__qmdFe"
-          src="/assets/star.svg"
-        />
+    <div className="flex items-center justify-center bg-background">
+      <div className="w-full bg-transparent p-8">
+        <div className="mb-8 grid gap-4">
+          <div className="grid">
+            <h1 className="text-2xl font-bold">Reset Password 🔐</h1>
+            <p className="text-muted-foreground">
+              Enter your new password below to reset your account
+            </p>
+          </div>
+        </div>
+
+        <Form {...resetPasswordForm}>
+          <form
+            onSubmit={resetPasswordForm.handleSubmit(handleResetPassword)}
+            className="space-y-6"
+          >
+            <FormField
+              control={resetPasswordForm.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>New Password</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Enter new password"
+                      type={showPassword ? "text" : "password"}
+                      {...field}
+                    />
+                  </FormControl>
+                  {!showPassword ? (
+                    <EyeIcon
+                      size={20}
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-2 top-4 -translate-y-1/2 text-gray-400"
+                    />
+                  ) : (
+                    <EyeOffIcon
+                      size={20}
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-2 top-4 -translate-y-1/2 text-gray-400"
+                    />
+                  )}
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={resetPasswordForm.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Confirm Password</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Confirm new password"
+                      type={showConfirmPassword ? "text" : "password"}
+                      {...field}
+                    />
+                  </FormControl>
+                  {!showConfirmPassword ? (
+                    <EyeIcon
+                      size={20}
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
+                      className="absolute right-2 top-4 -translate-y-1/2 text-gray-400"
+                    />
+                  ) : (
+                    <EyeOffIcon
+                      size={20}
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
+                      className="absolute right-2 top-4 -translate-y-1/2 text-gray-400"
+                    />
+                  )}
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <Button type="submit" className="w-full rounded-full">
+              Reset Password
+            </Button>
+          </form>
+        </Form>
+
+        <div className="mt-4 text-center text-sm">
+          <Link
+            href="/auth/login"
+            className="text-muted-foreground hover:underline"
+          >
+            Back to login
+          </Link>
+        </div>
       </div>
-      <span className="text-3xl font-sentient text-gray-500">
-        Hey 👋🏻, <br />
-        Reset Password
-      </span>
-      <Form {...resetPasswordForm}>
-        <form
-          className="mt-8"
-          onSubmit={resetPasswordForm.handleSubmit(handleResetPassword)}
-        >
-          <FormField
-            control={resetPasswordForm.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem className="my-4 relative">
-                <FormControl>
-                  <Input
-                    placeholder="Enter new password"
-                    className="Field_input__1L5wD h-[50px]"
-                    type={showPassword ? "text" : "password"}
-                    {...field}
-                  />
-                </FormControl>
-                {!showPassword ? (
-                  <EyeIcon
-                    size={20}
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-2 top-4 -translate-y-1/2 text-gray-400"
-                  />
-                ) : (
-                  <EyeOffIcon
-                    size={20}
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-2 top-4 -translate-y-1/2 text-gray-400"
-                  />
-                )}
-                <FormMessage className="text-red-400" />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={resetPasswordForm.control}
-            name="confirmPassword"
-            render={({ field }) => (
-              <FormItem className="my-4 relative">
-                <FormControl>
-                  <Input
-                    placeholder="Confirm new password"
-                    className="Field_input__1L5wD h-[50px]"
-                    type={showConfirmPassword ? "text" : "password"}
-                    {...field}
-                  />
-                </FormControl>
-                {!showConfirmPassword ? (
-                  <EyeIcon
-                    size={20}
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-2 top-4 -translate-y-1/2 text-gray-400"
-                  />
-                ) : (
-                  <EyeOffIcon
-                    size={20}
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-2 top-4 -translate-y-1/2 text-gray-400"
-                  />
-                )}
-                <FormMessage className="text-red-400" />
-              </FormItem>
-            )}
-          />
-          <button className="button w-full" type="submit">
-            Reset Password
-          </button>
-        </form>
-      </Form>
     </div>
   );
 }

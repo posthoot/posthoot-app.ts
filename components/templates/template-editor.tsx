@@ -16,14 +16,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../ui/dialog";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Settings, Mail, Send } from "lucide-react";
 import { deepCompare } from "@/lib/utils";
-
 
 const testEmailSchema = z.object({
   email: z.string().email(),
@@ -205,19 +211,30 @@ export function TemplateEditor({ templateId }: TemplateEditorProps) {
               </TabsTrigger>
             </TabsList>
             <div className="flex items-center gap-2">
-              {activeTab !== "settings" && (
-                <Button
-                  variant="secondary"
-                  onClick={() => setShowTestEmailDialog(true)}
-                  className="flex items-center gap-2"
-                >
-                  <Send className="h-4 w-4" />
-                  {isSendingTestEmail ? "Sending..." : "Send Test"}
-                </Button>
-              )}
-              {activeTab !== "settings" && (
-                <Button onClick={handleSave}>Save Template</Button>
-              )}
+              <Button
+                variant="secondary"
+                onClick={() => setShowTestEmailDialog(true)}
+                className="flex items-center gap-2"
+              >
+                <Send className="h-4 w-4" />
+                {isSendingTestEmail ? "Sending..." : "Send Test"}
+              </Button>
+
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button>Save Template</Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-sm">
+                  <DialogHeader>
+                    <DialogTitle>Save Template</DialogTitle>
+                    <DialogDescription>
+                      Are you sure you want to save this template? This will
+                      overwrite any existing template with the same name.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <Button onClick={handleSave}>Save Template</Button>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
 
@@ -226,7 +243,7 @@ export function TemplateEditor({ templateId }: TemplateEditorProps) {
               open={showTestEmailDialog}
               onOpenChange={setShowTestEmailDialog}
             >
-              <DialogContent>
+              <DialogContent className="max-w-sm">
                 <DialogHeader>
                   <DialogTitle>Send Test Email</DialogTitle>
                 </DialogHeader>

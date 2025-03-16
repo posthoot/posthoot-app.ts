@@ -382,6 +382,9 @@ export function CampaignsList({
   );
 
   const createCampaign = async (data: z.infer<typeof createCampaignSchema>) => {
+    refetch();
+    onClose();
+    return;
     const campaign = await fetch("/api/campaigns", {
       method: data.id ? "PUT" : "POST",
       body: JSON.stringify({

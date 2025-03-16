@@ -57,9 +57,14 @@ export interface APIKey {
   id: string;
   name: string;
   key: string;
-  createdAt: Date;
-  expiresAt?: Date;
+  teamId: string;
+  createdAt: string;
+  lastUsedAt: string;
+  updatedAt: string;
+  expiresAt: string;
+  isDeleted: boolean;
 }
+
 
 export interface APIKeyRequest {
   name: string;
@@ -119,15 +124,6 @@ export interface TemplateEditorProps {
   templateId: string;
 }
 
-
-export interface ApiKey {
-  id: string;
-  name: string;
-  key: string;
-  createdAt: Date;
-  expiresAt?: Date;
-}
-
 export interface User {
   id: string;
   name: string;
@@ -169,6 +165,8 @@ export interface MailingList {
   _count?: {
     subscribers: number;
   };
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface Campaign {

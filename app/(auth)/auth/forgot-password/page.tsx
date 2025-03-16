@@ -9,10 +9,12 @@ import {
   FormControl,
   FormField,
   FormItem,
+  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { toast } from "@/hooks/use-toast";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default function ForgotPasswordPage() {
   // 🔐 Form schema for forgot password
@@ -20,7 +22,7 @@ export default function ForgotPasswordPage() {
     email: z.string().email(),
   });
 
-  const forgotPasswordForm = useForm<z.infer<typeof forgotPasswordSchema>>({
+  const form = useForm<z.infer<typeof forgotPasswordSchema>>({
     defaultValues: {
       email: "",
     },
@@ -55,58 +57,55 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="relative z-[9999] text-white py-20 w-96 gap-8 p-8 text-center">
-      <div className="EntryScreen_logo__qjIqU">
-        <img
-          alt=""
-          loading="lazy"
-          width="24"
-          height="24"
-          decoding="async"
-          data-nimg="1"
-          className="Image_image__5RgVm Image_loaded__qmdFe"
-          src="/assets/star.svg"
-        />
-      </div>
-      <span className="text-3xl font-sentient text-gray-500">
-        Forgot Password? 🔑 <br />
-        No worries!
-      </span>
-      <Form {...forgotPasswordForm}>
-        <form
-          className="mt-8"
-          onSubmit={forgotPasswordForm.handleSubmit(handleForgotPassword)}
-        >
-          <FormField
-            control={forgotPasswordForm.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem className="my-4">
-                <FormControl>
-                  <Input
-                    placeholder="Enter your email"
-                    className="Field_input__1L5wD h-[50px]"
-                    type="email"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage className="text-red-400" />
-              </FormItem>
-            )}
-          />
-          <button className="button w-full" type="submit">
-            Reset Password
-          </button>
-          <div className="flex flex-col gap-2 mt-4">
-            <Link
-              href="/auth/login"
-              className="text-sm font-sans hover:underline text-gray-400"
-            >
-              Back to login
-            </Link>
+    <div className="flex items-center justify-center bg-background">
+      <div className="w-full bg-transparent p-8">
+        <div className="mb-8 grid gap-4">
+          <div className="grid">
+            <h1 className="text-2xl font-bold">Forgot Password 🫡</h1>
+            <p className="text-muted-foreground">
+              Enter your email address and we'll send you a link to reset your
+              password.
+            </p>
           </div>
-        </form>
-      </Form>
+        </div>
+
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(handleForgotPassword)}
+            className="space-y-6"
+          >
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Enter your email"
+                      type="email"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <Button type="submit" className="w-full rounded-full">
+              Send Reset Link
+            </Button>
+          </form>
+        </Form>
+        <div className="mt-4 text-center text-sm">
+          <Link
+            href="/auth/login"
+            className="text-muted-foreground hover:underline"
+          >
+            Back to login
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }

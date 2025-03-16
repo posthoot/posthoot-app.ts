@@ -1,5 +1,6 @@
 "use client";
 
+import { ContactImport } from "@/components/contacts/contact-import";
 import { ContactsList } from "@/components/contacts/contacts-list";
 import { PageHeader } from "@/components/page-header";
 import { useParams } from "next/navigation";
@@ -13,11 +14,13 @@ export default function ContactListPage() {
         heading="Contacts"
         description="Manage contacts in this list"
         backButton={{
-          href: "/contacts/lists",
+          href: "/audience/lists",
           label: "Back to lists",
         }}
-      ></PageHeader>
-      <div className="px-4">
+      >
+        <ContactImport listId={listId as string} onImportComplete={() => {}} />
+      </PageHeader>
+      <div className="px-8">
         <ContactsList listId={listId as string} />
       </div>
     </div>
