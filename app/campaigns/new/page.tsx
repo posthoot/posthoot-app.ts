@@ -142,7 +142,7 @@ function Timeline({
                 whileHover={{ scale: 1.05 }}
                 onClick={() => onClick(step.id)}
                 className={cn(
-                  "h-12 w-12 rounded-full border-[3px] flex items-center justify-center bg-white transition-all duration-200",
+                  "h-12 w-12  border-[3px] flex items-center justify-center bg-white transition-all duration-200",
                   isCurrent &&
                     "border-[#E7B75F] shadow-[0_0_0_4px_rgba(231,183,95,0.2)]",
                   isCompleted && "border-[#007C89] bg-[#007C89] text-white",
@@ -238,7 +238,7 @@ export default function NewCampaignPage() {
   const renderStepIcon = (step: string) => {
     if (completedSteps.includes(step)) {
       return (
-        <div className="h-6 w-6 rounded-full bg-[#007C89] flex items-center justify-center">
+        <div className="h-6 w-6  bg-[#007C89] flex items-center justify-center">
           <CheckIcon className="h-4 w-4 text-white" />
         </div>
       );
@@ -278,7 +278,9 @@ export default function NewCampaignPage() {
                   <FormItem className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <FormLabel className="text-base">Mailing List</FormLabel>
+                        <FormLabel className="text-base">
+                          Mailing List
+                        </FormLabel>
                         <FormDescription>
                           Choose the list of subscribers for this campaign
                         </FormDescription>
@@ -369,8 +371,8 @@ export default function NewCampaignPage() {
                         From Address
                       </FormLabel>
                       <FormDescription className="text-gray-600">
-                        Choose the email address that will appear in the
-                        "From" field
+                        Choose the email address that will appear in the "From"
+                        field
                       </FormDescription>
                     </div>
 
@@ -495,7 +497,7 @@ export default function NewCampaignPage() {
                     </h4>
                     <div className="rounded-lg border border-gray-200 p-6 bg-gray-50 space-y-4">
                       <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded-full bg-[#007C89]/10 flex items-center justify-center flex-shrink-0">
+                        <div className="w-10 h-10  bg-[#007C89]/10 flex items-center justify-center flex-shrink-0">
                           <PersonIcon className="h-5 w-5 text-[#007C89]" />
                         </div>
                         <div className="flex-1 min-w-0">
@@ -505,9 +507,7 @@ export default function NewCampaignPage() {
                                 (c) => c.id === form.watch("smtpConfigId")
                               )?.username || "Sender"}
                             </span>
-                            <span className="text-sm text-gray-500">
-                              Today
-                            </span>
+                            <span className="text-sm text-gray-500">Today</span>
                           </div>
                           <div className="text-sm text-gray-500 flex items-center gap-1">
                             <span>to me</span>
@@ -527,19 +527,19 @@ export default function NewCampaignPage() {
                     </h4>
                     <ul className="text-sm text-gray-600 space-y-2">
                       <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-[#E7B75F]" />
+                        <div className="w-1.5 h-1.5  bg-[#E7B75F]" />
                         Keep it short and clear (4-7 words)
                       </li>
                       <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-[#E7B75F]" />
+                        <div className="w-1.5 h-1.5  bg-[#E7B75F]" />
                         Create a sense of urgency or curiosity
                       </li>
                       <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-[#E7B75F]" />
+                        <div className="w-1.5 h-1.5  bg-[#E7B75F]" />
                         Avoid spam trigger words
                       </li>
                       <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-[#E7B75F]" />
+                        <div className="w-1.5 h-1.5  bg-[#E7B75F]" />
                         Personalize when possible
                       </li>
                     </ul>
@@ -757,9 +757,7 @@ export default function NewCampaignPage() {
                                       className="border-gray-200"
                                       {...field}
                                       onChange={(e) =>
-                                        field.onChange(
-                                          parseInt(e.target.value)
-                                        )
+                                        field.onChange(parseInt(e.target.value))
                                       }
                                     />
                                   </FormControl>
@@ -920,7 +918,10 @@ export default function NewCampaignPage() {
                         <div className="font-semibold text-gray-900">To</div>
                         <div className="text-sm text-gray-500">
                           {form.watch("listId")
-                            ? `${lists.find((l) => l.id === form.watch("listId"))?.name || "Selected list"}`
+                            ? `${
+                                lists.find((l) => l.id === form.watch("listId"))
+                                  ?.name || "Selected list"
+                              }`
                             : "Choose your recipients"}
                         </div>
                       </div>
@@ -942,7 +943,11 @@ export default function NewCampaignPage() {
                         <div className="font-semibold text-gray-900">From</div>
                         <div className="text-sm text-gray-500">
                           {form.watch("smtpConfigId")
-                            ? `${smtpConfigs.find((c) => c.id === form.watch("smtpConfigId"))?.username || "Selected sender"}`
+                            ? `${
+                                smtpConfigs.find(
+                                  (c) => c.id === form.watch("smtpConfigId")
+                                )?.username || "Selected sender"
+                              }`
                             : "Set sender details"}
                         </div>
                       </div>
@@ -961,7 +966,9 @@ export default function NewCampaignPage() {
                     <div className="flex items-center gap-4">
                       {renderStepIcon("subject")}
                       <div>
-                        <div className="font-semibold text-gray-900">Subject</div>
+                        <div className="font-semibold text-gray-900">
+                          Subject
+                        </div>
                         <div className="text-sm text-gray-500">
                           {form.watch("name") || "Write your subject line"}
                         </div>
@@ -981,7 +988,9 @@ export default function NewCampaignPage() {
                     <div className="flex items-center gap-4">
                       {renderStepIcon("schedule")}
                       <div>
-                        <div className="font-semibold text-gray-900">Send time</div>
+                        <div className="font-semibold text-gray-900">
+                          Send time
+                        </div>
                         <div className="text-sm text-gray-500">
                           {isScheduled
                             ? form.watch("scheduledFor")
@@ -1005,10 +1014,16 @@ export default function NewCampaignPage() {
                     <div className="flex items-center gap-4">
                       {renderStepIcon("content")}
                       <div>
-                        <div className="font-semibold text-gray-900">Content</div>
+                        <div className="font-semibold text-gray-900">
+                          Content
+                        </div>
                         <div className="text-sm text-gray-500">
                           {form.watch("templateId")
-                            ? `${templates.find((t) => t.id === form.watch("templateId"))?.name || "Selected template"}`
+                            ? `${
+                                templates.find(
+                                  (t) => t.id === form.watch("templateId")
+                                )?.name || "Selected template"
+                              }`
                             : "Design your email"}
                         </div>
                       </div>

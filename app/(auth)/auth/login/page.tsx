@@ -50,7 +50,9 @@ export default function LoginPage({
         <div className="mb-8 grid gap-4">
           <div className="grid">
             <h1 className="text-3xl font-bold">Welcome back 👋🏻!</h1>
-            <p className="text-muted-foreground">Posthoot - Your email, your way.</p>
+            <p className="text-muted-foreground">
+              Posthoot - Your email, your way.
+            </p>
           </div>
         </div>
         {showError && (
@@ -86,7 +88,7 @@ export default function LoginPage({
               />
             </div>
           </div>
-          <Button type="submit" className="w-full rounded-full">
+          <Button type="submit" variant="default" className="w-full  ">
             Sign in
           </Button>
         </form>

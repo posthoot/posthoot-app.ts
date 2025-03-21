@@ -92,7 +92,7 @@ export default function ForgotPasswordPage() {
               )}
             />
 
-            <Button type="submit" className="w-full rounded-full">
+            <Button type="submit" className="w-full ">
               Send Reset Link
             </Button>
           </form>

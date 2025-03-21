@@ -141,7 +141,7 @@ export function ContactsList({ listId }: { listId: string }) {
         <div className="h-14 w-14 flex items-center justify-center">
           <img
             src={`https://api.dicebear.com/9.x/lorelei/svg?seed=${row.original.email}`}
-            className="w-full h-full object-cover rounded-full"
+            className="w-full h-full object-cover "
           />
         </div>
       ),
@@ -255,7 +255,7 @@ export function ContactsList({ listId }: { listId: string }) {
           <div className="hidden mb-4">
             <div>
               <p className="font-bold inline">Current audience</p>
-              <span className="ml-1 hidden bg-green-500 text-white px-2 py-1 rounded-full"></span>
+              <span className="ml-1 hidden bg-green-500 text-white px-2 py-1 "></span>
             </div>
             <div className="pt-2"></div>
           </div>

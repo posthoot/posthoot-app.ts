@@ -196,7 +196,7 @@ export function FullScreenCalendar({ data }: FullScreenCalendarProps) {
                   <time
                     dateTime={format(day, "yyyy-MM-dd")}
                     className={cn(
-                      "ml-auto flex size-6 items-center justify-center rounded-full",
+                      "ml-auto flex size-6 items-center justify-center ",
                       isEqual(day, selectedDay) &&
                         isToday(day) &&
                         "bg-primary text-primary-foreground",
@@ -220,7 +220,7 @@ export function FullScreenCalendar({ data }: FullScreenCalendarProps) {
                             {date.events.map((event) => (
                               <span
                                 key={event.id}
-                                className="mx-0.5 mt-1 h-1.5 w-1.5 rounded-full bg-muted-foreground"
+                                className="mx-0.5 mt-1 h-1.5 w-1.5  bg-muted-foreground"
                               />
                             ))}
                           </div>
@@ -263,7 +263,7 @@ export function FullScreenCalendar({ data }: FullScreenCalendarProps) {
                           "bg-foreground",
                         (isEqual(day, selectedDay) || isToday(day)) &&
                           "font-semibold",
-                        "flex h-7 w-7 items-center justify-center rounded-full text-xs hover:border"
+                        "flex h-7 w-7 items-center justify-center  text-xs hover:border"
                       )}
                     >
                       <time dateTime={format(day, "yyyy-MM-dd")}>
@@ -326,7 +326,7 @@ export function FullScreenCalendar({ data }: FullScreenCalendarProps) {
                 <time
                   dateTime={format(day, "yyyy-MM-dd")}
                   className={cn(
-                    "ml-auto flex size-6 items-center justify-center rounded-full",
+                    "ml-auto flex size-6 items-center justify-center ",
                     isEqual(day, selectedDay) &&
                       isToday(day) &&
                       "bg-primary text-primary-foreground",
@@ -349,7 +349,7 @@ export function FullScreenCalendar({ data }: FullScreenCalendarProps) {
                           {date.events.map((event) => (
                             <span
                               key={event.id}
-                              className="mx-0.5 mt-1 h-1.5 w-1.5 rounded-full bg-muted-foreground"
+                              className="mx-0.5 mt-1 h-1.5 w-1.5  bg-muted-foreground"
                             />
                           ))}
                         </div>

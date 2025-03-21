@@ -174,7 +174,7 @@ export default function AcceptInvitationPage() {
             alt={inviteData.inviter.name}
             width={40}
             height={40}
-            className="rounded-full mb-3"
+            className=" mb-3"
           />
           <CardTitle>Accept Team Invitation</CardTitle>
           <CardDescription>

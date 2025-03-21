@@ -165,7 +165,7 @@ export default function ResetPasswordPage({
               )}
             />
 
-            <Button type="submit" className="w-full rounded-full">
+            <Button type="submit" className="w-full ">
               Reset Password
             </Button>
           </form>

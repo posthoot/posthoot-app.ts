@@ -6,10 +6,14 @@ interface ActivityItemProps {
   time: string;
 }
 
-export function ActivityItem({ icon: Icon, description, time }: ActivityItemProps) {
+export function ActivityItem({
+  icon: Icon,
+  description,
+  time,
+}: ActivityItemProps) {
   return (
     <div className="flex items-center gap-4">
-      <div className="rounded-full p-2 bg-primary/10">
+      <div className=" p-2 bg-primary/10">
         <Icon className="h-4 w-4 text-primary" />
       </div>
       <div>

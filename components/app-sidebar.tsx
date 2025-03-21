@@ -159,7 +159,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <div>
         {/* Create button */}
         <div className="px-4 py-2">
-          <Button className="w-full flex justify-center items-center p-4 text-teal-600 bg-white hover:bg-gray-50 border-2 border-teal-600 rounded-full">
+          <Button className="w-full flex justify-center items-center p-4 text-teal-600 bg-white hover:bg-gray-50 border-2 border-teal-600 ">
             <PencilLine className="mr-2 h-4 w-4" />
             Create
           </Button>

@@ -214,7 +214,7 @@ export default function RegisterPage() {
               )}
             />
 
-            <Button type="submit" className="w-full rounded-full">
+            <Button type="submit" className="w-full ">
               Create account
             </Button>
           </form>
