@@ -48,13 +48,14 @@ export function AppHeader({
     value: props,
     label: "props",
   });
+  const { data: session } = useSession();
 
   return (
-    <header className="sticky top-0 z-30 w-full border-b border bg-sidebar">
+    <header className="sticky top-0 z-30 w-full border-b border bg-background ">
       <div className="flex h-16 items-center px-6">
         <img src="/assets/logo.svg" alt="Posthoot" className="h-10 w-10" />
         <div className="flex flex-1 items-center gap-x-4">
-          <div className="relative w-full max-w-md">
+          <div className="relative w-full max-w-md ml-4">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               type="search"
@@ -78,14 +79,17 @@ export function AppHeader({
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-9 w-9 ">
+              <Button variant="outline" className="relative h-9 w-9">
                 <Avatar className="h-9 w-9">
-                  <AvatarImage src="" alt="User" />
-                  <AvatarFallback>MM</AvatarFallback>
+                  <AvatarImage
+                    src={`https://api.dicebear.com/9.x/adventurer/svg?seed=${session?.user?.name}`}
+                    alt="User"
+                  />
+                  <AvatarFallback></AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent>
+            <DropdownMenuContent className="mr-4">
               <DropdownMenuItem>
                 <Settings className="mr-2 h-4 w-4" />
                 Settings

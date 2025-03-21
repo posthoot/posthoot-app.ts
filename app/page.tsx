@@ -23,6 +23,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { subDays } from "date-fns";
+import { PageHeader } from "@/components/page-header";
 
 interface CampaignMetrics {
   id: string;
@@ -128,70 +129,76 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <div className="flex-1 space-y-8 p-8 pt-6">
-        <div className="flex items-center justify-between space-y-2">
-          <div>
+      <div className="flex-1 space-y-8">
+        <PageHeader
+          heading="Analytics"
+          description="Your email campaign performance metrics"
+          children={
+            <div className="flex items-center space-x-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" disabled={isDownloading}>
+                    <Download className="mr-2 h-4 w-4" />
+                    {isDownloading ? "Downloading..." : "Download Report"}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-[200px]">
+                  <DropdownMenuItem
+                    onClick={() => handleDownloadReport("week", "csv")}
+                  >
+                    This Week (CSV)
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => handleDownloadReport("week", "json")}
+                  >
+                    This Week (JSON)
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => handleDownloadReport("month", "csv")}
+                  >
+                    This Month (CSV)
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => handleDownloadReport("month", "json")}
+                  >
+                    This Month (JSON)
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => handleDownloadReport("all", "csv")}
+                  >
+                    All Time (CSV)
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => handleDownloadReport("all", "json")}
+                  >
+                    All Time (JSON)
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Button size="sm">
+                <Plus className="mr-2 h-4 w-4" />
+                Create Campaign
+              </Button>
+            </div>
+          }
+        />
+        {/* / //{" "}
             <h2 className="text-2xl font-bold tracking-tight">Analytics</h2>
+            //{" "}
             <p className="text-muted-foreground">
-              Your email campaign performance metrics
-            </p>
-          </div>
-          <div className="flex items-center space-x-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" disabled={isDownloading}>
-                  <Download className="mr-2 h-4 w-4" />
-                  {isDownloading ? "Downloading..." : "Download Report"}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-[200px]">
-                <DropdownMenuItem
-                  onClick={() => handleDownloadReport("week", "csv")}
-                >
-                  This Week (CSV)
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => handleDownloadReport("week", "json")}
-                >
-                  This Week (JSON)
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => handleDownloadReport("month", "csv")}
-                >
-                  This Month (CSV)
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => handleDownloadReport("month", "json")}
-                >
-                  This Month (JSON)
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => handleDownloadReport("all", "csv")}
-                >
-                  All Time (CSV)
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => handleDownloadReport("all", "json")}
-                >
-                  All Time (JSON)
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <Button size="sm">
-              <Plus className="mr-2 h-4 w-4" />
-              Create Campaign
-            </Button>
-          </div>
-        </div>
+              // Your email campaign performance metrics //{" "}
+            </p> */}
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 px-4">
           <Stats />
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7 px-4">
           <div className="col-span-4">
             <h2 className="text-2xl font-semibold mb-2">Overview</h2>
-            <p className="text-muted-foreground mb-4">Campaign performance over time</p>
+            <p className="text-muted-foreground mb-4">
+              Campaign performance over time
+            </p>
             <div className="pl-2 bg-primary/5 p-4 rounded-lg">
               <Overview />
             </div>
@@ -199,15 +206,19 @@ export default function Home() {
 
           <div className="col-span-3">
             <h2 className="text-2xl font-semibold mb-2">Recent Activity</h2>
-            <p className="text-muted-foreground mb-4">Your latest email campaign activities</p>
+            <p className="text-muted-foreground mb-4">
+              Your latest email campaign activities
+            </p>
             <div>
               <RecentActivity />
             </div>
           </div>
         </div>
 
-        <div className="grid gap-4">
-          <span className="text-2xl font-semibold">📊 Campaign Performance</span>
+        <div className="grid gap-4 px-4">
+          <span className="text-2xl font-semibold">
+            📊 Campaign Performance
+          </span>
           <span className="text-muted-foreground">
             📈 Detailed metrics for all your email campaigns
           </span>

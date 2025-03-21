@@ -45,11 +45,13 @@ async function MainLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <SidebarProvider className="flex flex-col h-screen max-h-screen">
-      <AppHeader heading="Posthoot ❇" />
-      <div className="flex h-full w-full overflow-hidden bg-sidebar">
-        <AppSidebar />
-        <main className="flex-1 h-full overflow-y-auto w-full">
+    <SidebarProvider className="flex flex-col min-h-screen">
+      <AppHeader heading="Posthoot ❇" className="shrink-0" />
+      <div className="flex flex-col lg:flex-row flex-1 w-full bg-sidebar relative">
+        <div className="lg:fixed lg:left-0 lg:top-[64px] lg:bottom-0 lg:w-64">
+          <AppSidebar className="h-full w-full" />
+        </div>
+        <main className="flex-1 overflow-y-auto w-full lg:ml-64">
           {children}
         </main>
       </div>
@@ -86,7 +88,7 @@ export default async function RootLayout({
       </head>
       <body
         className={cn(
-          "antialiased bg-background text-foreground font-sentient"
+          "antialiased bg-background text-foreground font-sentient text-base lg:text-lg"
         )}
       >
         <ThemeProvider attribute="class" defaultTheme="light">
