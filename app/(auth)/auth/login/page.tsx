@@ -80,6 +80,7 @@ export default function LoginPage({
             <div className="relative">
               <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
+                placeholder="password@123"
                 id="password"
                 type="password"
                 className="pl-9"
