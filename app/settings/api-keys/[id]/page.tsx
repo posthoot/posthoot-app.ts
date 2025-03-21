@@ -171,9 +171,9 @@ export default function APIKeyDetailsPage() {
               <div className="text-2xl font-bold text-green-600">
                 {stats.successRate}%
               </div>
-              <div className="h-2 bg-gray-100 rounded-full mt-2">
+              <div className="h-2 bg-gray-100  mt-2">
                 <div
-                  className="h-2 bg-green-500 rounded-full"
+                  className="h-2 bg-green-500 "
                   style={{ width: `${stats.successRate}%` }}
                 />
               </div>
@@ -202,9 +202,9 @@ export default function APIKeyDetailsPage() {
               <div className="text-2xl font-bold text-red-600">
                 {stats.failureRate}%
               </div>
-              <div className="h-2 bg-gray-100 rounded-full mt-2">
+              <div className="h-2 bg-gray-100  mt-2">
                 <div
-                  className="h-2 bg-red-500 rounded-full"
+                  className="h-2 bg-red-500 "
                   style={{ width: `${stats.failureRate}%` }}
                 />
               </div>
@@ -263,9 +263,9 @@ export default function APIKeyDetailsPage() {
                       {method.method}
                     </Badge>
                     <div className="flex-1 mx-4">
-                      <div className="h-2 bg-gray-100 rounded-full">
+                      <div className="h-2 bg-gray-100 ">
                         <div
-                          className="h-2 bg-[#007C89] rounded-full"
+                          className="h-2 bg-[#007C89] "
                           style={{
                             width: `${
                               (method.count / stats.totalRequests) * 100

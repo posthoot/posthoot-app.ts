@@ -237,7 +237,7 @@ export function SMTPSettings({
               documentation ||
               DEFAULT_PROVIDERS[row.original.provider].documentation
             }
-            className="text-sm rounded-full bg-muted-foreground/10 px-2 py-1 text-blue-500 hover:text-blue-600"
+            className="text-sm  bg-muted-foreground/10 px-2 py-1 text-blue-500 hover:text-blue-600"
             target="_blank"
           >
             Read Docs

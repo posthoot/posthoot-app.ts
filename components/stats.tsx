@@ -13,7 +13,9 @@ export function Stats() {
   useEffect(() => {
     const fetchMetrics = async () => {
       try {
-        const response = await fetch(`/api/email/track/metrics?teamId=${team?.id}`);
+        const response = await fetch(
+          `/api/email/track/metrics?teamId=${team?.id}`
+        );
         const data = await response.json();
         setMetricsData(Array.isArray(data) ? data : [data]);
       } catch (error) {
@@ -43,41 +45,68 @@ export function Stats() {
       name: "Total Sent",
       value: currentMetrics?.total || 0,
       icon: Mail,
-      change: previousMetrics 
-        ? calculateTrend(currentMetrics?.total || 0, previousMetrics.total).toFixed(1) + '%'
+      change: previousMetrics
+        ? calculateTrend(
+            currentMetrics?.total || 0,
+            previousMetrics.total
+          ).toFixed(1) + "%"
         : "0%",
-      trend: previousMetrics && currentMetrics
-        ? currentMetrics.total >= previousMetrics.total ? "up" : "down"
-        : "up",
+      trend:
+        previousMetrics && currentMetrics
+          ? currentMetrics.total >= previousMetrics.total
+            ? "up"
+            : "down"
+          : "up",
     },
     {
       name: "Open Rate",
-      value: currentMetrics ? `${(currentMetrics.openRate * 100).toFixed(1)}%` : "0%",
-      icon: Users,
-      change: previousMetrics 
-        ? calculateTrend(currentMetrics?.openRate || 0, previousMetrics.openRate).toFixed(1) + '%'
+      value: currentMetrics
+        ? `${(currentMetrics.openRate * 100).toFixed(1)}%`
         : "0%",
-      trend: previousMetrics && currentMetrics
-        ? currentMetrics.openRate >= previousMetrics.openRate ? "up" : "down"
-        : "up",
+      icon: Users,
+      change: previousMetrics
+        ? calculateTrend(
+            currentMetrics?.openRate || 0,
+            previousMetrics.openRate
+          ).toFixed(1) + "%"
+        : "0%",
+      trend:
+        previousMetrics && currentMetrics
+          ? currentMetrics.openRate >= previousMetrics.openRate
+            ? "up"
+            : "down"
+          : "up",
     },
     {
       name: "Click Rate",
-      value: currentMetrics ? `${(currentMetrics.clickRate * 100).toFixed(1)}%` : "0%",
-      icon: MousePointerClick,
-      change: previousMetrics 
-        ? calculateTrend(currentMetrics?.clickRate || 0, previousMetrics.clickRate).toFixed(1) + '%'
+      value: currentMetrics
+        ? `${(currentMetrics.clickRate * 100).toFixed(1)}%`
         : "0%",
-      trend: previousMetrics && currentMetrics
-        ? currentMetrics.clickRate >= previousMetrics.clickRate ? "up" : "down"
-        : "up",
+      icon: MousePointerClick,
+      change: previousMetrics
+        ? calculateTrend(
+            currentMetrics?.clickRate || 0,
+            previousMetrics.clickRate
+          ).toFixed(1) + "%"
+        : "0%",
+      trend:
+        previousMetrics && currentMetrics
+          ? currentMetrics.clickRate >= previousMetrics.clickRate
+            ? "up"
+            : "down"
+          : "up",
     },
     {
       name: "Bounce Rate",
-      value: currentMetrics ? `${(currentMetrics.bounceRate * 100).toFixed(1)}%` : "0%",
+      value: currentMetrics
+        ? `${(currentMetrics.bounceRate * 100).toFixed(1)}%`
+        : "0%",
       icon: AlertTriangle,
-      change: previousMetrics 
-        ? calculateTrend(currentMetrics?.bounceRate || 0, previousMetrics.bounceRate).toFixed(1) + '%'
+      change: previousMetrics
+        ? calculateTrend(
+            currentMetrics?.bounceRate || 0,
+            previousMetrics.bounceRate
+          ).toFixed(1) + "%"
         : "0%",
       trend: "down",
     },
@@ -86,7 +115,10 @@ export function Stats() {
   return (
     <>
       {stats.map((stat) => (
-        <Card key={stat.name} className="shadow-none rounded-lg relative overflow-hidden">
+        <Card
+          key={stat.name}
+          className="shadow-none rounded-lg relative overflow-hidden"
+        >
           <CardContent className="p-6">
             <div className="flex items-center justify-between space-x-4">
               <div className="flex flex-col space-y-1">
@@ -100,12 +132,10 @@ export function Stats() {
                   <span
                     className={cn(
                       "text-sm font-medium",
-                      stat.trend === "up" 
-                        ? "text-emerald-500"
-                        : "text-rose-500"
+                      stat.trend === "up" ? "text-emerald-500" : "text-rose-500"
                     )}
                   >
-                    {stat.change.startsWith('-') ? '' : '+'}
+                    {stat.change.startsWith("-") ? "" : "+"}
                     {stat.change}
                   </span>
                   <span className="text-sm text-muted-foreground">
@@ -113,7 +143,7 @@ export function Stats() {
                   </span>
                 </div>
               </div>
-              <div className="rounded-full p-2.5 bg-primary/5 dark:bg-primary/10">
+              <div className=" p-2.5 bg-primary/5 dark:bg-primary/10">
                 <stat.icon className="h-5 w-5 text-primary" />
               </div>
             </div>

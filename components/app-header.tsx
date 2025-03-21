@@ -64,24 +64,21 @@ export function AppHeader({
           </div>
         </div>
         <div className="flex flex-none items-center gap-x-4">
-          <Button
-            variant="outline"
-            className="rounded-full text-muted-foreground"
-          >
+          <Button variant="outline" className=" text-muted-foreground">
             <HelpCircle className="h-5 w-5" />
             <span>Help</span>
           </Button>
           <Button
             variant="outline"
             size="icon"
-            className="rounded-full text-muted-foreground"
+            className=" text-muted-foreground"
           >
             <Bell className="h-5 w-5" />
           </Button>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+              <Button variant="ghost" className="relative h-9 w-9 ">
                 <Avatar className="h-9 w-9">
                   <AvatarImage src="" alt="User" />
                   <AvatarFallback>MM</AvatarFallback>

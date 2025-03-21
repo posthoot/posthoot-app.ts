@@ -67,9 +67,12 @@ export default function AudiencePage() {
               <div className="flex-1">
                 <div className="flex items-start justify-between">
                   <div>
-                    <h3 className="font-medium">Try the QuickBooks Online integration</h3>
+                    <h3 className="font-medium">
+                      Try the QuickBooks Online integration
+                    </h3>
                     <p className="text-sm text-muted-foreground">
-                      Automatically sync your QuickBooks Online customers and sales data to your Mailchimp account.
+                      Automatically sync your QuickBooks Online customers and
+                      sales data to your Mailchimp account.
                     </p>
                   </div>
                   <Button
@@ -104,7 +107,9 @@ export default function AudiencePage() {
               <div className="space-y-6">
                 <div>
                   <div className="text-3xl font-semibold">2</div>
-                  <div className="text-sm text-muted-foreground">New Contacts</div>
+                  <div className="text-sm text-muted-foreground">
+                    New Contacts
+                  </div>
                   <div className="text-xs text-muted-foreground mt-1">
                     From February 15, 2025 to March 17, 2025
                   </div>
@@ -113,14 +118,14 @@ export default function AudiencePage() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className="h-2 w-2 rounded-full bg-[#FF8C61]" />
+                      <div className="h-2 w-2  bg-[#FF8C61]" />
                       <span className="text-sm">Subscribed</span>
                     </div>
                     <span className="text-sm">2</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className="h-2 w-2 rounded-full bg-gray-300" />
+                      <div className="h-2 w-2  bg-gray-300" />
                       <span className="text-sm">Non-Subscribed</span>
                     </div>
                     <span className="text-sm">0</span>
@@ -131,7 +136,7 @@ export default function AudiencePage() {
                   <div className="text-sm font-medium mb-2">
                     Where your contacts came from:
                   </div>
-                  <div className="h-2 w-full rounded-full bg-[#FF8C61]" />
+                  <div className="h-2 w-full  bg-[#FF8C61]" />
                   <div className="mt-4">
                     <div className="flex items-center justify-between text-sm">
                       <span>100%</span>
@@ -142,11 +147,14 @@ export default function AudiencePage() {
 
                 <div className="space-y-4 pt-4 border-t">
                   <div className="flex items-center gap-2">
-                    <div className="h-6 w-6 rounded-full border flex items-center justify-center">
+                    <div className="h-6 w-6  border flex items-center justify-center">
                       +
                     </div>
                     <div className="flex-1">
-                      <Button variant="link" className="h-auto p-0 text-[#007C89]">
+                      <Button
+                        variant="link"
+                        className="h-auto p-0 text-[#007C89]"
+                      >
                         Add a pop-up form
                       </Button>
                       <p className="text-sm text-muted-foreground">
@@ -156,11 +164,14 @@ export default function AudiencePage() {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <div className="h-6 w-6 rounded-full border flex items-center justify-center">
+                    <div className="h-6 w-6  border flex items-center justify-center">
                       +
                     </div>
                     <div className="flex-1">
-                      <Button variant="link" className="h-auto p-0 text-[#007C89]">
+                      <Button
+                        variant="link"
+                        className="h-auto p-0 text-[#007C89]"
+                      >
                         Create a landing page
                       </Button>
                       <p className="text-sm text-muted-foreground">
@@ -170,15 +181,19 @@ export default function AudiencePage() {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <div className="h-6 w-6 rounded-full border flex items-center justify-center">
+                    <div className="h-6 w-6  border flex items-center justify-center">
                       +
                     </div>
                     <div className="flex-1">
-                      <Button variant="link" className="h-auto p-0 text-[#007C89]">
+                      <Button
+                        variant="link"
+                        className="h-auto p-0 text-[#007C89]"
+                      >
                         Connect your site
                       </Button>
                       <p className="text-sm text-muted-foreground">
-                        to sync your data and send more targeted campaigns to your customers.
+                        to sync your data and send more targeted campaigns to
+                        your customers.
                       </p>
                     </div>
                   </div>
@@ -235,7 +250,9 @@ export default function AudiencePage() {
               <div className="flex items-center gap-2">
                 <PersonIcon className="h-5 w-5 text-muted-foreground" />
                 <div>
-                  <CardTitle className="text-base">Predicted demographics</CardTitle>
+                  <CardTitle className="text-base">
+                    Predicted demographics
+                  </CardTitle>
                   <CardDescription>
                     Your contacts broken down by their predicted gender and age.
                   </CardDescription>
