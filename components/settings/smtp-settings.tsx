@@ -24,7 +24,7 @@ import { SMTPConfig, formSchema } from "@/lib/validations/smtp-provider";
 import { SMTPProviders } from "./smtp-providers";
 import { SMTPProvider } from "@/types";
 import Link from "next/link";
-const DEFAULT_PROVIDER = SMTPProvider.CUSTOM;
+
 const DEFAULT_PROVIDERS: Record<SMTPProvider, SMTPConfig> = {
   [SMTPProvider.CUSTOM]: {
     provider: SMTPProvider.CUSTOM,
