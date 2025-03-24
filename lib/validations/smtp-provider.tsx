@@ -12,7 +12,7 @@ export const formSchema = z.object({
   password: z.string(),
   isActive: z.boolean().default(true),
   supportsTls: z.boolean().default(true),
-  maxSendRate: z.union([z.number().min(1), z.string()]),  
+  maxSendRate: z.string().min(1, "Max send rate is required"),
   documentation: z.string().optional(),
   isDefault: z.boolean().default(false),
 });
