@@ -53,6 +53,14 @@ import {
   SelectValue,
 } from "../ui/select";
 import { SMTPProvider } from "@/types";
+import {
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  Sheet,
+  SheetFooter,
+} from "../ui/sheet";
 
 export const columns: ColumnDef<SMTPConfig>[] = [
   {
@@ -155,14 +163,14 @@ export function SMTPProviders({
 }) {
   const [showPassword, setShowPassword] = useState(false);
   return (
-    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Add SMTP Provider</DialogTitle>
-          <DialogDescription>
+    <Sheet open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <SheetContent className="overflow-y-auto w-auto">
+        <SheetHeader>
+          <SheetTitle>Add SMTP Provider</SheetTitle>
+          <SheetDescription>
             Add a new SMTP service provider configuration
-          </DialogDescription>
-        </DialogHeader>
+          </SheetDescription>
+        </SheetHeader>
         <form
           onSubmit={form.handleSubmit(onSaveProvider)}
           className="space-y-4"
@@ -318,29 +326,31 @@ export function SMTPProviders({
               onCheckedChange={(checked) => form.setValue("isDefault", checked)}
             />
           </div>
-          <div className="flex justify-between items-center space-x-2">
-            <Button
+          <SheetFooter className="flex  w-full">
+            {/* <Button
               type="button"
               variant="outline"
+              className="!text-sm"
               onClick={() => setIsDialogOpen(false)}
             >
               Cancel
+            </Button> */}
+            {/* <div className="flex items-center space-x-2"> */}
+            <Button
+              type="button"
+              variant="outline"
+              className="!text-sm"
+              onClick={() => onTestConnection(form.getValues())}
+            >
+              Test Connection
             </Button>
-            <div className="flex items-center space-x-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onTestConnection(form.getValues())}
-              >
-                Test Connection
-              </Button>
-              <Button variant="default" type="submit">
-                Save Provider
-              </Button>
-            </div>
-          </div>
+            <Button variant="default" type="submit" className="!text-sm">
+              Save Provider
+            </Button>
+            {/* </div> */}
+          </SheetFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 }

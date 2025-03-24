@@ -29,7 +29,7 @@ interface SMTPConfig {
   id?: string;
   provider: SMTPProvider;
   host: string;
-  port: string;
+  port: number;
   username: string;
   password: string;
   isActive: boolean;

@@ -29,7 +29,7 @@ const DEFAULT_PROVIDERS: Record<SMTPProvider, SMTPConfig> = {
   [SMTPProvider.CUSTOM]: {
     provider: SMTPProvider.CUSTOM,
     host: "",
-    port: "",
+    port: 587,
     username: "",
     password: "",
     requiresAuth: true,
@@ -40,7 +40,7 @@ const DEFAULT_PROVIDERS: Record<SMTPProvider, SMTPConfig> = {
   [SMTPProvider.GMAIL]: {
     provider: SMTPProvider.GMAIL,
     host: "smtp.gmail.com",
-    port: "587",
+    port: 587,
     username: "",
     password: "",
     requiresAuth: true,
@@ -51,7 +51,7 @@ const DEFAULT_PROVIDERS: Record<SMTPProvider, SMTPConfig> = {
   [SMTPProvider.OUTLOOK]: {
     provider: SMTPProvider.OUTLOOK,
     host: "smtp.office365.com",
-    port: "587",
+    port: 587,
     username: "",
     password: "",
     requiresAuth: true,
@@ -63,7 +63,7 @@ const DEFAULT_PROVIDERS: Record<SMTPProvider, SMTPConfig> = {
   [SMTPProvider.AMAZON]: {
     provider: SMTPProvider.AMAZON,
     host: "email-smtp.us-east-1.amazonaws.com",
-    port: "587",
+    port: 587,
     username: "",
     password: "",
     requiresAuth: true,
