@@ -59,6 +59,7 @@ import {
   SheetHeader,
   SheetTitle,
   Sheet,
+  SheetFooter,
 } from "../ui/sheet";
 
 export const columns: ColumnDef<SMTPConfig>[] = [
@@ -163,7 +164,7 @@ export function SMTPProviders({
   const [showPassword, setShowPassword] = useState(false);
   return (
     <Sheet open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-      <SheetContent>
+      <SheetContent className="overflow-y-auto w-auto">
         <SheetHeader>
           <SheetTitle>Add SMTP Provider</SheetTitle>
           <SheetDescription>
@@ -325,27 +326,29 @@ export function SMTPProviders({
               onCheckedChange={(checked) => form.setValue("isDefault", checked)}
             />
           </div>
-          <div className="flex justify-between items-center space-x-2">
-            <Button
+          <SheetFooter className="flex  w-full">
+            {/* <Button
               type="button"
               variant="outline"
+              className="!text-sm"
               onClick={() => setIsDialogOpen(false)}
             >
               Cancel
+            </Button> */}
+            {/* <div className="flex items-center space-x-2"> */}
+            <Button
+              type="button"
+              variant="outline"
+              className="!text-sm"
+              onClick={() => onTestConnection(form.getValues())}
+            >
+              Test Connection
             </Button>
-            <div className="flex items-center space-x-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onTestConnection(form.getValues())}
-              >
-                Test Connection
-              </Button>
-              <Button variant="default" type="submit">
-                Save Provider
-              </Button>
-            </div>
-          </div>
+            <Button variant="default" type="submit" className="!text-sm">
+              Save Provider
+            </Button>
+            {/* </div> */}
+          </SheetFooter>
         </form>
       </SheetContent>
     </Sheet>
