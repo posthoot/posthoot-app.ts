@@ -58,8 +58,6 @@ const formSchema = z.object({
     .refine((date) => date && date > new Date(), {
       message: "Expiration date must be in the future",
     }),
-  scopes: z.array(z.string()),
-  rateLimit: z.number().min(1).max(10000),
 });
 
 export default function APIKeysPage() {
@@ -70,7 +68,7 @@ export default function APIKeysPage() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
-      expiresAt: undefined,
+      expiresAt: new Date(new Date().setDate(new Date().getDate() + 9000)),
     },
   });
 
@@ -176,6 +174,7 @@ export default function APIKeysPage() {
         variant: "destructive",
       });
     } finally {
+      setIsCreateKeyOpen(false);
       setIsLoading(false);
     }
   };
@@ -273,14 +272,10 @@ export default function APIKeysPage() {
                     Cancel
                   </Button>
                   <Button
-                    type="submit"
-                    onClick={() => {
-                      // Handle key creation
-                      setIsCreateKeyOpen(false);
-                    }}
+                    type={isLoading ? "button" : "submit"}
                     className="bg-[#007C89] text-white hover:bg-[#005F6B]"
                   >
-                    Create Key
+                    {isLoading ? "Creating..." : "Create Key"}
                   </Button>
                 </SheetFooter>
               </form>
@@ -422,7 +417,9 @@ export default function APIKeysPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => router.push(`/settings/api-keys/${apiKey.id}`)}
+                          onClick={() =>
+                            router.push(`/settings/api-keys/${apiKey.id}`)
+                          }
                         >
                           Stats
                         </Button>
