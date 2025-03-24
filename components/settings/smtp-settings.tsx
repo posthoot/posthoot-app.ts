@@ -34,7 +34,7 @@ const DEFAULT_PROVIDERS: Record<SMTPProvider, SMTPConfig> = {
     password: "",
     requiresAuth: true,
     supportsTls: true,
-    maxSendRate: "1000",
+    maxSendRate: 14,
     documentation: "",
   },
   [SMTPProvider.GMAIL]: {
@@ -45,7 +45,7 @@ const DEFAULT_PROVIDERS: Record<SMTPProvider, SMTPConfig> = {
     password: "",
     requiresAuth: true,
     supportsTls: true,
-    maxSendRate: "1000",
+    maxSendRate: 14,
     documentation: "https://support.google.com/mail/answer/7126229?hl=en",
   },
   [SMTPProvider.OUTLOOK]: {
@@ -56,7 +56,7 @@ const DEFAULT_PROVIDERS: Record<SMTPProvider, SMTPConfig> = {
     password: "",
     requiresAuth: true,
     supportsTls: true,
-    maxSendRate: "1000",
+    maxSendRate: 14,
     documentation:
       "https://support.microsoft.com/en-us/office/set-up-a-connection-to-an-smtp-server-for-outlook-com-d088d509-d54c-4036-a5c3-21d483f2f017",
   },
@@ -68,7 +68,7 @@ const DEFAULT_PROVIDERS: Record<SMTPProvider, SMTPConfig> = {
     password: "",
     requiresAuth: true,
     supportsTls: true,
-    maxSendRate: "1000",
+    maxSendRate: 14,
     documentation:
       "https://docs.aws.amazon.com/ses/latest/DeveloperGuide/smtp-connect.html",
   },

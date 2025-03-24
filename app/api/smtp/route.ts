@@ -36,7 +36,7 @@ interface SMTPConfig {
   supportsTls?: boolean;
   requiresAuth?: boolean;
   supportsStartTLS?: boolean;
-  maxSendRate?: string;
+  maxSendRate?: number;
   documentation?: string;
 }
 
@@ -52,7 +52,7 @@ const smtpConfigSchema = z.object({
   supportsTls: z.boolean().optional(),
   requiresAuth: z.boolean().optional(),
   supportsStartTLS: z.boolean().optional(),
-  maxSendRate: z.string().min(1).optional(),
+  maxSendRate: z.number().min(1).optional(),
   documentation: z.string().url().optional(),
 });
 
