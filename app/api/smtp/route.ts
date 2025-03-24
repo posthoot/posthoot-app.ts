@@ -157,7 +157,7 @@ export async function POST(
 
     const apiService = new APIService("smtp-configs", session);
     const createdConfigs = await apiService.post<SMTPConfig[]>("", {
-      ...validatedConfigs,
+      ...validatedConfigs[0],
     });
 
     logger.info({
