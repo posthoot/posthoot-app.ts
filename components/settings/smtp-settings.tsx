@@ -108,14 +108,14 @@ export function SMTPSettings({
 
   const onSubmit = async (data: SMTPConfig) => {
     try {
-      console.log(data, team.id, "team id");
-      // const response = await fetch("/api/smtp", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({ smtpConfigs: [data], teamId: team.id }),
-      // });
+      const response = await fetch("/api/smtp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ smtpConfigs: [data], teamId: team.id }),
+      });
 
-      // if (!response.ok) throw new Error("Failed to save configuration");
+      if (!response.ok) throw new Error("Failed to save configuration");
+
       refresh();
       toast({
         title: "Success",
