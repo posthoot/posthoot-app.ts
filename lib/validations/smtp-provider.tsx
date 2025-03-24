@@ -5,7 +5,7 @@ export const formSchema = z.object({
   id: z.string().optional(),
   provider: z.nativeEnum(SMTPProvider),
   host: z.string().min(1, "Host is required"),
-  port: z.string().regex(/^\d+$/, "Port must be a number"),
+  port: z.number(),
   username: z.string(),
   requiresAuth: z.boolean().default(true),
   fromEmail: z.string(),
