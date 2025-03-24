@@ -53,6 +53,13 @@ import {
   SelectValue,
 } from "../ui/select";
 import { SMTPProvider } from "@/types";
+import {
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  Sheet,
+} from "../ui/sheet";
 
 export const columns: ColumnDef<SMTPConfig>[] = [
   {
@@ -155,14 +162,14 @@ export function SMTPProviders({
 }) {
   const [showPassword, setShowPassword] = useState(false);
   return (
-    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Add SMTP Provider</DialogTitle>
-          <DialogDescription>
+    <Sheet open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <SheetContent>
+        <SheetHeader>
+          <SheetTitle>Add SMTP Provider</SheetTitle>
+          <SheetDescription>
             Add a new SMTP service provider configuration
-          </DialogDescription>
-        </DialogHeader>
+          </SheetDescription>
+        </SheetHeader>
         <form
           onSubmit={form.handleSubmit(onSaveProvider)}
           className="space-y-4"
@@ -340,7 +347,7 @@ export function SMTPProviders({
             </div>
           </div>
         </form>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 }
