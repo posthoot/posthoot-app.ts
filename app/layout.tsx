@@ -91,7 +91,7 @@ export default async function RootLayout({
           "antialiased bg-background text-foreground font-sentient text-base lg:text-lg"
         )}
       >
-        <ThemeProvider attribute="class" defaultTheme="light">
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
           <NextAuthProvider>
             <QueryProvider>
               <TeamProvider>
