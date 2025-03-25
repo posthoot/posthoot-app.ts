@@ -188,12 +188,7 @@ export default function APIKeysPage() {
       <PageHeader heading="API keys">
         <Sheet open={isCreateKeyOpen} onOpenChange={setIsCreateKeyOpen}>
           <SheetTrigger asChild>
-            <Button
-              variant="outline"
-              className="border-[#007C89] text-[#007C89] hover:bg-[#007C89]/5"
-            >
-              Create A Key
-            </Button>
+            <Button variant="outline">Create A Key</Button>
           </SheetTrigger>
           <SheetContent>
             <SheetHeader>
@@ -273,7 +268,6 @@ export default function APIKeysPage() {
                   </Button>
                   <Button
                     type={isLoading ? "button" : "submit"}
-                    className="bg-[#007C89] text-white hover:bg-[#005F6B]"
                   >
                     {isLoading ? "Creating..." : "Create Key"}
                   </Button>
@@ -285,7 +279,7 @@ export default function APIKeysPage() {
       </PageHeader>
 
       {/* Three Column Section */}
-      <div className="grid grid-cols-3 gap-8 p-16">
+      <div className="grid grid-cols-3 gap-4 p-8">
         {/* About the API */}
         <div className="space-y-4">
           <h2 className="text-2xl font-semibold">About the API</h2>
@@ -302,7 +296,7 @@ export default function APIKeysPage() {
               Posthoot's features into other applications.
             </p>
           </div>
-          <Button variant="secondary" className="w-max justify-start">
+          <Button variant="outline" className="w-max justify-start">
             Read The API Documentation
           </Button>
         </div>
@@ -327,7 +321,7 @@ export default function APIKeysPage() {
               , then register your app.
             </p>
           </div>
-          <Button variant="secondary" className="w-max justify-start">
+          <Button variant="outline" className="w-max justify-start">
             Register And Manage Your Apps
           </Button>
         </div>
@@ -348,7 +342,7 @@ export default function APIKeysPage() {
               integrations safe.
             </p>
           </div>
-          <Button variant="secondary" className="w-full justify-start">
+          <Button variant="outline" className="w-max justify-start">
             View Security Guidelines
           </Button>
         </div>

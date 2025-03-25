@@ -70,44 +70,17 @@ export async function GET(
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const apiService = new APIService("users", session);
+    const apiServiceTeam = new APIService("teams", session);
 
-    logger.info({
-      fileName: FILE_NAME,
-      emoji: "🔍",
-      action: "fetch",
-      label: "team",
-      value: { userId: session.user.id },
-      message: "Fetching team data",
+
+    const team = await apiServiceTeam.get<{
+      data: Team[];
+    }>("", {
+      include: "Users",
+      id: session.user.teamId,
     });
 
-    const profile = await apiService.get<{
-      id: string;
-      team: Team;
-    }>("me");
-
-    if (!profile) {
-      logger.warn({
-        fileName: FILE_NAME,
-        emoji: "❓",
-        action: "fetch",
-        label: "team",
-        value: { userId: session.user.id },
-        message: "Team not found",
-      });
-      return new NextResponse("Team not found", { status: 404 });
-    }
-
-    logger.info({
-      fileName: FILE_NAME,
-      emoji: "✅",
-      action: "fetch",
-      label: "team",
-      value: { userId: session.user.id, profileId: profile.id },
-      message: "Team data fetched successfully",
-    });
-
-    return NextResponse.json(profile.team);
+    return NextResponse.json(team.data[0]);
   } catch (error) {
     const apiError = error as ApiError;
     logger.error({

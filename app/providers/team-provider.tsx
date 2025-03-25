@@ -49,7 +49,8 @@ export function TeamProvider({ children }: { children: React.ReactNode }) {
       if (!response.ok) throw new Error("Failed to fetch team data");
 
       const teamData = await response.json();
-        
+
+      console.log("teamData", teamData);
       setTeam(teamData);
 
       logger.info({

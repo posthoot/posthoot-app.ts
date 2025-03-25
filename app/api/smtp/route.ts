@@ -54,6 +54,7 @@ const smtpConfigSchema = z.object({
   supportsStartTLS: z.boolean().optional(),
   maxSendRate: z.number().min(1).optional(),
   documentation: z.string().url().optional(),
+  fromEmail: z.string().optional(),
 });
 
 export async function GET(

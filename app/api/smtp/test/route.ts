@@ -76,12 +76,7 @@ interface SMTPTestResponse {
 
 const SMTPConfigSchema = z.object({
   host: z.string().min(1),
-  port: z.union([
-    z.string().regex(/^\d+$/).refine((val) => parseInt(val) > 0, {
-      message: "Port must be a positive integer",
-    }),
-    z.number().int().positive()
-  ]),
+  port: z.number().int().positive(),
   username: z.string(),
   password: z.string().min(1),
   fromEmail: z.string(),
@@ -149,7 +144,7 @@ export async function POST(
       username: config.username,
       password: config.password,
       from: config.fromEmail,
-      requireTls: config.port === "587" || config.port === 587,
+      requireTls: config.port === 587,
     });
 
     logger.info({

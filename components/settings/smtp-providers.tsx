@@ -164,49 +164,46 @@ export function SMTPProviders({
   const [showPassword, setShowPassword] = useState(false);
   return (
     <Sheet open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-      <SheetContent className="overflow-y-auto w-auto">
-        <SheetHeader>
+      <SheetContent className="overflow-y-auto w-auto p-0">
+        <SheetHeader className="p-4">
           <SheetTitle>Add SMTP Provider</SheetTitle>
           <SheetDescription>
             Add a new SMTP service provider configuration
           </SheetDescription>
         </SheetHeader>
-        <form
-          onSubmit={form.handleSubmit(onSaveProvider)}
-          className="space-y-4"
-        >
-          <div className="space-y-2">
-            <Label htmlFor="provider">Provider Type</Label>
-            <Select
-              onValueChange={(value) => {
-                const provider = providers[value as SMTPProvider];
-                onProviderChange(provider.provider as SMTPProvider);
-              }}
-              defaultValue={Object.keys(providers)[0]}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select a provider" />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.entries(providers).map(([provider, config]) => (
-                  <SelectItem key={provider} value={provider}>
-                    {provider}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <span className="text-sm text-muted-foreground flex items-center gap-1">
-              Need help? Check out our documentation.{" "}
-              <a
-                href="https://docs.posthoot.com/docs/smtp-providers"
-                target="_blank"
-                className="text-blue-500 hover:text-blue-600"
+        <form onSubmit={form.handleSubmit(onSaveProvider)}>
+          <div className="p-4 space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="provider">Provider Type</Label>
+              <Select
+                onValueChange={(value) => {
+                  const provider = providers[value as SMTPProvider];
+                  onProviderChange(provider.provider as SMTPProvider);
+                }}
+                defaultValue={Object.keys(providers)[0]}
               >
-                Click here
-              </a>
-            </span>
-          </div>
-          <div className="grid gap-4 grid-cols-2">
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a provider" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(providers).map(([provider, config]) => (
+                    <SelectItem key={provider} value={provider}>
+                      {provider}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <span className="text-sm text-muted-foreground flex items-center gap-1">
+                Need help? Check out our documentation.{" "}
+                <a
+                  href="https://docs.posthoot.com/docs/smtp-providers"
+                  target="_blank"
+                  className="text-blue-500 hover:text-blue-600"
+                >
+                  Click here
+                </a>
+              </span>
+            </div>
             <div className="space-y-2">
               <Label htmlFor="host">Host</Label>
               <Input
@@ -224,109 +221,116 @@ export function SMTPProviders({
                 {...form.register("port")}
               />
             </div>
-          </div>
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label>Requires Authentication</Label>
-              <p className="text-xs text-muted-foreground">
-                Provider requires username and password
-              </p>
-            </div>
-            <Switch
-              checked={form.watch("requiresAuth")}
-              onCheckedChange={(checked) =>
-                form.setValue("requiresAuth", checked)
-              }
-            />
-          </div>
-          {form.watch("requiresAuth") && (
-            <>
-              <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
-                <Input
-                  id="username"
-                  placeholder="john@example.com"
-                  {...form.register("username")}
-                />
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Requires Authentication</Label>
+                <p className="text-xs text-muted-foreground">
+                  Provider requires username and password
+                </p>
               </div>
-              <div className="space-y-2 relative">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="********"
-                  {...form.register("password")}
-                />
-                {!showPassword ? (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-1 top-6"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                ) : (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-1 top-6"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    <EyeOff className="h-4 w-4" />
-                  </Button>
-                )}
+              <Switch
+                checked={form.watch("requiresAuth")}
+                onCheckedChange={(checked) =>
+                  form.setValue("requiresAuth", checked)
+                }
+              />
+            </div>
+            {form.watch("requiresAuth") && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="username">Username</Label>
+                  <Input
+                    id="username"
+                    placeholder="john@example.com"
+                    {...form.register("username")}
+                  />
+                </div>
+                <div className="space-y-2 relative">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="********"
+                    {...form.register("password")}
+                  />
+                  {!showPassword ? (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-1 top-6"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-1 top-6"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      <EyeOff className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              </>
+            )}
+            <div className="space-y-2">
+              <Label htmlFor="fromEmail">From Email</Label>
+              <Input
+                id="fromEmail"
+                type="email"
+                placeholder="noreply@example.com"
+                {...form.register("fromEmail")}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="maxSendRate">Max Send Rate</Label>
+              <Input
+                id="maxSendRate"
+                placeholder="1,000"
+                type="number"
+                {...form.register("maxSendRate")}
+              />
+              <p className="text-xs text-muted-foreground">
+                This is the maximum number of emails that can be sent per
+                second.
+              </p>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Supports TLS</Label>
+                <p className="text-xs text-muted-foreground">
+                  Provider supports TLS encryption
+                </p>
               </div>
-            </>
-          )}
-          <div className="space-y-2">
-            <Label htmlFor="fromEmail">From Email</Label>
-            <Input
-              id="fromEmail"
-              type="email"
-              placeholder="noreply@example.com"
-              {...form.register("fromEmail")}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="maxSendRate">Max Send Rate</Label>
-            <Input
-              id="maxSendRate"
-              placeholder="1,000"
-              type="number"
-              {...form.register("maxSendRate")}
-            />
-            <p className="text-xs text-muted-foreground">
-              This is the maximum number of emails that can be sent per second.
-            </p>
-          </div>
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label>Supports TLS</Label>
-              <p className="text-xs text-muted-foreground">
-                Provider supports TLS encryption
-              </p>
+              <Switch
+                checked={form.watch("supportsTls")}
+                onCheckedChange={(checked) =>
+                  form.setValue("supportsTls", checked)
+                }
+              />
             </div>
-            <Switch
-              checked={form.watch("supportsTls")}
-              onCheckedChange={(checked) =>
-                form.setValue("supportsTls", checked)
-              }
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label>Default Provider</Label>
-              <p className="text-xs text-muted-foreground">
-                Make this the default provider
-              </p>
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Default Provider</Label>
+                <p className="text-xs text-muted-foreground">
+                  Make this the default provider
+                </p>
+              </div>
+              <Switch
+                checked={form.watch("isDefault")}
+                onCheckedChange={(checked) =>
+                  form.setValue("isDefault", checked)
+                }
+              />
             </div>
-            <Switch
-              checked={form.watch("isDefault")}
-              onCheckedChange={(checked) => form.setValue("isDefault", checked)}
-            />
+            <span className="text-xs text-muted-foreground">
+              Note: The default provider will be used for all email
+              notifications.
+            </span>
           </div>
-          <SheetFooter className="flex  w-full">
+          <SheetFooter className="flex justify-between sticky bottom-0 p-4 bg-background w-full">
             {/* <Button
               type="button"
               variant="outline"

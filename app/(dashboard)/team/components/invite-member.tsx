@@ -8,11 +8,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTeam } from "@/app/providers/team-provider";
 import { toast } from "sonner";
+import {
+  Select,
+  SelectItem,
+  SelectTrigger,
+  SelectContent,
+  SelectValue,
+} from "@/components/ui/select";
 
 const inviteSchema = z.object({
   email: z.string().email("Invalid email address"),
   name: z.string().default(""),
-  role: z.enum(["ADMIN", "USER"]),
+  role: z.enum(["ADMIN", "MEMBER", "SUPER_ADMIN"]),
 });
 
 type InviteFormData = z.infer<typeof inviteSchema>;
@@ -25,6 +32,7 @@ export function InviteTeamMember() {
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<InviteFormData>({
     resolver: zodResolver(inviteSchema),
@@ -74,14 +82,22 @@ export function InviteTeamMember() {
       </div>
 
       <div>
-        <select
+        <Select
           {...register("role")}
-          className="w-full rounded-md border border-input bg-background px-3 py-2"
           disabled={loading}
+          onValueChange={(value) => {
+            setValue("role", value as "ADMIN" | "MEMBER" | "SUPER_ADMIN");
+          }}
         >
-          <option value="USER">Team Member</option>
-          <option value="ADMIN">Admin</option>
-        </select>
+          <SelectTrigger>
+            <SelectValue placeholder="Select Role" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="MEMBER">Team Member</SelectItem>
+            <SelectItem value="ADMIN">Admin</SelectItem>
+            <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
+          </SelectContent>
+        </Select>
         {errors.role && (
           <p className="text-sm text-red-500 mt-1">{errors.role.message}</p>
         )}

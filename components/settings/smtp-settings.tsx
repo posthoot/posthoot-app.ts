@@ -84,13 +84,7 @@ export function SMTPSettings({
   const { toast } = useToast();
   const [editConfig, setEditConfig] = useState<SMTPConfig | null>(null);
   const { team } = useTeam();
-  const {
-    configs: smtpConfigs,
-    isLoading,
-    error,
-    updateConfig,
-    refresh,
-  } = useSMTP();
+  const { configs: smtpConfigs, isLoading, refresh } = useSMTP();
 
   const openCreateSMTPDialog = () => {
     setEditConfig(null);
@@ -103,6 +97,7 @@ export function SMTPSettings({
     defaultValues: {
       provider: SMTPProvider.CUSTOM,
       isActive: true,
+      maxSendRate: 14,
     },
   });
 
@@ -111,7 +106,11 @@ export function SMTPSettings({
       const response = await fetch("/api/smtp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ smtpConfigs: [data], teamId: team.id }),
+        body: JSON.stringify({ smtpConfigs: [{
+          ...data,
+          port: Number(data.port),
+          maxSendRate: Number(data.maxSendRate),
+        }], teamId: team.id }),
       });
 
       if (!response.ok) throw new Error("Failed to save configuration");
@@ -154,7 +153,11 @@ export function SMTPSettings({
       const response = await fetch(`/api/smtp/test`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(config),
+        body: JSON.stringify({
+          ...config,
+          port: Number(config.port),
+          maxSendRate: Number(config.maxSendRate),
+        }),
       });
 
       if (!response.ok) throw new Error("Test failed");
