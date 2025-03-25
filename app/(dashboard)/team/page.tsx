@@ -40,13 +40,6 @@ export default function TeamPage() {
               <Mail className="h-4 w-4" />
               Invites
             </TabsTrigger>
-            <TabsTrigger
-              value="settings"
-              className="flex items-center gap-2 data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-12 px-4"
-            >
-              <Settings className="h-4 w-4" />
-              Settings
-            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="members" className="space-y-4">
@@ -66,14 +59,6 @@ export default function TeamPage() {
             <div className="border rounded-lg p-6">
               <h3 className="font-semibold mb-4">Pending Invites</h3>
               <TeamInvites />
-            </div>
-          </TabsContent>
-          <TabsContent value="settings" className="space-y-4">
-            <div className="border rounded-lg p-6">
-              <h3 className="font-semibold mb-4">Team Settings</h3>
-              <TemplatesProvider>
-                <TeamSettings />
-              </TemplatesProvider>
             </div>
           </TabsContent>
         </Tabs>
