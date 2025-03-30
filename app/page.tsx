@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { subDays } from "date-fns";
 import { PageHeader } from "@/components/page-header";
+import Link from "next/link";
 
 interface CampaignMetrics {
   id: string;
@@ -176,8 +177,10 @@ export default function Home() {
                 </DropdownMenuContent>
               </DropdownMenu>
               <Button size="sm">
-                <Plus className="mr-2 h-4 w-4" />
-                Create Campaign
+                <Link href="/campaigns/new" className="flex items-center">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create Campaign
+                </Link>
               </Button>
             </div>
           }
