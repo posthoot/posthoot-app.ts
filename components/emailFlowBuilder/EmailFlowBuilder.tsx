@@ -20,8 +20,13 @@ import { IconType } from "react-icons";
 
 import TurboNode from "@/components/emailFlowBuilder/nodes/TurboNode";
 import TurboEdge from "@/components/emailFlowBuilder/edges/TurboEdge";
-import NodeTypeSelector, { nodeTypes as availableNodeTypes } from "@/components/emailFlowBuilder/nodes/NodeTypeSelector";
-import { initialNodes, initialEdges } from "@/components/emailFlowBuilder/utils/initial-elements";
+import NodeTypeSelector, {
+  nodeTypes as availableNodeTypes,
+} from "@/components/emailFlowBuilder/nodes/NodeTypeSelector";
+import {
+  initialNodes,
+  initialEdges,
+} from "@/components/emailFlowBuilder/utils/initial-elements";
 import NodeContextMenu from "@/components/emailFlowBuilder/nodes/NodeContextMenu";
 import NodeConfigForm from "@/components/emailFlowBuilder/nodes/NodeConfigForm";
 import { TurboNodeData } from "@/components/emailFlowBuilder/types";
@@ -66,7 +71,7 @@ const EmailFlowBuilder = () => {
     node: Node<TurboNodeData>;
     position: XYPosition;
   } | null>(null);
-  
+
   const onConnect = useCallback(
     (params: Connection) => setEdges((eds) => addEdge(params, eds)),
     [setEdges]
@@ -137,7 +142,14 @@ const EmailFlowBuilder = () => {
         setEdges((eds) => addEdge(edge, eds));
       }
     },
-    [nodes, selectorPosition, selectedNode, screenToFlowPosition, setNodes, setEdges]
+    [
+      nodes,
+      selectorPosition,
+      selectedNode,
+      screenToFlowPosition,
+      setNodes,
+      setEdges,
+    ]
   );
 
   const calculatePopupPosition = useCallback((buttonRect: DOMRect) => {
@@ -229,6 +241,7 @@ const EmailFlowBuilder = () => {
         defaultViewport={{ x: 0, y: 0, zoom: 1 }}
         snapToGrid={true}
         snapGrid={[15, 15]}
+        style={{ backgroundColor: "#F7F9FB" }}
       >
         <Controls showInteractive={true} />
         <Background variant={BackgroundVariant.Dots} gap={12} size={0.6} />
@@ -279,4 +292,4 @@ const EmailFlowBuilder = () => {
   );
 };
 
-export default EmailFlowBuilder; 
+export default EmailFlowBuilder;
