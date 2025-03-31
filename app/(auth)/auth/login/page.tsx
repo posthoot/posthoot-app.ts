@@ -8,6 +8,7 @@ import { Mail, Lock } from "lucide-react";
 import Link from "next/link";
 import { signIn, useSession } from "next-auth/react";
 import { redirect, useRouter } from "next/navigation";
+import GoogleIcon from "@/components/icon/GoogleIcon";
 
 export default function LoginPage({
   searchParams,
@@ -45,22 +46,32 @@ export default function LoginPage({
   };
 
   return (
-    <div className="flex w-full items-center justify-center bg-background">
+    <div className="flex w-full h-full items-center justify-center ">
       <div className="w-full bg-transparent p-8">
         <div className="mb-8 grid gap-4">
           <div className="grid">
-            <h1 className="text-3xl font-bold">Welcome back 👋🏻!</h1>
-            <p className="text-muted-foreground">
-              Posthoot - Your email, your way.
-            </p>
+            <h1 className="text-4xl text-center font-normal text-primary-foreground">
+              hey, welcome to posthoot
+            </h1>
+            <div className="text-center text-muted-foreground ">
+              <div
+                className="cursor-pointer flex mx-auto justify-center items-center w-[200px] !rounded-xl border border-white bg-[#00000082] gap-2 text-primary-foreground px-5 py-2 mt-8"
+                onClick={() => signIn("google")}
+              >
+                <div>
+                  <GoogleIcon />
+                </div>
+                <div>Google</div>
+              </div>
+            </div>
           </div>
         </div>
-        {showError && (
+        {/* {showError && (
           <div className="mb-4 p-3 text-sm text-red-500 bg-red-50 rounded-md">
             Invalid email or password. Please try again.
           </div>
-        )}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        )} */}
+        {/* <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1">
             <Label htmlFor="email">Email</Label>
             <div className="relative">
@@ -92,8 +103,8 @@ export default function LoginPage({
           <Button type="submit" variant="default" className="w-full  ">
             Sign in
           </Button>
-        </form>
-        <div className="mt-4 text-center text-sm">
+        </form> */}
+        {/* <div className="mt-4 text-center text-sm">
           <Link
             href="/auth/forgot-password"
             className="text-muted-foreground hover:underline"
@@ -111,7 +122,7 @@ export default function LoginPage({
               Sign up
             </Link>
           </span>
-        </div>
+        </div> */}
       </div>
     </div>
   );

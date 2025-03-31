@@ -57,53 +57,49 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="flex items-center justify-center bg-background">
+    <div className="flex items-center justify-center bg-transparent w-1/2 mx-auto">
       <div className="w-full bg-transparent p-8">
         <div className="mb-8 grid gap-4">
           <div className="grid">
-            <h1 className="text-2xl font-bold">Forgot Password 🫡</h1>
-            <p className="text-muted-foreground">
-              Enter your email address and we'll send you a link to reset your
-              password.
-            </p>
+            <h1 className="text-4xl text-center font-normal text-primary-foreground">
+              Forgot Password 🫡
+            </h1>
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(handleForgotPassword)}
+                className="space-y-6 mx-auto w-[300px] mt-4"
+              >
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input
+                          placeholder="Enter your email"
+                          type="email"
+                          {...field}
+                          className="!rounded-xl !border-none"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </form>
+            </Form>
+            <div className="flex items-center justify-center w-[300px] mx-auto gap-4 mt-2">
+              <Link
+                className="text-left text-primary-foreground w-full hover:underline"
+                href={"/auth/login"}
+              >
+                login
+              </Link>
+              <div className="text-right text-primary-foreground w-full">
+                press ⏎ to confirm{" "}
+              </div>
+            </div>
           </div>
-        </div>
-
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleForgotPassword)}
-            className="space-y-6"
-          >
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Enter your email"
-                      type="email"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <Button type="submit" className="w-full ">
-              Send Reset Link
-            </Button>
-          </form>
-        </Form>
-        <div className="mt-4 text-center text-sm">
-          <Link
-            href="/auth/login"
-            className="text-muted-foreground hover:underline"
-          >
-            Back to login
-          </Link>
         </div>
       </div>
     </div>
