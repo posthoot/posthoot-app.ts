@@ -111,23 +111,20 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Get teamId from query params
     const { searchParams } = new URL(req.url);
-    const teamId = searchParams.get("teamId");
-
-    if (!teamId) {
-      logger.warn({
-        fileName: FILE_NAME,
-        emoji: "❓",
-        action: "validate",
-        label: "campaigns",
-        value: { teamId },
-        message: "Missing team ID",
-      });
-      return NextResponse.json({ error: "Team ID required" }, { status: 400 });
-    }
+    const id = searchParams.get("id");
+    const page = searchParams.get("page");
+    const limit = searchParams.get("limit");
 
     const apiService = new APIService("campaigns", session);
-    const campaigns = await apiService.get<Campaign[]>("");
+    const campaigns = await apiService.get<Campaign[]>(
+      "",
+      id ? { id: id } : {
+        page: page,
+        limit: limit,
+      }
+    );
 
     logger.info({
       fileName: FILE_NAME,
@@ -225,7 +222,7 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = (await req.json()) as CreateCampaignRequest;
+    const body = await req.json();
     if (!body) {
       logger.warn({
         fileName: FILE_NAME,
@@ -244,7 +241,6 @@ export async function POST(
     const apiService = new APIService("campaigns", session);
     const campaign = await apiService.post<Campaign>("", {
       ...body,
-      userId: session.user.id,
     });
 
     logger.info({
@@ -349,8 +345,8 @@ export async function PUT(req: Request) {
     });
 
     const campaign = await new APIService("campaigns", session).post<Campaign>(
-      "/campaigns/update",
-      body
+      `${id}`,
+      updateData
     );
 
     logger.info({
@@ -415,7 +411,7 @@ export async function DELETE(req: Request) {
       return new NextResponse("Campaign ID required", { status: 400 });
     }
 
-    await new APIService("campaigns", session).delete(`/${campaignId}`);
+    await new APIService("campaigns", session).delete(`${campaignId}`);
 
     return new NextResponse(null, { status: 204 });
   } catch (error) {

@@ -184,6 +184,8 @@ export interface Campaign {
   teamId: string;
   userId: string;
   analytics?: Record<string, any>;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface ApiError {

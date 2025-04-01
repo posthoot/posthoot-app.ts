@@ -11,15 +11,18 @@ import { SMTPProvider } from "../providers/smtp-provider";
 import { CampaignsProvider } from "../providers/campaigns-provider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FullScreenCalendar } from "@/components/ui/full-screen-calendar";
-
+import Link from "next/link";
 export default function CampaignsPage() {
   const [isOpen, setIsOpen] = useState(false);
+
   return (
     <div className="flex-1">
       <PageHeader heading="All campaigns">
-        <Button onClick={() => setIsOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" /> Create Campaign
-        </Button>
+        <Link href="/campaigns/new">
+          <Button>
+            <Plus className="mr-2 h-4 w-4" /> Create Campaign
+          </Button>
+        </Link>
       </PageHeader>
 
       <div className="flex bg-primary/10 p-16 items-center gap-4 justify-between">
@@ -60,10 +63,7 @@ export default function CampaignsPage() {
                     </TabsTrigger>
                   </TabsList>
                   <TabsContent value="all">
-                    <CampaignsList
-                      isOpen={isOpen}
-                      onClose={() => setIsOpen(!isOpen)}
-                    />
+                    <CampaignsList />
                   </TabsContent>
                   <TabsContent value="scheduled">
                     <FullScreenCalendar data={[]} />

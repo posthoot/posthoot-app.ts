@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,28 +59,37 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import Link from "next/link";
+import { toast } from "sonner";
 
 const campaignSchema = z.object({
   name: z.string().min(1, "Name is required"),
   description: z.string().optional(),
-  templateId: z.string().min(1, "Template is required"),
-  listId: z.string().min(1, "Mailing list is required"),
-  deliveryType: z.enum(["SEND_NOW", "SCHEDULE"]),
+  templateId: z
+    .string()
+    .uuid("Template ID must be a valid UUID")
+    .min(1, "Template is required"),
+  status: z
+    .enum(["DRAFT", "SCHEDULED", "SENDING", "COMPLETED", "FAILED", "PAUSED"])
+    .default("DRAFT"),
+  scheduledFor: z.date().optional(),
   schedule: z.enum(["ONE_TIME", "RECURRING"]).optional(),
+  listId: z
+    .string()
+    .uuid("List ID must be a valid UUID")
+    .min(1, "Mailing list is required"),
   recurringSchedule: z
     .enum(["DAILY", "WEEKLY", "MONTHLY", "CUSTOM"])
     .optional(),
   cronExpression: z.string().optional(),
-  scheduledFor: z.date().optional(),
-  batchSettings: z.object({
-    enabled: z.boolean(),
-    batchSize: z.number().min(1).optional(),
-    delayBetweenBatches: z.number().min(1).optional(),
-    delayUnit: z.enum(["MINUTES", "HOURS"]).optional(),
-    optimizeDeliveryTime: z.boolean(),
-    timezone: z.string().optional(),
-  }),
-  smtpConfigId: z.string().min(1, "SMTP configuration is required"),
+  batchSize: z.number().min(1).default(100),
+  processed: z.number().default(0),
+  batchDelay: z.number().min(1).optional(),
+  timezone: z.string().default("America/New_York"),
+  smtpConfigId: z
+    .string()
+    .uuid("SMTP configuration ID must be a valid UUID")
+    .min(1, "SMTP configuration is required"),
 });
 
 type CampaignFormValues = z.infer<typeof campaignSchema>;
@@ -210,23 +219,34 @@ const NewCampaignForm = () => {
   const { configs: smtpConfigs } = useSMTP();
   const [currentStep, setCurrentStep] = useState("to");
   const [isScheduled, setIsScheduled] = useState(false);
-  const [isRecurring, setIsRecurring] = useState(false);
-  const [batchingEnabled, setBatchingEnabled] = useState(false);
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
-
   const form = useForm<CampaignFormValues>({
     resolver: zodResolver(campaignSchema),
     defaultValues: {
       name: "",
       description: "",
-      deliveryType: "SEND_NOW",
-      batchSettings: {
-        enabled: false,
-        optimizeDeliveryTime: false,
-        delayUnit: "MINUTES",
-      },
+      templateId: "",
+      status: "DRAFT",
+      listId: "",
+      smtpConfigId: "",
+      schedule: "ONE_TIME",
+      scheduledFor: undefined,
+      recurringSchedule: undefined,
+      cronExpression: undefined,
+      batchSize: 100,
+      processed: 0,
+      batchDelay: undefined,
+      timezone: "America/New_York",
     },
   });
+
+  useEffect(() => {
+    if (form.formState.errors) {
+      toast.error("Please fill in all fields", {
+        description: Object.values(form.formState.errors).join(", "),
+      });
+    }
+  }, [form.formState.errors]);
 
   const onSubmit = async (data: CampaignFormValues) => {
     try {
@@ -247,7 +267,7 @@ const NewCampaignForm = () => {
       }
 
       const result = await response.json();
-      router.push(`/campaigns/${result.data.id}`);
+      router.push(`/campaigns/${result.campaign.id}`);
     } catch (error) {
       console.error("Error creating campaign:", error);
     }
@@ -464,9 +484,11 @@ const NewCampaignForm = () => {
                             Provider:
                           </span>
                           <span className="text-sm text-gray-900">
-                            {smtpConfigs.find(
-                              (c) => c.id === form.watch("smtpConfigId")
-                            )?.provider}
+                            {
+                              smtpConfigs.find(
+                                (c) => c.id === form.watch("smtpConfigId")
+                              )?.provider
+                            }
                           </span>
                         </div>
                       </div>
@@ -656,7 +678,9 @@ const NewCampaignForm = () => {
                               <Calendar
                                 mode="single"
                                 selected={field.value}
-                                onSelect={field.onChange}
+                                onSelect={(date) =>
+                                  field.onChange(date || undefined)
+                                }
                                 disabled={(date) =>
                                   date < new Date() ||
                                   date < new Date("1900-01-01")
@@ -672,7 +696,7 @@ const NewCampaignForm = () => {
 
                     <FormField
                       control={form.control}
-                      name="batchSettings.timezone"
+                      name="timezone"
                       render={({ field }) => (
                         <FormItem>
                           <Select
@@ -708,44 +732,14 @@ const NewCampaignForm = () => {
                   <div className="pt-6 border-t">
                     <FormField
                       control={form.control}
-                      name="batchSettings.enabled"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border border-gray-200 p-4">
-                          <FormControl>
-                            <input
-                              type="checkbox"
-                              checked={field.value}
-                              onChange={(e) => {
-                                field.onChange(e);
-                                setBatchingEnabled(e.target.checked);
-                              }}
-                              className="mt-1"
-                            />
-                          </FormControl>
-                          <div className="space-y-1">
-                            <FormLabel className="text-base font-medium text-gray-900">
-                              Send in batches
-                            </FormLabel>
-                            <FormDescription className="text-sm text-gray-600">
-                              Break up your send into smaller batches
-                            </FormDescription>
-                          </div>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <div className="pt-6 border-t">
-                    <FormField
-                      control={form.control}
-                      name="batchSettings.recurringSchedule"
+                      name="schedule"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-base font-medium text-gray-900">
-                            Recurrence
+                            Schedule Type
                           </FormLabel>
                           <FormDescription className="text-sm text-gray-600">
-                            Choose how often to send this email
+                            Choose how to schedule this campaign
                           </FormDescription>
                           <Select
                             onValueChange={field.onChange}
@@ -753,15 +747,14 @@ const NewCampaignForm = () => {
                           >
                             <FormControl>
                               <SelectTrigger className="w-[200px] border-gray-200">
-                                <SelectValue placeholder="Select recurrence" />
+                                <SelectValue placeholder="Select schedule type" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="DAILY">Daily</SelectItem>
-                              <SelectItem value="WEEKLY">Weekly</SelectItem>
-                              <SelectItem value="MONTHLY">Monthly</SelectItem>
-                              <SelectItem value="YEARLY">Yearly</SelectItem>
-                              <SelectItem value="CRON">Custom (Cron)</SelectItem>
+                              <SelectItem value="ONE_TIME">One Time</SelectItem>
+                              <SelectItem value="RECURRING">
+                                Recurring
+                              </SelectItem>
                             </SelectContent>
                           </Select>
                         </FormItem>
@@ -769,91 +762,68 @@ const NewCampaignForm = () => {
                     />
                   </div>
 
-                  <AnimatePresence>
-                    {batchingEnabled && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="space-y-6 pl-8 pt-4"
-                      >
-                        <div className="grid grid-cols-2 gap-6">
-                          <FormField
-                            control={form.control}
-                            name="batchSettings.batchSize"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="font-medium text-gray-900">
-                                  Recipients per batch
-                                </FormLabel>
-                                <FormControl>
-                                  <Input
-                                    type="number"
-                                    min={1}
-                                    placeholder="500"
-                                    className="border-gray-200"
-                                    {...field}
-                                    onChange={(e) =>
-                                      field.onChange(parseInt(e.target.value))
-                                    }
-                                  />
-                                </FormControl>
-                              </FormItem>
-                            )}
-                          />
+                  {form.watch("schedule") === "RECURRING" && (
+                    <div className="pt-6 border-t">
+                      <FormField
+                        control={form.control}
+                        name="recurringSchedule"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-base font-medium text-gray-900">
+                              Recurrence
+                            </FormLabel>
+                            <FormDescription className="text-sm text-gray-600">
+                              Choose how often to send this email
+                            </FormDescription>
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger className="w-[200px] border-gray-200">
+                                  <SelectValue placeholder="Select recurrence" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="DAILY">Daily</SelectItem>
+                                <SelectItem value="WEEKLY">Weekly</SelectItem>
+                                <SelectItem value="MONTHLY">Monthly</SelectItem>
+                                <SelectItem value="CUSTOM">
+                                  Custom (Cron)
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  )}
 
-                          <FormField
-                            control={form.control}
-                            name="batchSettings.delayBetweenBatches"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="font-medium text-gray-900">
-                                  Time between batches
-                                </FormLabel>
-                                <div className="flex gap-2">
-                                  <FormControl>
-                                    <Input
-                                      type="number"
-                                      min={1}
-                                      placeholder="15"
-                                      className="border-gray-200"
-                                      {...field}
-                                      onChange={(e) =>
-                                        field.onChange(parseInt(e.target.value))
-                                      }
-                                    />
-                                  </FormControl>
-                                  <Select
-                                    onValueChange={(value) =>
-                                      form.setValue(
-                                        "batchSettings.delayUnit",
-                                        value as "MINUTES" | "HOURS"
-                                      )
-                                    }
-                                    defaultValue="MINUTES"
-                                  >
-                                    <FormControl>
-                                      <SelectTrigger className="w-[100px] border-gray-200">
-                                        <SelectValue />
-                                      </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                      <SelectItem value="MINUTES">
-                                        Minutes
-                                      </SelectItem>
-                                      <SelectItem value="HOURS">
-                                        Hours
-                                      </SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                  {form.watch("recurringSchedule") === "CUSTOM" && (
+                    <div className="pt-6 border-t">
+                      <FormField
+                        control={form.control}
+                        name="cronExpression"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-base font-medium text-gray-900">
+                              Cron Expression
+                            </FormLabel>
+                            <FormDescription className="text-sm text-gray-600">
+                              Enter a cron expression for custom scheduling
+                            </FormDescription>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                placeholder="* * * * *"
+                                className="w-full border-gray-200"
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -902,12 +872,15 @@ const NewCampaignForm = () => {
                     </Select>
                     <FormMessage />
 
-                    <Button
-                      variant="outline"
-                      className="border-gray-200 text-[#007C89] hover:text-[#004E54] hover:border-[#007C89]"
-                    >
-                      Design email
-                    </Button>
+                    <Link href="/templates/new">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="border-gray-200 text-[#007C89] hover:text-[#004E54] hover:border-[#007C89]"
+                      >
+                        Design email
+                      </Button>
+                    </Link>
                   </FormItem>
                 )}
               />
@@ -921,46 +894,53 @@ const NewCampaignForm = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="border-b">
-        <div className="container mx-auto">
-          <div className="flex items-center justify-between py-4">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                onClick={() => router.back()}
-                className="text-gray-600 hover:text-gray-900"
-              >
-                ←
-              </Button>
-              <h1 className="text-xl font-semibold text-gray-900">Untitled</h1>
-              <Button variant="ghost" className="text-[#007C89]">
-                Edit name
-              </Button>
-            </div>
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                onClick={() => router.back()}
-                className="border-gray-200 text-gray-600 hover:text-gray-900"
-              >
-                Finish later
-              </Button>
-              <Button
-                type="submit"
-                className="bg-[#007C89] text-white hover:bg-[#005F6B] shadow-sm"
-              >
-                Send
-              </Button>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <div className="min-h-screen bg-white">
+          <div className="border-b">
+            <div className="container mx-auto">
+              <div className="flex items-center justify-between py-4 px-4">
+                <div className="flex items-center gap-4">
+                  <Button
+                    variant="ghost"
+                    onClick={() => router.back()}
+                    className="text-gray-600 hover:text-gray-900"
+                  >
+                    ←
+                  </Button>
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <Input
+                        {...field}
+                        placeholder="Give your campaign a name"
+                        className="w-full border-gray-200"
+                      />
+                    )}
+                  />
+                </div>
+                <div className="flex gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => router.back()}
+                    className="border-gray-200 text-gray-600 hover:text-gray-900"
+                  >
+                    Finish later
+                  </Button>
+                  <Button
+                    type="submit"
+                    className="bg-[#007C89] text-white hover:bg-[#005F6B] shadow-sm"
+                  >
+                    Send
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <div className="container mx-auto py-8">
-        <div className="max-w-3xl mx-auto">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <div className="container mx-auto py-8">
+            <div className="max-w-3xl mx-auto">
               <Accordion
                 type="single"
                 collapsible
@@ -1096,10 +1076,10 @@ const NewCampaignForm = () => {
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
-            </form>
-          </Form>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      </form>
+    </Form>
   );
 };
