@@ -95,6 +95,7 @@ export function SMTPSettings({
   const form = useForm<SMTPConfig>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      id: null,
       provider: SMTPProvider.CUSTOM,
       isActive: true,
       maxSendRate: 14,
@@ -106,8 +107,8 @@ export function SMTPSettings({
       // first test the configuration
       await testConfiguration(data);
 
-      const response = await fetch("/api/smtp", {
-        method: "POST",
+      const response = await fetch(data.id ? `/api/smtp/${data.id}` : "/api/smtp", {
+        method: data.id ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           smtpConfigs: [
@@ -121,7 +122,10 @@ export function SMTPSettings({
         }),
       });
 
-      if (!response.ok) throw new Error("Failed to save configuration");
+      if (!response.ok) {
+        const apiError = (await response.json()) as ApiError;
+        throw new Error(apiError.message);
+      }
 
       refresh();
       toast({
@@ -130,10 +134,10 @@ export function SMTPSettings({
       });
       setIsDialogOpen(false);
       form.reset();
-    } catch (error) {
+    } catch (error: any) {
       toast({
-        title: "Error",
-        description: "Failed to save SMTP configuration",
+        title: "Failed to save SMTP configuration",
+        description: error.message,
         variant: "destructive",
       });
     }

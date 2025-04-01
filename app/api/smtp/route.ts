@@ -256,3 +256,69 @@ export async function DELETE(
     );
   }
 }
+
+export async function PUT(
+  request: Request
+): Promise<NextResponse<SMTPConfigResponse>> {
+  try {
+    const session = await auth();
+
+    if (!session?.user) {
+      logger.warn({
+        fileName: FILE_NAME,
+        emoji: "🚫",
+        action: "update",
+        label: "smtp",
+        value: { userId: session?.user?.id },
+        message: "Unauthorized access attempt",
+      });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = (await request.json()) as SMTPConfigRequest;
+    const { smtpConfigs, teamId } = body;
+
+    // Validate configurations
+    const validatedConfigs = smtpConfigs.map((config: unknown) =>
+      smtpConfigSchema.parse(config)
+    );
+
+    const apiService = new APIService("smtp-configs", session);
+    const updatedConfigs = await apiService.update<SMTPConfig[]>(
+      validatedConfigs[0].id,
+      {
+        ...validatedConfigs[0],
+      }
+    );
+
+    logger.info({
+      fileName: FILE_NAME,
+      emoji: "✅",
+      action: "update",
+      label: "smtp",
+      value: { teamId, count: updatedConfigs.length },
+      message: "SMTP configurations updated successfully",
+    });
+
+    return NextResponse.json({
+      data: { message: "Configurations saved successfully" },
+    });
+  } catch (error) {
+    const apiError = error as ApiError;
+    logger.error({
+      fileName: FILE_NAME,
+      emoji: "❌",
+      action: "update",
+      label: "smtp",
+      value: { error: apiError.message || "Unknown error" },
+      message: "Failed to update SMTP configurations",
+    });
+    return NextResponse.json(
+      {
+        error: apiError.message,
+        message: apiError.message,
+      },
+      { status: 500 }
+    );
+  }
+}

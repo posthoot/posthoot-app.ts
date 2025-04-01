@@ -256,6 +256,7 @@ export function SMTPProviders({
                   {!showPassword ? (
                     <Button
                       variant="ghost"
+                      type="button"
                       size="icon"
                       className="absolute right-1 top-6"
                       onClick={() => setShowPassword(!showPassword)}
@@ -265,6 +266,7 @@ export function SMTPProviders({
                   ) : (
                     <Button
                       variant="ghost"
+                      type="button"
                       size="icon"
                       className="absolute right-1 top-6"
                       onClick={() => setShowPassword(!showPassword)}
