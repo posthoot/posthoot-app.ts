@@ -91,12 +91,11 @@ interface ImportContactsResponse {
 }
 
 const importSchema = z.object({
-  file: z.instanceof(File, { message: "File is required" }),
+  fileId: z.string().min(1, "File ID is required"),
   listId: z.string().min(1, "List ID is required"),
   teamId: z.string().min(1, "Team ID is required"),
+  mappings: z.record(z.string(), z.string()),
 });
-
-type ImportRequest = z.infer<typeof importSchema>;
 
 export async function POST(
   request: Request
@@ -110,14 +109,31 @@ export async function POST(
         action: "authenticate",
         label: "import_contacts",
         value: {},
-        message: "Unauthorized access attempt"
+        message: "Unauthorized access attempt",
       });
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const apiService = new APIService("contacts", session);
-    
-    // ... rest of the implementation ...
+    const apiService = new APIService("imports", session);
+    const importRequest = await request.json();
+
+    const validatedImportRequest = importSchema.safeParse(importRequest);
+
+    if (!validatedImportRequest.success) {
+      return NextResponse.json(
+        { error: "Invalid import request" },
+        { status: 400 }
+      );
+    }
+
+    const importData = validatedImportRequest.data;
+
+    await apiService.post("contact", importData);
+
+    return NextResponse.json({
+      message: "Contacts imported successfully",
+      success: true,
+    });
   } catch (error) {
     const apiError = error as ApiError;
     logger.error({
@@ -126,11 +142,11 @@ export async function POST(
       action: "import",
       label: "contacts",
       value: { error: apiError.message || "Unknown error" },
-      message: "Failed to import contacts"
+      message: "Failed to import contacts",
     });
     return NextResponse.json(
-      { error: "Failed to import contacts. Please try again." }, 
+      { error: "Failed to import contacts. Please try again." },
       { status: 500 }
     );
   }
-} 
+}

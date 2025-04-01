@@ -72,7 +72,7 @@ export async function POST(
     const validatedData = mailingListSchema.parse(body);
 
     const createdList = await apiService.post<MailingList>(
-      "/mailing-lists",
+      "",
       validatedData
     );
 
@@ -170,7 +170,9 @@ export async function GET(request: Request): Promise<NextResponse> {
       total: number;
       page: number;
       limit: number;
-    }>("");
+    }>("", {
+      limit: 100,
+    });
 
     logger.info({
       fileName: FILE_NAME,

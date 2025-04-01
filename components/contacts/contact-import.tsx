@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -50,8 +50,8 @@ const FIELD_MAPPINGS: { [key: string]: string[] } = {
 
 const REQUIRED_FIELDS = ["email"];
 const OPTIONAL_FIELDS = [
-  "firstName",
-  "lastName",
+  "first_name",
+  "last_name",
   "phone",
   "company",
   "title",
@@ -59,7 +59,8 @@ const OPTIONAL_FIELDS = [
   "city",
   "state",
   "country",
-  "postalCode"
+  "postal_code",
+  "linkedin"
 ];
 const ALL_FIELDS = [...REQUIRED_FIELDS, ...OPTIONAL_FIELDS];
 
@@ -73,6 +74,7 @@ export function ContactImport({ listId, onImportComplete }: ContactImportProps) 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const { team } = useTeam();
+  const [file, setFile] = useState<File | null>(null);
 
   // Function to guess field mapping based on header name
   const guessFieldMapping = (header: string): string | null => {
@@ -90,9 +92,14 @@ export function ContactImport({ listId, onImportComplete }: ContactImportProps) 
     const file = event.target.files?.[0];
     if (!file) return;
 
+    setFile(file);
+
     parse(file, {
       header: true,
       skipEmptyLines: true,
+      transformHeader: (header) => {
+        return header.trim();
+      },
       complete: (results) => {
         if (results.data.length === 0) {
           toast({
@@ -105,7 +112,7 @@ export function ContactImport({ listId, onImportComplete }: ContactImportProps) 
 
         // Get headers from the first row
         const headers = Object.keys(results.data[0]);
-        setCsvHeaders(headers);
+        setCsvHeaders(headers.filter(header => header !== ""));
         setCsvData(results.data);
 
         // Initialize field mapping with best guesses
@@ -143,34 +150,28 @@ export function ContactImport({ listId, onImportComplete }: ContactImportProps) 
     try {
       setIsLoading(true);
 
-      // Transform data according to mapping
-      const transformedData = csvData.map(row => {
-        const transformed: any = {
-          metadata: {} // Store unmapped fields in metadata
-        };
-        
-        // First, store all original fields in metadata
-        Object.entries(row).forEach(([key, value]) => {
-          transformed.metadata[key] = value;
-        });
-
-        // Then map the fields according to our mapping
-        Object.entries(fieldMapping).forEach(([csvField, mappedField]) => {
-          if (ALL_FIELDS.includes(mappedField)) {
-            transformed[mappedField] = row[csvField];
-          }
-        });
-
-        return transformed;
+      // upload file 
+      // form data
+      const formData = new FormData();
+      formData.append("file", file);
+      console.log("file", file);
+      const fileUpload = await fetch("/api/blobs", {
+        method: "POST",
+        body: formData,
       });
+
+      const fileUploadResponse = await fileUpload.json();
+
+      const fileId = fileUploadResponse.data.fileId;
 
       const response = await fetch("/api/contacts/import", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          contacts: transformedData,
+          mappings: fieldMapping,
           listId,
           teamId: team?.id,
+          fileId,
         }),
       });
 
@@ -250,7 +251,7 @@ export function ContactImport({ listId, onImportComplete }: ContactImportProps) 
         )}
 
         {step === "map" && (
-          <div className="space-y-4 py-4">
+          <div className="space-y-4 py-4 overflow-y-auto max-h-[500px]">
             <div className="grid gap-4">
               {ALL_FIELDS.map((field) => (
                 <div key={field} className="grid grid-cols-2 items-center gap-4">
@@ -261,9 +262,10 @@ export function ContactImport({ listId, onImportComplete }: ContactImportProps) 
                     )}
                   </Label>
                   <Select
-                    value={Object.keys(fieldMapping).find(
+                    value={Object.keys(fieldMapping)?.find(
                       key => fieldMapping[key] === field
                     ) || "none"}
+                    key={field}
                     onValueChange={(value) => {
                       const newMapping = { ...fieldMapping };
                       // Remove old mapping if it exists
@@ -279,10 +281,10 @@ export function ContactImport({ listId, onImportComplete }: ContactImportProps) 
                       setFieldMapping(newMapping);
                     }}
                   >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a column" />
+                    <SelectTrigger className="text-muted-foreground">
+                      <SelectValue className="capitalize" placeholder="Select a column" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="h-54 overflow-y-auto">
                       <SelectItem value="none">Not mapped</SelectItem>
                       {csvHeaders.map((header) => (
                         <SelectItem key={header} value={header}>

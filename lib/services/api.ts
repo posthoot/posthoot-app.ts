@@ -98,7 +98,7 @@ export class APIService {
     };
   }
 
-  async upload(file: File): Promise<{ file: string }> {
+  async upload(file: File | Blob): Promise<{ file: string; url: string }> {
     const formData = new FormData();
     formData.append("file", file, file.name);
     const response = await axios.post(`${this.baseUrl}/upload`, formData, {
@@ -107,6 +107,6 @@ export class APIService {
         "Content-Type": "multipart/form-data",
       },
     });
-    return response.data as { file: string };
+    return response.data as { file: string; url: string };
   }
 }

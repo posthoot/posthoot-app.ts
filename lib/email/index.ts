@@ -24,7 +24,5 @@ export const createTempFile = async (
   // Clean up temp file
   await fs.promises.unlink(tempPath);
 
-  console.log("tempFile", tempFile);
-
   return tempFile;
 };

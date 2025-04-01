@@ -5,9 +5,15 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useTemplates } from "@/app/providers/templates-provider";
-import { useMailingLists } from "@/app/providers/mailinglist-provider";
-import { useSMTP } from "@/app/providers/smtp-provider";
+import {
+  TemplatesProvider,
+  useTemplates,
+} from "@/app/providers/templates-provider";
+import {
+  MailingListProvider,
+  useMailingLists,
+} from "@/app/providers/mailinglist-provider";
+import { SMTPProvider, useSMTP } from "@/app/providers/smtp-provider";
 import {
   Form,
   FormControl,
@@ -185,6 +191,18 @@ function Timeline({
 }
 
 export default function NewCampaignPage() {
+  return (
+    <SMTPProvider>
+      <TemplatesProvider>
+        <MailingListProvider>
+          <NewCampaignForm />
+        </MailingListProvider>
+      </TemplatesProvider>
+    </SMTPProvider>
+  );
+}
+
+const NewCampaignForm = () => {
   const router = useRouter();
   const { team } = useTeam();
   const { templates } = useTemplates();
@@ -306,7 +324,7 @@ export default function NewCampaignPage() {
                             <div className="flex items-center justify-between w-full">
                               <span>{list.name}</span>
                               <span className="text-sm text-muted-foreground">
-                                {list._count.subscribers} subscribers
+                                {list?._count?.subscribers} subscribers
                               </span>
                             </div>
                           </SelectItem>
@@ -390,10 +408,10 @@ export default function NewCampaignPage() {
                           <SelectItem key={config.id} value={config.id}>
                             <div className="flex flex-col">
                               <span className="font-medium">
-                                {config.username}
+                                {config.fromEmail}
                               </span>
-                              <span className="text-sm text-gray-500">
-                                via {config.host}
+                              <span className="text-sm">
+                                via {config.host} ({config.provider})
                               </span>
                             </div>
                           </SelectItem>
@@ -425,7 +443,7 @@ export default function NewCampaignPage() {
                             {
                               smtpConfigs.find(
                                 (c) => c.id === form.watch("smtpConfigId")
-                              )?.username
+                              )?.fromEmail
                             }
                           </span>
                         </div>
@@ -437,8 +455,18 @@ export default function NewCampaignPage() {
                             {
                               smtpConfigs.find(
                                 (c) => c.id === form.watch("smtpConfigId")
-                              )?.username
+                              )?.fromEmail
                             }
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-sm font-medium text-gray-700">
+                            Provider:
+                          </span>
+                          <span className="text-sm text-gray-900">
+                            {smtpConfigs.find(
+                              (c) => c.id === form.watch("smtpConfigId")
+                            )?.provider}
                           </span>
                         </div>
                       </div>
@@ -707,6 +735,40 @@ export default function NewCampaignPage() {
                     />
                   </div>
 
+                  <div className="pt-6 border-t">
+                    <FormField
+                      control={form.control}
+                      name="batchSettings.recurringSchedule"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-base font-medium text-gray-900">
+                            Recurrence
+                          </FormLabel>
+                          <FormDescription className="text-sm text-gray-600">
+                            Choose how often to send this email
+                          </FormDescription>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger className="w-[200px] border-gray-200">
+                                <SelectValue placeholder="Select recurrence" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="DAILY">Daily</SelectItem>
+                              <SelectItem value="WEEKLY">Weekly</SelectItem>
+                              <SelectItem value="MONTHLY">Monthly</SelectItem>
+                              <SelectItem value="YEARLY">Yearly</SelectItem>
+                              <SelectItem value="CRON">Custom (Cron)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
                   <AnimatePresence>
                     {batchingEnabled && (
                       <motion.div
@@ -912,7 +974,7 @@ export default function NewCampaignPage() {
                   className="border rounded-lg overflow-hidden"
                 >
                   <AccordionTrigger className="px-6 py-4 hover:no-underline hover:bg-gray-50 [&[data-state=open]]:bg-gray-50">
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-start text-left gap-4">
                       {renderStepIcon("to")}
                       <div>
                         <div className="font-semibold text-gray-900">To</div>
@@ -937,7 +999,7 @@ export default function NewCampaignPage() {
                   className="border rounded-lg overflow-hidden"
                 >
                   <AccordionTrigger className="px-6 py-4 hover:no-underline hover:bg-gray-50 [&[data-state=open]]:bg-gray-50">
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-start text-left gap-4">
                       {renderStepIcon("from")}
                       <div>
                         <div className="font-semibold text-gray-900">From</div>
@@ -946,7 +1008,7 @@ export default function NewCampaignPage() {
                             ? `${
                                 smtpConfigs.find(
                                   (c) => c.id === form.watch("smtpConfigId")
-                                )?.username || "Selected sender"
+                                )?.fromEmail || "Selected sender"
                               }`
                             : "Set sender details"}
                         </div>
@@ -963,7 +1025,7 @@ export default function NewCampaignPage() {
                   className="border rounded-lg overflow-hidden"
                 >
                   <AccordionTrigger className="px-6 py-4 hover:no-underline hover:bg-gray-50 [&[data-state=open]]:bg-gray-50">
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-start text-left gap-4">
                       {renderStepIcon("subject")}
                       <div>
                         <div className="font-semibold text-gray-900">
@@ -985,7 +1047,7 @@ export default function NewCampaignPage() {
                   className="border rounded-lg overflow-hidden"
                 >
                   <AccordionTrigger className="px-6 py-4 hover:no-underline hover:bg-gray-50 [&[data-state=open]]:bg-gray-50">
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-start text-left gap-4">
                       {renderStepIcon("schedule")}
                       <div>
                         <div className="font-semibold text-gray-900">
@@ -1011,7 +1073,7 @@ export default function NewCampaignPage() {
                   className="border rounded-lg overflow-hidden"
                 >
                   <AccordionTrigger className="px-6 py-4 hover:no-underline hover:bg-gray-50 [&[data-state=open]]:bg-gray-50">
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-start text-left gap-4">
                       {renderStepIcon("content")}
                       <div>
                         <div className="font-semibold text-gray-900">
@@ -1040,4 +1102,4 @@ export default function NewCampaignPage() {
       </div>
     </div>
   );
-}
+};

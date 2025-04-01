@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { logger } from "@/app/lib/logger";
 import { APIService } from "@/lib/services/api";
 import { ApiError } from "@/types";
+import { randomUUID } from "crypto";
 
 const FILE_NAME = "api/blobs/route.ts";
 
@@ -51,14 +52,18 @@ export async function POST(
         action: "authenticate",
         label: "blob",
         value: {},
-        message: "Unauthorized"
+        message: "Unauthorized",
       });
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const apiService = new APIService("blobs", session);
+    // upload file
+    const form = await request.formData();
+    const file = form.get("file") as File;
+    const fileService = new APIService("files", session);
+    const { file: fileId, url } = await fileService.upload(file);
 
-    // ... existing code for handling file upload ...
+    return NextResponse.json({ data: { url, fileId } });
   } catch (error) {
     const apiError = error as ApiError;
     logger.error({
@@ -67,7 +72,7 @@ export async function POST(
       action: "upload",
       label: "blob",
       value: { error: apiError.message || "Unknown error" },
-      message: "Failed to upload blob"
+      message: "Failed to upload blob",
     });
     return NextResponse.json(
       { error: "Failed to upload file" },
