@@ -13,8 +13,7 @@ export class APIService {
   private async handleResponse<T>(response: Response): Promise<T> {
     if (!response.ok) {
       const error = await response.json();
-      console.log(error);
-      throw new Error(error.message || "API request failed");
+      throw new Error(error.error || "API request failed");
     }
     return response.json();
   }
