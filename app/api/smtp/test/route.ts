@@ -168,7 +168,7 @@ export async function POST(
       message: "SMTP test failed",
     });
     return NextResponse.json(
-      { error: "Internal Server Error", message: "SMTP test failed" },
+      { error: apiError.message, message: apiError.message },
       { status: 500 }
     );
   }

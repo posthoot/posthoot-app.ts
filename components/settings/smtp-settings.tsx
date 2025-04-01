@@ -22,7 +22,7 @@ import { useTeam } from "@/app/providers/team-provider";
 import { useSMTP } from "@/app/providers/smtp-provider";
 import { SMTPConfig, formSchema } from "@/lib/validations/smtp-provider";
 import { SMTPProviders } from "./smtp-providers";
-import { SMTPProvider } from "@/types";
+import { ApiError, SMTPProvider } from "@/types";
 import Link from "next/link";
 
 const DEFAULT_PROVIDERS: Record<SMTPProvider, SMTPConfig> = {
@@ -103,14 +103,22 @@ export function SMTPSettings({
 
   const onSubmit = async (data: SMTPConfig) => {
     try {
+      // first test the configuration
+      await testConfiguration(data);
+
       const response = await fetch("/api/smtp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ smtpConfigs: [{
-          ...data,
-          port: Number(data.port),
-          maxSendRate: Number(data.maxSendRate),
-        }], teamId: team.id }),
+        body: JSON.stringify({
+          smtpConfigs: [
+            {
+              ...data,
+              port: Number(data.port),
+              maxSendRate: Number(data.maxSendRate),
+            },
+          ],
+          teamId: team.id,
+        }),
       });
 
       if (!response.ok) throw new Error("Failed to save configuration");
@@ -160,18 +168,22 @@ export function SMTPSettings({
         }),
       });
 
-      if (!response.ok) throw new Error("Test failed");
+      if (!response.ok) {
+        const apiError = (await response.json()) as ApiError;
+        throw new Error(apiError.message);
+      }
 
       toast({
         title: "Success",
         description: "SMTP configuration test successful",
       });
-    } catch (error) {
+    } catch (error: any) {
       toast({
-        title: "Error",
-        description: "SMTP configuration test failed",
+        title: "SMTP configuration test failed",
+        description: error.message,
         variant: "destructive",
       });
+      throw error;
     }
   };
 
