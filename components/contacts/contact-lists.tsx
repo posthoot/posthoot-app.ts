@@ -139,7 +139,7 @@ export function ContactLists() {
 
           <Sheet open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <SheetTrigger asChild>
-              <Button className="bg-[#007C89] text-white hover:bg-[#005F6B]">
+              <Button className="text-white">
                 <Plus className="h-4 w-4 mr-2" />
                 New List
               </Button>

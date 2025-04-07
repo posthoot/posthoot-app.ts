@@ -1,7 +1,15 @@
 "use client";
 
 import { logger } from "@/app/lib/logger";
-import { Bell, HelpCircle, Plus, Search, Settings } from "lucide-react";
+import {
+  Bell,
+  HelpCircle,
+  Moon,
+  Plus,
+  Search,
+  Settings,
+  Sun,
+} from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useSession, signOut } from "next-auth/react";
 import {
@@ -15,7 +23,7 @@ import {
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { useRouter } from "next/navigation";
-
+import { useTheme } from "next-themes";
 interface AppHeaderProps {
   heading: string;
   description?: string;
@@ -49,11 +57,12 @@ export function AppHeader({
     label: "props",
   });
   const { data: session } = useSession();
+  const { theme, setTheme } = useTheme();
 
   return (
     <header className="sticky top-0 z-30 w-full border-b border bg-background ">
       <div className="flex h-16 items-center px-6">
-        <img src="/assets/logo.svg" alt="Posthoot" className="h-10 w-10" />
+        <img src="https://framerusercontent.com/images/Mj9OOgqyJTaP8t5wDmlauyecVM.png?scale-down-to=512" alt="Posthoot" className="h-10 w-10" />
         <div className="flex flex-1 items-center gap-x-4">
           <div className="relative w-full max-w-md ml-4">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -90,6 +99,16 @@ export function AppHeader({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="mr-4">
+              <DropdownMenuItem
+                onClick={() => setTheme(theme == "light" ? "dark" : "light")}
+              >
+                {theme == "light" ? (
+                  <Moon className="mr-2 h-4 w-4" />
+                ) : (
+                  <Sun className="mr-2 h-4 w-4" />
+                )}
+                {theme == "light" ? "Dark" : "Light"} mode
+              </DropdownMenuItem>
               <DropdownMenuItem>
                 <Settings className="mr-2 h-4 w-4" />
                 Settings

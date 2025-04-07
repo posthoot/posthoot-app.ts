@@ -276,7 +276,7 @@ const NewCampaignForm = () => {
   const renderStepIcon = (step: string) => {
     if (completedSteps.includes(step)) {
       return (
-        <div className="h-6 w-6  bg-[#007C89] flex items-center justify-center">
+        <div className="h-6 w-6  bg-primary flex items-center justify-center">
           <CheckIcon className="h-4 w-4 text-white" />
         </div>
       );
@@ -284,15 +284,15 @@ const NewCampaignForm = () => {
 
     switch (step) {
       case "to":
-        return <EnvelopeClosedIcon className="h-6 w-6 text-[#007C89]" />;
+        return <EnvelopeClosedIcon className="h-6 w-6 text-primary" />;
       case "from":
-        return <PersonIcon className="h-6 w-6 text-[#007C89]" />;
+        return <PersonIcon className="h-6 w-6 text-primary" />;
       case "subject":
-        return <CheckCircledIcon className="h-6 w-6 text-[#007C89]" />;
+        return <CheckCircledIcon className="h-6 w-6 text-primary" />;
       case "schedule":
-        return <CalendarIcon className="h-6 w-6 text-[#007C89]" />;
+        return <CalendarIcon className="h-6 w-6 text-primary" />;
       case "content":
-        return <CheckCircledIcon className="h-6 w-6 text-[#007C89]" />;
+        return <CheckCircledIcon className="h-6 w-6 text-primary" />;
       default:
         return null;
     }
@@ -405,10 +405,10 @@ const NewCampaignForm = () => {
                 render={({ field }) => (
                   <FormItem className="space-y-4">
                     <div>
-                      <FormLabel className="text-base font-semibold text-gray-900">
+                      <FormLabel className="text-base font-semibold text-sidebar-foreground">
                         From Address
                       </FormLabel>
-                      <FormDescription className="text-gray-600">
+                      <FormDescription className="text-sidebar-foreground">
                         Choose the email address that will appear in the "From"
                         field
                       </FormDescription>
@@ -450,7 +450,7 @@ const NewCampaignForm = () => {
                   className="pt-6 border-t space-y-4"
                 >
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-3">
+                    <h4 className="font-semibold text-sidebar-foreground mb-3">
                       Preview
                     </h4>
                     <div className="rounded-lg border border-gray-200 p-6 bg-gray-50">
@@ -459,7 +459,7 @@ const NewCampaignForm = () => {
                           <span className="text-sm font-medium text-gray-700">
                             From:
                           </span>
-                          <span className="text-sm text-gray-900">
+                          <span className="text-sm text-sidebar-foreground">
                             {
                               smtpConfigs.find(
                                 (c) => c.id === form.watch("smtpConfigId")
@@ -471,7 +471,7 @@ const NewCampaignForm = () => {
                           <span className="text-sm font-medium text-gray-700">
                             Reply-To:
                           </span>
-                          <span className="text-sm text-gray-900">
+                          <span className="text-sm text-sidebar-foreground">
                             {
                               smtpConfigs.find(
                                 (c) => c.id === form.watch("smtpConfigId")
@@ -483,7 +483,7 @@ const NewCampaignForm = () => {
                           <span className="text-sm font-medium text-gray-700">
                             Provider:
                           </span>
-                          <span className="text-sm text-gray-900">
+                          <span className="text-sm text-sidebar-foreground">
                             {
                               smtpConfigs.find(
                                 (c) => c.id === form.watch("smtpConfigId")
@@ -515,10 +515,10 @@ const NewCampaignForm = () => {
                 render={({ field }) => (
                   <FormItem className="space-y-4">
                     <div>
-                      <FormLabel className="text-base font-semibold text-gray-900">
+                      <FormLabel className="text-base font-semibold text-sidebar-foreground">
                         Subject Line
                       </FormLabel>
-                      <FormDescription className="text-gray-600">
+                      <FormDescription className="text-sidebar-foreground">
                         Write a compelling subject line that will make
                         subscribers want to open your email
                       </FormDescription>
@@ -542,7 +542,7 @@ const NewCampaignForm = () => {
                   className="pt-6 border-t space-y-6"
                 >
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-3">
+                    <h4 className="font-semibold text-sidebar-foreground mb-3">
                       Preview
                     </h4>
                     <div className="rounded-lg border border-gray-200 p-6 bg-gray-50 space-y-4">
@@ -552,7 +552,7 @@ const NewCampaignForm = () => {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between">
-                            <span className="font-medium text-gray-900">
+                            <span className="font-medium text-sidebar-foreground">
                               {smtpConfigs.find(
                                 (c) => c.id === form.watch("smtpConfigId")
                               )?.username || "Sender"}
@@ -565,17 +565,17 @@ const NewCampaignForm = () => {
                           </div>
                         </div>
                       </div>
-                      <p className="font-medium text-gray-900">
+                      <p className="font-medium text-sidebar-foreground">
                         {form.watch("name")}
                       </p>
                     </div>
                   </div>
 
                   <div className="bg-[#FFFCEE] border border-[#E7B75F]/30 rounded-lg p-6">
-                    <h4 className="font-semibold text-gray-900 mb-3">
+                    <h4 className="font-semibold text-sidebar-foreground mb-3">
                       Subject Line Tips
                     </h4>
-                    <ul className="text-sm text-gray-600 space-y-2">
+                    <ul className="text-sm text-sidebar-foreground space-y-2">
                       <li className="flex items-center gap-2">
                         <div className="w-1.5 h-1.5  bg-[#E7B75F]" />
                         Keep it short and clear (4-7 words)
@@ -613,12 +613,14 @@ const NewCampaignForm = () => {
                 whileHover={{ scale: 1.02 }}
                 className={cn(
                   "p-6 border rounded-lg cursor-pointer transition-all",
-                  !isScheduled && "border-[#007C89] bg-[#007C89]/5 shadow-sm"
+                  !isScheduled && "border-primary bg-primary/5 shadow-sm"
                 )}
                 onClick={() => setIsScheduled(false)}
               >
-                <h3 className="font-semibold text-gray-900 mb-2">Send now</h3>
-                <p className="text-sm text-gray-600">
+                <h3 className="font-semibold text-sidebar-foreground mb-2">
+                  Send now
+                </h3>
+                <p className="text-sm text-sidebar-foreground">
                   Your email will be sent immediately after review
                 </p>
               </motion.div>
@@ -627,12 +629,14 @@ const NewCampaignForm = () => {
                 whileHover={{ scale: 1.02 }}
                 className={cn(
                   "p-6 border rounded-lg cursor-pointer transition-all",
-                  isScheduled && "border-[#007C89] bg-[#007C89]/5 shadow-sm"
+                  isScheduled && "border-primary bg-primary/5 shadow-sm"
                 )}
                 onClick={() => setIsScheduled(true)}
               >
-                <h3 className="font-semibold text-gray-900 mb-2">Schedule</h3>
-                <p className="text-sm text-gray-600">
+                <h3 className="font-semibold text-sidebar-foreground mb-2">
+                  Schedule
+                </h3>
+                <p className="text-sm text-sidebar-foreground">
                   Pick a date and time to send your email
                 </p>
               </motion.div>
@@ -735,10 +739,10 @@ const NewCampaignForm = () => {
                       name="schedule"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-base font-medium text-gray-900">
+                          <FormLabel className="text-base font-medium text-sidebar-foreground">
                             Schedule Type
                           </FormLabel>
-                          <FormDescription className="text-sm text-gray-600">
+                          <FormDescription className="text-sm text-sidebar-foreground">
                             Choose how to schedule this campaign
                           </FormDescription>
                           <Select
@@ -769,10 +773,10 @@ const NewCampaignForm = () => {
                         name="recurringSchedule"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-base font-medium text-gray-900">
+                            <FormLabel className="text-base font-medium text-sidebar-foreground">
                               Recurrence
                             </FormLabel>
-                            <FormDescription className="text-sm text-gray-600">
+                            <FormDescription className="text-sm text-sidebar-foreground">
                               Choose how often to send this email
                             </FormDescription>
                             <Select
@@ -806,10 +810,10 @@ const NewCampaignForm = () => {
                         name="cronExpression"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-base font-medium text-gray-900">
+                            <FormLabel className="text-base font-medium text-sidebar-foreground">
                               Cron Expression
                             </FormLabel>
-                            <FormDescription className="text-sm text-gray-600">
+                            <FormDescription className="text-sm text-sidebar-foreground">
                               Enter a cron expression for custom scheduling
                             </FormDescription>
                             <FormControl>
@@ -836,7 +840,7 @@ const NewCampaignForm = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="p-6"
+            className="p-6 grid gap-3"
           >
             <div className="space-y-6">
               <FormField
@@ -845,10 +849,10 @@ const NewCampaignForm = () => {
                 render={({ field }) => (
                   <FormItem className="space-y-6">
                     <div>
-                      <FormLabel className="text-base font-semibold text-gray-900">
+                      <FormLabel className="text-base font-semibold text-sidebar-foreground">
                         Email Template
                       </FormLabel>
-                      <FormDescription className="text-gray-600">
+                      <FormDescription className="text-sidebar-foreground">
                         Choose a template for your email content
                       </FormDescription>
                     </div>
@@ -870,21 +874,17 @@ const NewCampaignForm = () => {
                         ))}
                       </SelectContent>
                     </Select>
-                    <FormMessage />
 
-                    <Link href="/templates/new">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="border-gray-200 text-[#007C89] hover:text-[#004E54] hover:border-[#007C89]"
-                      >
-                        Design email
-                      </Button>
-                    </Link>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
             </div>
+            <Link href="/templates/new" className="!mt-2">
+              <Button type="button" variant="secondary">
+                Design email
+              </Button>
+            </Link>
           </motion.div>
         );
 
@@ -896,16 +896,12 @@ const NewCampaignForm = () => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen">
           <div className="border-b">
             <div className="container mx-auto">
               <div className="flex items-center justify-between py-4 px-4">
                 <div className="flex items-center gap-4">
-                  <Button
-                    variant="ghost"
-                    onClick={() => router.back()}
-                    className="text-gray-600 hover:text-gray-900"
-                  >
+                  <Button variant="ghost" onClick={() => router.back()}>
                     ←
                   </Button>
                   <FormField
@@ -915,23 +911,16 @@ const NewCampaignForm = () => {
                       <Input
                         {...field}
                         placeholder="Give your campaign a name"
-                        className="w-full border-gray-200"
+                        className="w-full"
                       />
                     )}
                   />
                 </div>
                 <div className="flex gap-3">
-                  <Button
-                    variant="outline"
-                    onClick={() => router.back()}
-                    className="border-gray-200 text-gray-600 hover:text-gray-900"
-                  >
+                  <Button variant="outline" onClick={() => router.back()}>
                     Finish later
                   </Button>
-                  <Button
-                    type="submit"
-                    className="bg-[#007C89] text-white hover:bg-[#005F6B] shadow-sm"
-                  >
+                  <Button type="submit" className="text-white shadow-sm">
                     Send
                   </Button>
                 </div>
@@ -953,12 +942,14 @@ const NewCampaignForm = () => {
                   value="to"
                   className="border rounded-lg overflow-hidden"
                 >
-                  <AccordionTrigger className="px-6 py-4 hover:no-underline hover:bg-gray-50 [&[data-state=open]]:bg-gray-50">
+                  <AccordionTrigger className="px-6 py-4 hover:no-underline hover:bg-card [&[data-state=open]]:bg-card dark:text-white">
                     <div className="flex items-start text-left gap-4">
                       {renderStepIcon("to")}
                       <div>
-                        <div className="font-semibold text-gray-900">To</div>
-                        <div className="text-sm text-gray-500">
+                        <div className="font-semibold text-muted-foreground">
+                          To
+                        </div>
+                        <div className="text-sm text-muted-foreground">
                           {form.watch("listId")
                             ? `${
                                 lists.find((l) => l.id === form.watch("listId"))
@@ -978,12 +969,14 @@ const NewCampaignForm = () => {
                   value="from"
                   className="border rounded-lg overflow-hidden"
                 >
-                  <AccordionTrigger className="px-6 py-4 hover:no-underline hover:bg-gray-50 [&[data-state=open]]:bg-gray-50">
+                  <AccordionTrigger className="px-6 py-4 hover:no-underline hover:bg-card [&[data-state=open]]:bg-card dark:text-white">
                     <div className="flex items-start text-left gap-4">
                       {renderStepIcon("from")}
                       <div>
-                        <div className="font-semibold text-gray-900">From</div>
-                        <div className="text-sm text-gray-500">
+                        <div className="font-semibold text-muted-foreground">
+                          From
+                        </div>
+                        <div className="text-sm text-muted-foreground">
                           {form.watch("smtpConfigId")
                             ? `${
                                 smtpConfigs.find(
@@ -1004,14 +997,14 @@ const NewCampaignForm = () => {
                   value="subject"
                   className="border rounded-lg overflow-hidden"
                 >
-                  <AccordionTrigger className="px-6 py-4 hover:no-underline hover:bg-gray-50 [&[data-state=open]]:bg-gray-50">
+                  <AccordionTrigger className="px-6 py-4 hover:no-underline hover:bg-card [&[data-state=open]]:bg-card dark:text-white">
                     <div className="flex items-start text-left gap-4">
                       {renderStepIcon("subject")}
                       <div>
-                        <div className="font-semibold text-gray-900">
+                        <div className="font-semibold text-muted-foreground">
                           Subject
                         </div>
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm text-muted-foreground">
                           {form.watch("name") || "Write your subject line"}
                         </div>
                       </div>
@@ -1026,14 +1019,14 @@ const NewCampaignForm = () => {
                   value="schedule"
                   className="border rounded-lg overflow-hidden"
                 >
-                  <AccordionTrigger className="px-6 py-4 hover:no-underline hover:bg-gray-50 [&[data-state=open]]:bg-gray-50">
+                  <AccordionTrigger className="px-6 py-4 hover:no-underline hover:bg-card [&[data-state=open]]:bg-card dark:text-white">
                     <div className="flex items-start text-left gap-4">
                       {renderStepIcon("schedule")}
                       <div>
-                        <div className="font-semibold text-gray-900">
+                        <div className="font-semibold text-muted-foreground">
                           Send time
                         </div>
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm text-muted-foreground">
                           {isScheduled
                             ? form.watch("scheduledFor")
                               ? format(form.watch("scheduledFor"), "PPP")
@@ -1052,14 +1045,14 @@ const NewCampaignForm = () => {
                   value="content"
                   className="border rounded-lg overflow-hidden"
                 >
-                  <AccordionTrigger className="px-6 py-4 hover:no-underline hover:bg-gray-50 [&[data-state=open]]:bg-gray-50">
+                  <AccordionTrigger className="px-6 py-4 hover:no-underline hover:bg-card [&[data-state=open]]:bg-card dark:text-white">
                     <div className="flex items-start text-left gap-4">
                       {renderStepIcon("content")}
                       <div>
-                        <div className="font-semibold text-gray-900">
+                        <div className="font-semibold text-muted-foreground">
                           Content
                         </div>
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm text-muted-foreground">
                           {form.watch("templateId")
                             ? `${
                                 templates.find(
