@@ -1,8 +1,17 @@
+import { auth } from "@/auth";
 import { APIService } from "@/lib/services/api";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request): Promise<NextResponse> {
   try {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const { email, name, role } = body;
 
@@ -15,7 +24,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     }
     
     // Use APIService for the registration
-    await new APIService("auth", null).post("invite", {
+    await new APIService("auth", session).post("invite", {
       email: email,
       name: name,
       role: role,
