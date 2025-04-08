@@ -32,10 +32,6 @@ import MailList from "@/app/developer/logs/emails/components/mail-list";
 import { type Mail } from "@/app/types";
 import { useMail } from "@/hooks/use-mail";
 
-interface MailProps {
-  defaultLayout: number[] | undefined;
-}
-
 const PAGE_SIZE = 20;
 
 async function fetchEmails({ pageParam = 0, filter = "SENT" }) {
@@ -51,9 +47,8 @@ async function fetchEmails({ pageParam = 0, filter = "SENT" }) {
   };
 }
 
-export default function Mail({
-  defaultLayout = [265, 440, 655],
-}: MailProps) {
+export default function Mail() {
+  const defaultLayout = [265, 440, 655]
   const { mail } = useMail();
   const [activeTab, setActiveTab] = React.useState("SENT");
   const [search, setSearch] = React.useState("");
