@@ -9,14 +9,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
 import { useTemplates } from "@/app/providers/templates-provider";
 import { useTeam } from "@/app/providers/team-provider";
+import { toast } from "sonner";
 
 
 export function TeamSettings() {
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
-  const { toast } = useToast();
   const { templates } = useTemplates();
   const { team } = useTeam();
 
@@ -41,16 +40,9 @@ export function TeamSettings() {
 
       if (!response.ok) throw new Error("Failed to update settings");
 
-      toast({
-        title: "Success",
-        description: "Invite template updated successfully",
-      });
+      toast.success("Invite template updated successfully");
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update invite template",
-        variant: "destructive",
-      });
+      toast.error("Failed to update invite template");
     }
   };
 

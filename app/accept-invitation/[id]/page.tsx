@@ -15,9 +15,9 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 import { signIn, useSession } from "next-auth/react";
 import { Team, TeamInvite, User } from "@/types";
+import { toast } from "sonner";
 
 const acceptInviteSchema = z
   .object({
@@ -42,7 +42,6 @@ type AcceptInviteFormData = z.infer<typeof acceptInviteSchema>;
 
 export default function AcceptInvitationPage() {
   const params = useParams();
-  const { toast } = useToast();
   const [inviteData, setInviteData] = useState<
     | (TeamInvite & {
         inviter: User;
@@ -79,11 +78,7 @@ export default function AcceptInvitationPage() {
         const data = await response.json();
         setInviteData(data.invitation);
       } catch (error) {
-        toast({
-          title: "Error",
-          description: "Invalid or expired invitation",
-          variant: "destructive",
-        });
+        toast.error("Invalid or expired invitation");
       } finally {
         setIsLoading(false);
       }
@@ -105,10 +100,7 @@ export default function AcceptInvitationPage() {
         throw new Error("Failed to accept invitation");
       }
 
-      toast({
-        title: "Success",
-        description: "Account created successfully. Please log in.",
-      });
+      toast.success("Account created successfully. Please log in.");
 
       return signIn("credentials", {
         email: inviteData.email,
@@ -117,11 +109,7 @@ export default function AcceptInvitationPage() {
         callbackUrl: "/",
       });
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to accept invitation",
-        variant: "destructive",
-      });
+      toast.error("Failed to accept invitation");
     } finally {
       setIsSubmitting(false);
     }

@@ -52,7 +52,6 @@ export default function MailDisplay({ mail }: MailDisplayProps) {
   const getMail = async (id: string) => {
     const response = await fetch(`/api/emails?id=${id}`);
     const data = await response.json();
-    // decode the body its base64 encoded
     const decodedBody = atob(data.data?.[0].body);
     const { html } = extract(decodedBody);
     return { ...data.data?.[0], body: html };

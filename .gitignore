@@ -32,5 +32,4 @@ yarn-error.log*
 nginx/ssl
 nginx/auto-ssl
 nginx/logs
-logs
 postgres_data

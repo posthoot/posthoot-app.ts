@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/table";
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Download } from "lucide-react";
 import {
@@ -30,6 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { toast } from "sonner";
 
 interface APIKeyUsage {
   id: string;
@@ -67,7 +67,6 @@ interface APIKeyStats {
 export default function APIKeyDetailsPage() {
   const params = useParams();
   const router = useRouter();
-  const { toast } = useToast();
   const [usageStats, setUsageStats] = useState<APIKeyUsage[]>([]);
   const [stats, setStats] = useState<APIKeyStats>({
     totalRequests: 0,
@@ -88,11 +87,7 @@ export default function APIKeyDetailsPage() {
         const data = await response.json();
         setUsageStats(data.data);
       } catch (error) {
-        toast({
-          title: "Error",
-          description: "Failed to fetch API key usage data",
-          variant: "destructive",
-        });
+        toast.error("Failed to fetch API key usage data");
       } finally {
         setIsLoading(false);
       }

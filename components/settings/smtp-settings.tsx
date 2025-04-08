@@ -5,7 +5,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
 import { DataTable } from "@/components/ui/data-table";
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +23,7 @@ import { SMTPConfig, formSchema } from "@/lib/validations/smtp-provider";
 import { SMTPProviders } from "./smtp-providers";
 import { ApiError, SMTPProvider } from "@/types";
 import Link from "next/link";
+import { toast } from "sonner";
 
 const DEFAULT_PROVIDERS: Record<SMTPProvider, SMTPConfig> = {
   [SMTPProvider.CUSTOM]: {
@@ -81,7 +81,6 @@ export function SMTPSettings({
   isDialogOpen: boolean;
   setIsDialogOpen: (open: boolean) => void;
 }) {
-  const { toast } = useToast();
   const [editConfig, setEditConfig] = useState<SMTPConfig | null>(null);
   const { team } = useTeam();
   const { configs: smtpConfigs, isLoading, refresh } = useSMTP();
@@ -128,18 +127,11 @@ export function SMTPSettings({
       }
 
       refresh();
-      toast({
-        title: "Success",
-        description: "SMTP configuration saved successfully",
-      });
+      toast.success("SMTP configuration saved successfully");
       setIsDialogOpen(false);
       form.reset();
     } catch (error: any) {
-      toast({
-        title: "Failed to save SMTP configuration",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error("Failed to save SMTP configuration");
     }
   };
 
@@ -147,16 +139,9 @@ export function SMTPSettings({
     try {
       await fetch(`/api/smtp/${id}`, { method: "DELETE" });
       refresh();
-      toast({
-        title: "Success",
-        description: "SMTP configuration removed successfully",
-      });
+      toast.success("SMTP configuration removed successfully");
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to remove SMTP configuration",
-        variant: "destructive",
-      });
+      toast.error("Failed to remove SMTP configuration");
     }
   };
 
@@ -177,16 +162,9 @@ export function SMTPSettings({
         throw new Error(apiError.message);
       }
 
-      toast({
-        title: "Success",
-        description: "SMTP configuration test successful",
-      });
+      toast.success("SMTP configuration test successful");
     } catch (error: any) {
-      toast({
-        title: "SMTP configuration test failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error("SMTP configuration test failed");
       throw error;
     }
   };

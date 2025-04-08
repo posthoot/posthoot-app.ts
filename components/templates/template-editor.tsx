@@ -6,7 +6,6 @@ import EmailEditor, { EditorRef, EmailEditorProps } from "react-email-editor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
 import { EmailCategory, EmailTemplate, TemplateEditorProps } from "@/types";
 import { useTeam } from "@/app/providers/team-provider";
 import {
@@ -30,6 +29,7 @@ import { z } from "zod";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Settings, Mail, Send } from "lucide-react";
 import { deepCompare } from "@/lib/utils";
+import { toast } from "sonner";
 
 const testEmailSchema = z.object({
   email: z.string().email(),
@@ -37,7 +37,6 @@ const testEmailSchema = z.object({
 
 export function TemplateEditor({ templateId }: TemplateEditorProps) {
   const router = useRouter();
-  const { toast } = useToast();
   const emailEditorRef = useRef<EditorRef | null>(null);
   const { team } = useTeam();
 
@@ -68,11 +67,7 @@ export function TemplateEditor({ templateId }: TemplateEditorProps) {
         template.categoryId = data.data[0].id;
       }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch email categories",
-        variant: "destructive",
-      });
+      toast.error("Failed to fetch email categories");
     }
   };
 
@@ -100,11 +95,7 @@ export function TemplateEditor({ templateId }: TemplateEditorProps) {
       console.log("data", data);
       setTemplate(data.data);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load template",
-        variant: "destructive",
-      });
+      toast.error("Failed to load template");
     }
   };
 
@@ -142,18 +133,11 @@ export function TemplateEditor({ templateId }: TemplateEditorProps) {
 
         if (!response.ok) throw new Error("Failed to save template");
 
-        toast({
-          title: "Success",
-          description: "Template saved successfully",
-        });
+        toast.success("Template saved successfully");
         router.push("/templates");
       });
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to save template",
-        variant: "destructive",
-      });
+      toast.error("Failed to save template");
     }
   };
 
@@ -175,10 +159,7 @@ export function TemplateEditor({ templateId }: TemplateEditorProps) {
         throw new Error("Failed to send test email");
       }
 
-      toast({
-        title: "Success",
-        description: "Test email sent successfully",
-      });
+      toast.success("Test email sent successfully");
     });
   };
 

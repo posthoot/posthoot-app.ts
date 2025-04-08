@@ -16,7 +16,6 @@ import {
   ChevronRight,
   ChevronLeft,
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 import { useTeam } from "@/app/providers/team-provider";
 import {
   DropdownMenu,
@@ -30,6 +29,7 @@ import { EmailTemplate } from "@/types";
 import { useQuery } from "@tanstack/react-query";
 import { Pagination } from "../ui/pagination";
 import { Input } from "../ui/input";
+import { toast } from "sonner";
 
 interface Template {
   id: string;
@@ -42,7 +42,7 @@ interface Template {
 }
 
 export function TemplatesList() {
-  const [templates, setTemplates] = useState<Template[]>([]);
+  const [templates, setTemplates] = useState<EmailTemplate[]>([]);
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 1,
     pageSize: 50,
@@ -51,7 +51,6 @@ export function TemplatesList() {
   const [totalCount, setTotalCount] = useState<number>(0);
 
   const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
   const router = useRouter();
   const { team } = useTeam();
 
@@ -70,20 +69,11 @@ export function TemplatesList() {
         pageSize: data.limit,
       });
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch templates",
-        variant: "destructive",
-      });
+      toast.error("Failed to fetch templates");
     } finally {
       setIsLoading(false);
     }
   };
-
-  const { data, isLoading: isLoadingQuery } = useQuery({
-    queryKey: ["templates", pagination.pageIndex, pagination.pageSize],
-    queryFn: fetchTemplates,
-  });
 
   const deleteTemplate = async (id: string) => {
     try {
@@ -93,18 +83,11 @@ export function TemplatesList() {
       });
       if (!response.ok) throw new Error("Failed to delete template");
 
-      toast({
-        title: "Success",
-        description: "Template deleted successfully",
-      });
+      toast.success("Template deleted successfully");
 
       await fetchTemplates();
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete template",
-        variant: "destructive",
-      });
+      toast.error("Failed to delete template");
     } finally {
       setIsLoading(false);
     }
@@ -128,18 +111,11 @@ export function TemplatesList() {
 
       if (!createResponse.ok) throw new Error("Failed to duplicate template");
 
-      toast({
-        title: "Success",
-        description: "Template duplicated successfully",
-      });
+      toast.success("Template duplicated successfully");
 
       await fetchTemplates();
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to duplicate template",
-        variant: "destructive",
-      });
+      toast.error("Failed to duplicate template");
     } finally {
       setIsLoading(false);
     }
@@ -150,101 +126,6 @@ export function TemplatesList() {
       fetchTemplates();
     }
   }, [team?.id]);
-
-  const columns: ColumnDef<EmailTemplate>[] = [
-    {
-      id: "select",
-      header: ({ table }) => (
-        <Checkbox
-          checked={table.getIsAllPageRowsSelected()}
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-        />
-      ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-        />
-      ),
-      enableSorting: false,
-      enableHiding: false,
-    },
-    {
-      accessorKey: "name",
-      header: "Name",
-      cell: ({ row }) => (
-        <div className="flex flex-col">
-          <span className="font-medium">{row.getValue("name")}</span>
-          <span className="text-sm text-muted-foreground">
-            {row.original.subject}
-          </span>
-        </div>
-      ),
-    },
-    {
-      accessorKey: "category",
-      header: "Category",
-      cell: ({ row }) => (
-        <div className="capitalize">{row.getValue("category")?.["name"]}</div>
-      ),
-    },
-    {
-      accessorKey: "updatedAt",
-      header: "Last Modified",
-      cell: ({ row }) => {
-        return (
-          <div className="font-medium">
-            {new Date(row.getValue("updatedAt")).toLocaleDateString()}
-          </div>
-        );
-      },
-    },
-    {
-      id: "actions",
-      cell: ({ row }) => {
-        const template = row.original;
-
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem
-                onClick={() => navigator.clipboard.writeText(template.id)}
-              >
-                Copy template ID
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() => router.push(`/templates/${template.id}/edit`)}
-              >
-                <Pencil className="mr-2 h-4 w-4" />
-                Edit
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => duplicateTemplate(template)}>
-                <Copy className="mr-2 h-4 w-4" />
-                Duplicate
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="text-red-600"
-                onClick={() => deleteTemplate(template.id)}
-              >
-                <Trash className="mr-2 h-4 w-4" />
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        );
-      },
-    },
-  ];
 
   return (
     <div className="space-y-4 pb-12">
@@ -272,7 +153,7 @@ export function TemplatesList() {
                   <h3 className="font-medium">{template.name}</h3>
                   <p className="text-sm text-muted-foreground">
                     Last updated{" "}
-                    {new Date(template.lastModified).toLocaleDateString()}
+                    {new Date(template.updatedAt).toLocaleDateString()}
                   </p>
                 </div>
               </div>
@@ -286,7 +167,10 @@ export function TemplatesList() {
                 <DropdownMenuContent align="end">
                   <DropdownMenuLabel>Actions</DropdownMenuLabel>
                   <DropdownMenuItem
-                    onClick={() => navigator.clipboard.writeText(template.id)}
+                    onClick={() => {
+                      navigator.clipboard.writeText(template.id);
+                      toast.success("Template ID copied to clipboard");
+                    }}
                   >
                     Copy template ID
                   </DropdownMenuItem>
@@ -299,7 +183,7 @@ export function TemplatesList() {
                     <Pencil className="mr-2 h-4 w-4" />
                     Edit
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => {}}>
+                  <DropdownMenuItem onClick={() => duplicateTemplate(template)}>
                     <Copy className="mr-2 h-4 w-4" />
                     Duplicate
                   </DropdownMenuItem>

@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 import { useTeam } from "@/app/providers/team-provider";
 import {
   Dialog,
@@ -23,6 +22,8 @@ import {
 } from "@/components/ui/select";
 import { parse } from "papaparse";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "../ui/textarea";
+import { toast } from "sonner";
 
 interface ContactImportProps {
   listId: string;
@@ -67,15 +68,14 @@ const ALL_FIELDS = [...REQUIRED_FIELDS, ...OPTIONAL_FIELDS];
 export function ContactImport({ listId, onImportComplete }: ContactImportProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [step, setStep] = useState<"upload" | "map" | "preview">("upload");
+  const [step, setStep] = useState<"upload" | "map" | "preview" | "text">("upload");
   const [csvHeaders, setCsvHeaders] = useState<string[]>([]);
   const [fieldMapping, setFieldMapping] = useState<FieldMapping>({});
   const [csvData, setCsvData] = useState<any[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { toast } = useToast();
   const { team } = useTeam();
   const [file, setFile] = useState<File | null>(null);
-
+  const [text, setText] = useState<string>("name,email,phone\nJohn Doe,john.doe@example.com,1234567890\nJane Smith,jane.smith@example.com,9876543210");
   // Function to guess field mapping based on header name
   const guessFieldMapping = (header: string): string | null => {
     const normalizedHeader = header.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -102,11 +102,7 @@ export function ContactImport({ listId, onImportComplete }: ContactImportProps) 
       },
       complete: (results) => {
         if (results.data.length === 0) {
-          toast({
-            title: "Error",
-            description: "The CSV file is empty",
-            variant: "destructive",
-          });
+          toast.error("The CSV file is empty");
           return;
         }
 
@@ -127,23 +123,27 @@ export function ContactImport({ listId, onImportComplete }: ContactImportProps) 
         setStep("map");
       },
       error: () => {
-        toast({
-          title: "Error",
-          description: "Failed to parse CSV file",
-          variant: "destructive",
-        });
+        toast.error("Failed to parse CSV file");
       }
     });
   };
 
   const handleImport = async () => {
+
+
+    if (step === "text") {
+      toast.loading("Creating CSV file...");
+      // lets create a csv file from the text
+      const csv = text.split("\n").map(line => line.split(",").map(cell => cell.trim()).join(",")).join("\n");
+      setFile(new File([csv], "contacts.csv", { type: "text/csv" }));
+      fieldMapping["name"] = "name";
+      fieldMapping["email"] = "email";
+      fieldMapping["phone"] = "phone";
+    }
+
     // Validate required fields
     if (!Object.values(fieldMapping).includes("email")) {
-      toast({
-        title: "Error",
-        description: "Email field mapping is required",
-        variant: "destructive",
-      });
+      toast.error("Email field mapping is required");
       return;
     }
 
@@ -178,10 +178,7 @@ export function ContactImport({ listId, onImportComplete }: ContactImportProps) 
       if (!response.ok) throw new Error("Failed to import contacts");
 
       const result = await response.json();
-      toast({
-        title: "Success",
-        description: `Successfully imported ${result.imported} contacts`,
-      });
+      toast.success(`Successfully imported ${result.imported} contacts`);
 
       // Reset state and close dialog
       setStep("upload");
@@ -189,11 +186,7 @@ export function ContactImport({ listId, onImportComplete }: ContactImportProps) 
       onImportComplete();
 
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to import contacts",
-        variant: "destructive",
-      });
+      toast.error("Failed to import contacts");
     } finally {
       setIsLoading(false);
       if (fileInputRef.current) {
@@ -225,10 +218,40 @@ export function ContactImport({ listId, onImportComplete }: ContactImportProps) 
         <DialogHeader>
           <DialogTitle>Import Contacts</DialogTitle>
           <DialogDescription>
+            <div className="flex border-b py-4 mb-3 gap-4">
+              <Button 
+                variant={step === "upload" ? "secondary" : "ghost"}
+                onClick={() => setStep("upload")}
+                size="sm"
+              >
+                CSV Import
+              </Button>
+              <Button
+                variant={step === "text" ? "secondary" : "ghost"} 
+                onClick={() => setStep("text")}
+                size="sm"
+              >
+                Manually Add
+              </Button>
+            </div>
             {step === "upload" && "Upload a CSV file with your contacts data."}
             {step === "map" && "Map your CSV columns to contact fields."}
+            {step === "text" && "Manually add contacts."}
           </DialogDescription>
         </DialogHeader>
+
+        {
+          step === 'text' && (
+            <div className="space-y-4 py-4">
+              <Textarea
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                placeholder="Enter contacts here"
+                className="w-full"
+              />
+            </div>
+          )
+        }
 
         {step === "upload" && (
           <div className="space-y-4 py-4">
@@ -308,7 +331,7 @@ export function ContactImport({ listId, onImportComplete }: ContactImportProps) 
           <Button variant="outline" onClick={handleCancel}>
             Cancel
           </Button>
-          {step === "map" && (
+          {step === "map" || step === "text" && (
             <Button onClick={handleImport} disabled={isLoading}>
               {isLoading ? "Importing..." : "Import Contacts"}
             </Button>

@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
 import {
   Plus,
   Trash2,
@@ -47,6 +46,7 @@ import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "../page-header";
 import { DataTable } from "../table/data-table";
+import { toast } from "sonner";
 
 interface MailingList {
   id: string;
@@ -61,7 +61,6 @@ interface MailingList {
 export function ContactLists() {
   const [newList, setNewList] = useState({ name: "", description: "" });
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const { toast } = useToast();
   const router = useRouter();
   const { team } = useTeam();
   const { lists, isLoading, error, refetch } = useMailingLists();
@@ -79,16 +78,9 @@ export function ContactLists() {
       await refetch();
       setNewList({ name: "", description: "" });
       setIsDialogOpen(false);
-      toast({
-        title: "Success",
-        description: "Contact list created successfully",
-      });
+      toast.success("Contact list created successfully");
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create contact list",
-        variant: "destructive",
-      });
+      toast.error("Failed to create contact list");
     }
   };
 
@@ -104,16 +96,9 @@ export function ContactLists() {
       if (!response.ok) throw new Error("Failed to delete list");
 
       await refetch();
-      toast({
-        title: "Success",
-        description: "Contact list deleted successfully",
-      });
+      toast.success("Contact list deleted successfully");
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete contact list",
-        variant: "destructive",
-      });
+      toast.error("Failed to delete contact list");
     }
   };
 

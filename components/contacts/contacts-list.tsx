@@ -7,9 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, Mail, UserX, UserCheck } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 import { useTeam } from "@/app/providers/team-provider";
-import { ContactImport } from "./contact-import";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +16,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { toast } from "sonner";
 
 interface Contact {
   id: string;
@@ -42,7 +41,6 @@ export function ContactsList({ listId }: { listId: string }) {
   });
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
   const { team } = useTeam();
 
   const fetchContacts = async () => {
@@ -61,12 +59,9 @@ export function ContactsList({ listId }: { listId: string }) {
         pageSize: data.limit,
       });
       setTotal(data.total);
+      toast.success("Contacts fetched successfully");
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch contacts",
-        variant: "destructive",
-      });
+      toast.error("Failed to fetch contacts");
     } finally {
       setIsLoading(false);
     }
@@ -89,20 +84,15 @@ export function ContactsList({ listId }: { listId: string }) {
 
       if (!response.ok) throw new Error("Failed to update contact status");
 
-      toast({
-        title: "Success",
-        description: `Contact ${
+      toast.success(
+        `Contact ${
           newStatus === "ACTIVE" ? "resubscribed" : "unsubscribed"
-        } successfully`,
-      });
+        } successfully`
+      );
 
       await fetchContacts();
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update contact status",
-        variant: "destructive",
-      });
+      toast.error("Failed to update contact status");
     } finally {
       setIsLoading(false);
     }

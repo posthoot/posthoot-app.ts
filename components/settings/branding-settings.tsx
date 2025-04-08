@@ -13,9 +13,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Upload, Image as ImageIcon } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { useTeam } from "@/app/providers/team-provider";
+import { toast } from "sonner";
 
 const brandingSchema = z.object({
   dashboardName: z
@@ -26,13 +26,11 @@ const brandingSchema = z.object({
 type BrandingFormData = z.infer<typeof brandingSchema>;
 
 export function BrandingSettings() {
-  const { toast } = useToast();
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { team } = useTeam();
-
 
   const {
     register,
@@ -48,13 +46,9 @@ export function BrandingSettings() {
   const handleLogoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) {
+      if (file.size > 1 * 1024 * 1024) {
         // 5MB limit
-        toast({
-          title: "Error",
-          description: "Logo file size must be less than 5MB",
-          variant: "destructive",
-        });
+        toast.error("Logo file size must be less than 1MB");
         return;
       }
 
@@ -85,16 +79,9 @@ export function BrandingSettings() {
 
       if (!response.ok) throw new Error("Failed to update branding settings");
 
-      toast({
-        title: "Success",
-        description: "Branding settings updated successfully",
-      });
+      toast.success("Branding settings updated successfully");
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update branding settings",
-        variant: "destructive",
-      });
+      toast.error("Failed to update branding settings");
     } finally {
       setIsSubmitting(false);
     }

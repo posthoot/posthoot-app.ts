@@ -23,15 +23,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
+import { toast } from "sonner";
 import { PageHeader } from "@/components/page-header";
 import { APIKey } from "@/types";
 import { z } from "zod";
@@ -62,7 +55,6 @@ const formSchema = z.object({
 
 export default function APIKeysPage() {
   const [isCreateKeyOpen, setIsCreateKeyOpen] = useState(false);
-  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -87,16 +79,9 @@ export default function APIKeysPage() {
       if (!response.ok) throw new Error("Failed to delete API key");
 
       setApiKeys(apiKeys.filter((key) => key.id !== id));
-      toast({
-        title: "Success",
-        description: "API key deleted successfully",
-      });
+      toast.success("API key deleted successfully");
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete API key",
-        variant: "destructive",
-      });
+      toast.error("Failed to delete API key");
     }
   };
 
@@ -115,18 +100,9 @@ export default function APIKeysPage() {
       setApiKeys(
         apiKeys?.map((key) => (key.id === id ? { ...key, isActive } : key))
       );
-      toast({
-        title: "Success",
-        description: `API key ${
-          isActive ? "activated" : "deactivated"
-        } successfully`,
-      });
+      toast.success(`API key ${isActive ? "activated" : "deactivated"} successfully`);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update API key",
-        variant: "destructive",
-      });
+      toast.error("Failed to update API key");
     }
   };
 
@@ -140,11 +116,7 @@ export default function APIKeysPage() {
       }
       console.log(apiKeys, "FETCHED");
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch API keys",
-        variant: "destructive",
-      });
+      toast.error("Failed to fetch API keys");
     }
   };
 
@@ -163,16 +135,9 @@ export default function APIKeysPage() {
 
       const newKey = await response.json();
       setApiKeys([...apiKeys, newKey]);
-      toast({
-        title: "Success",
-        description: "API key created successfully",
-      });
+      toast.success("API key created successfully");
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create API key",
-        variant: "destructive",
-      });
+      toast.error("Failed to create API key");
     } finally {
       setIsCreateKeyOpen(false);
       setIsLoading(false);

@@ -1,17 +1,14 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import { headers } from "next/headers";
 import { ThemeProvider } from "@/components/theme-provider";
 import { auth } from "@/auth";
 import { NextAuthProvider } from "./providers/NextAuthProvider";
 import { TeamProvider } from "@/app/providers/team-provider";
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "sonner";
 import { cn } from "@/lib/utils";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { QueryProvider } from "./providers/query-provider";
-import { PageHeader } from "@/components/page-header";
 import { AppHeader } from "@/components/app-header";
 
 export const metadata: Metadata = {
@@ -51,7 +48,7 @@ async function MainLayout({ children }: { children: React.ReactNode }) {
         <div className="lg:fixed lg:left-0 lg:top-[64px] lg:bottom-0 lg:w-64 overflow-y-auto overflow-x-hidden">
           <AppSidebar className="h-full w-full" />
         </div>
-        <main className="flex-1 overflow-y-auto w-full lg:ml-64">
+        <main className="flex-1 overflow-y-auto w-full lg:ml-64 max-h-svh">
           {children}
         </main>
       </div>
