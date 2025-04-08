@@ -202,8 +202,8 @@ export function TemplatesList() {
           {pagination && (
             <div className="flex justify-between items-center mt-4 text-sm text-[#606060]">
               <div>
-                Showing results {pagination.pageIndex} -{" "}
-                {pagination.pageIndex + pagination.pageSize} of {totalCount}
+                Showing results {pagination.pageIndex} - {" "}
+                {pagination.pageIndex * pagination.pageSize} of {totalCount}
               </div>
               <div className="flex items-center gap-2">
                 <span>Page</span>

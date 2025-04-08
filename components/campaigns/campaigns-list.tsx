@@ -131,20 +131,21 @@ export function CampaignsList() {
   ];
 
   return (
-    <div>
-      <DataTable
-        pagination={true}
-        columns={columns}
-        data={campaigns}
-        pageSize={limit}
-        pageIndex={page - 1}
-        isLoading={isLoading}
-        totalRows={total}
-        onPaginationChange={({ pageIndex, pageSize }) => {
-          setPage(pageIndex);
-          setLimit(pageSize);
-        }}
-      />
-    </div>
+    <DataTable
+      pagination={true}
+      onPaginationChange={(pagination: {
+        pageIndex: number;
+        pageSize: number;
+      }) => {
+        setPage(pagination.pageIndex);
+        setLimit(pagination.pageSize);
+      }}
+      totalRows={total}
+      isLoading={isLoading}
+      pageIndex={page}
+      pageSize={limit}
+      columns={columns as any}
+      data={campaigns}
+    />
   );
 }

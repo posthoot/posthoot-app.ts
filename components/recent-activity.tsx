@@ -7,12 +7,19 @@ import { cn } from "@/lib/utils";
 import { useTeam } from "@/app/providers/team-provider";
 
 interface EmailEvent {
-  id: string;
-  type: "OPENED" | "CLICKED" | "BOUNCED" | "FAILED";
-  createdAt: string;
-  sentEmail: {
-    subject: string;
-    recipient: string;
+  eventId: string;
+  eventType: "OPENED" | "CLICKED" | "BOUNCED" | "FAILED";
+  timestamp: string;
+  campaignName: string;
+  emailSubject: string;
+  recipient: string;
+  deviceInfo?: {
+    type: string;
+    browser: string;
+  };
+  location?: {
+    country: string;
+    city: string;
   };
 }
 
@@ -24,10 +31,26 @@ export function RecentActivity() {
     const fetchEvents = async () => {
       try {
         const response = await fetch(
-          `/api/email/track/events?limit=10&teamId=${team?.id}`
+          `/api/analytics/team/overview?teamId=${team?.id}`
         );
-        const data = await response.json();
-        setEvents(data);
+        if (!response.ok) {
+          throw new Error('Failed to fetch team overview');
+        }
+        const { data } = await response.json();
+
+        // Convert tracking events from team overview to email events
+        const recentEvents = (data.recentActivity || []).slice(0, 10).map((activity: any) => ({
+          eventId: activity.id,
+          eventType: activity.type.toUpperCase(),
+          timestamp: activity.timestamp,
+          campaignName: activity.campaignName || '',
+          emailSubject: activity.emailSubject || 'Email Campaign',
+          recipient: activity.recipient,
+          deviceInfo: activity.deviceInfo,
+          location: activity.location
+        }));
+        
+        setEvents(recentEvents);
       } catch (error) {
         console.error("Failed to fetch events:", error);
       } finally {
@@ -35,10 +58,12 @@ export function RecentActivity() {
       }
     };
 
-    fetchEvents();
-  }, []);
+    if (team?.id) {
+      fetchEvents();
+    }
+  }, [team?.id]);
 
-  const getEventIcon = (type: EmailEvent["type"]) => {
+  const getEventIcon = (type: EmailEvent["eventType"]) => {
     switch (type) {
       case "OPENED":
         return <Eye className="h-4 w-4" />;
@@ -52,7 +77,7 @@ export function RecentActivity() {
     }
   };
 
-  const getEventColor = (type: EmailEvent["type"]) => {
+  const getEventColor = (type: EmailEvent["eventType"]) => {
     switch (type) {
       case "OPENED":
         return "text-blue-500";
@@ -73,20 +98,34 @@ export function RecentActivity() {
   return (
     <div className="space-y-8">
       {events.map((event) => (
-        <div key={event.id} className="flex items-start space-x-4">
-          <div className={cn("mt-1", getEventColor(event.type))}>
-            {getEventIcon(event.type)}
+        <div key={event.eventId} className="flex items-start space-x-4">
+          <div className={cn("mt-1", getEventColor(event.eventType))}>
+            {getEventIcon(event.eventType)}
           </div>
           <div className="space-y-1">
             <p className="text-sm font-medium leading-none">
-              {event.sentEmail.subject}
+              {event.emailSubject}
             </p>
-            <p className="text-sm text-muted-foreground">
-              {event.sentEmail.recipient}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {format(new Date(event.createdAt), "MMM d, yyyy 'at' h:mm a")}
-            </p>
+            <div className="flex items-center gap-2">
+              <p className="text-sm text-muted-foreground">
+                {event.recipient}
+              </p>
+              {event.deviceInfo && (
+                <span className="text-xs text-muted-foreground">
+                  via {event.deviceInfo.type} ({event.deviceInfo.browser})
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <p className="text-xs text-muted-foreground">
+                {format(new Date(event.timestamp), "MMM d, yyyy 'at' h:mm a")}
+              </p>
+              {event.location && (
+                <span className="text-xs text-muted-foreground">
+                  from {event.location.city}, {event.location.country}
+                </span>
+              )}
+            </div>
           </div>
         </div>
       ))}

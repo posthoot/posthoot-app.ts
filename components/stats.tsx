@@ -11,13 +11,36 @@ export function Stats() {
   const { team } = useTeam();
 
   useEffect(() => {
+    if (!team?.id) return;
+
     const fetchMetrics = async () => {
       try {
         const response = await fetch(
-          `/api/email/track/metrics?teamId=${team?.id}`
+          `/api/analytics/team/overview?teamId=${team?.id}`
         );
-        const data = await response.json();
-        setMetricsData(Array.isArray(data) ? data : [data]);
+        if (!response.ok) {
+          throw new Error('Failed to fetch analytics');
+        }
+        const { data } = await response.json();
+        
+        // Transform team overview data for stats
+        const currentPeriodData = {
+          total: data.totalEmails,
+          openRate: data.averageOpenRate / 100,
+          clickRate: data.averageClickRate / 100,
+          bounceRate: data.bounceRate / 100,
+        };
+
+        // Get previous period from monthly stats
+        const previousPeriodData = data?.monthlyStats?.[data?.monthlyStats?.length - 2] || null;
+        const transformedPreviousData = previousPeriodData ? {
+          total: previousPeriodData.totalEmails,
+          openRate: previousPeriodData.openRate / 100,
+          clickRate: previousPeriodData.clickRate / 100,
+          bounceRate: previousPeriodData.bounceRate / 100,
+        } : null;
+
+        setMetricsData([currentPeriodData, transformedPreviousData].filter(Boolean));
       } catch (error) {
         console.error("Failed to fetch metrics:", error);
       } finally {

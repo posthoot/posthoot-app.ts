@@ -11,11 +11,11 @@ export default function NewTemplatePage() {
         <Button
           variant="ghost"
           onClick={() => router.back()}
-          className="text-gray-600 hover:text-gray-900"
+          className="text-gray-600 hover:"
         >
           ←
         </Button>
-        <h1 className="text-xl font-semibold text-gray-900">New Template</h1>
+        <h1 className="text-xl font-semibold">New Template</h1>
       </div>
       <TemplateEditor templateId="new" />
     </div>

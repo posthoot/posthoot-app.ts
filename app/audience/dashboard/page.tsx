@@ -1,6 +1,9 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { AudienceInsights } from "@/components/analytics/audience-insights";
+import { AudienceBehavior } from "@/components/analytics/audience-behavior";
+import { AudiencePreferences } from "@/components/analytics/audience-preferences";
 import {
   Card,
   CardContent,
@@ -49,44 +52,6 @@ export default function AudiencePage() {
               <Button variant="link" className="text-[#007C89]">
                 View Inbox
               </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* QuickBooks Integration */}
-        <Card className="bg-[#E7FFE9] border-none">
-          <CardContent className="p-6">
-            <div className="flex items-start gap-4">
-              <div className="h-12 w-12 rounded bg-white p-2">
-                <img
-                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/QuickBooks_Logo.svg/2560px-QuickBooks_Logo.svg.png"
-                  alt="QuickBooks"
-                  className="h-full w-full object-contain"
-                />
-              </div>
-              <div className="flex-1">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="font-medium">
-                      Try the QuickBooks Online integration
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      Automatically sync your QuickBooks Online customers and
-                      sales data to your Mailchimp account.
-                    </p>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-muted-foreground"
-                  >
-                    <XIcon className="h-4 w-4" />
-                  </Button>
-                </div>
-                <Button variant="outline" className="mt-4 bg-white">
-                  Connect accounts
-                </Button>
-              </div>
             </div>
           </CardContent>
         </Card>
@@ -243,47 +208,13 @@ export default function AudiencePage() {
           </Card>
         </div>
 
-        {/* Predicted Demographics */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <PersonIcon className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <CardTitle className="text-base">
-                    Predicted demographics
-                  </CardTitle>
-                  <CardDescription>
-                    Your contacts broken down by their predicted gender and age.
-                  </CardDescription>
-                </div>
-              </div>
-              <div className="text-xs px-2 py-1 bg-gray-100 rounded">
-                Paid Feature
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="min-h-[200px] flex flex-col items-center justify-center text-center p-8">
-            <div className="space-y-4">
-              <div className="flex justify-center">
-                <img
-                  src="/images/demographics-illustration.png"
-                  alt="Demographics"
-                  className="h-32"
-                />
-              </div>
-              <div>
-                <h3 className="text-xl font-semibold mb-2">
-                  Know your people even better
-                </h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Send targeted campaigns based on your contacts' demographics.
-                </p>
-                <Button>Upgrade Now</Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="space-y-6">
+          <AudienceInsights teamId="current" />
+          <div className="grid gap-6 md:grid-cols-2">
+            <AudienceBehavior teamId="current" />
+            <AudiencePreferences teamId="current" />
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -42,14 +42,12 @@ export async function generateReport(options: ReportOptions): Promise<string | B
     Period: metric.period || "N/A",
     Campaign: metric.campaignName || "All Campaigns",
     "Total Sent": metric.total,
-    "Opens": metric.opened,
+    "Opens": metric.openRate,
     "Open Rate": `${(metric.openRate * 100).toFixed(1)}%`,
-    "Clicks": metric.clicked,
+    "Clicks": metric.clickRate,
     "Click Rate": `${(metric.clickRate * 100).toFixed(1)}%`,
-    "Bounces": metric.bounced,
+    "Bounces": metric.bounceRate,
     "Bounce Rate": `${(metric.bounceRate * 100).toFixed(1)}%`,
-    "Failures": metric.failed,
-    "Failure Rate": `${(metric.failRate * 100).toFixed(1)}%`,
   }));
 
   if (options.format === "csv") {

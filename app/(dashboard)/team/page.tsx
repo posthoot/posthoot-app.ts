@@ -4,10 +4,11 @@ import { TeamInfo } from "./components/team-info";
 import { InviteTeamMember } from "./components/invite-member";
 import { TeamInvites } from "./components/team-invites";
 import { PageHeader } from "@/components/page-header";
-import { Users, Mail, Settings, Plus } from "lucide-react";
+import { Users, Mail, Settings, Plus, BarChart2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TeamSettings } from "./components/team-settings";
 import { TemplatesProvider } from "@/app/providers/templates-provider";
+import { TeamAnalytics } from "@/components/analytics/team-analytics";
 
 export const metadata: Metadata = {
   title: "Team Management | Email Engine",
@@ -40,6 +41,13 @@ export default function TeamPage() {
               <Mail className="h-4 w-4" />
               Invites
             </TabsTrigger>
+            <TabsTrigger
+              value="analytics"
+              className="flex items-center gap-2 data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-12 px-4"
+            >
+              <BarChart2 className="h-4 w-4" />
+              Analytics
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="members" className="space-y-4">
@@ -59,6 +67,12 @@ export default function TeamPage() {
             <div className="border rounded-lg p-6">
               <h3 className="font-semibold mb-4">Pending Invites</h3>
               <TeamInvites />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="analytics" className="space-y-4">
+            <div className="border rounded-lg p-6">
+              <TeamAnalytics teamId="current" />
             </div>
           </TabsContent>
         </Tabs>

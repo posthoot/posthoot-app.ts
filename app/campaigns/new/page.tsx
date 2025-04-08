@@ -901,7 +901,7 @@ const NewCampaignForm = () => {
             <div className="container mx-auto">
               <div className="flex items-center justify-between py-4 px-4">
                 <div className="flex items-center gap-4">
-                  <Button variant="ghost" onClick={() => router.back()}>
+                  <Button type="button" variant="ghost" onClick={() => router.back()}>
                     ←
                   </Button>
                   <FormField
@@ -917,7 +917,7 @@ const NewCampaignForm = () => {
                   />
                 </div>
                 <div className="flex gap-3">
-                  <Button variant="outline" onClick={() => router.back()}>
+                  <Button type="button" variant="outline" onClick={() => router.back()}>
                     Finish later
                   </Button>
                   <Button type="submit" className="text-white shadow-sm">

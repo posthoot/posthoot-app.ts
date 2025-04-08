@@ -107,7 +107,7 @@ declare module "@tanstack/react-table" {
   }
 }
 
-// Utility functions for formatting and parsing values
+// Keep existing utility functions
 function formatCellValue(value: unknown): any {
   if (value === null || value === undefined) return "";
   if (value instanceof Date) return formatDate(value);
@@ -190,7 +190,6 @@ export function DataTable<TData, TValue>({
     }
   }, [paginationData]);
 
-  // Initialize table first
   const table = useReactTable({
     data: data,
     columns,
@@ -211,96 +210,83 @@ export function DataTable<TData, TValue>({
   });
 
   return (
-    <div className={cn("space-y-4 w-full grid", className)}>
-      {isLoading && (
-        <div className="flex justify-center items-center h-24">
-          <Loader2 className="h-4 w-4 animate-spin" />
-        </div>
-      )}
+    <div className="grid grid-cols-1 gap-4">
+      {" "}
+      <div className="bg-card rounded-lg border border-gray-200">
+        {isLoading && (
+          <div className="flex justify-center items-center h-24">
+            <Loader2 className="h-4 w-4 animate-spin" />
+          </div>
+        )}
 
-      {!isLoading && (
-        <>
-          <div
-            className={cn(
-              "rounded-lg grid max-h-[calc(100vh-300px)] border border-border overflow-y-auto",
-              `${tableClassName} ${enableBackground && "dark:bg-sidebar/10"}`
-            )}
-          >
-            <Table className="w-full caption-bottom text-sm">
-              <TableHeader>
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => (
-                      <TableHead
-                        key={header.id + header.index}
-                        className={cn(
-                          "bg-[rgb(240,244,246)] px-4 py-1 overflow-hidden text-ellipsis whitespace-nowrap sticky top-0"
-                        )}
-                      >
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                      </TableHead>
-                    ))}
-                  </TableRow>
-                ))}
-              </TableHeader>
-              <TableBody>
-                {table.getRowModel().rows?.length ? (
-                  table.getRowModel().rows.map((row) => (
-                    <TableRow
-                      key={row.id + row.index}
-                      data-state={row.getIsSelected() && "selected"}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                      }}
-                      className="cursor-pointer group relative bg-sidebar/90"
-                    >
-                      {row.getVisibleCells().map((cell, index) => (
-                        <TableCell
-                          key={cell.id}
-                          className={cn(
-                            "overflow-hidden text-ellipsis whitespace-nowrap px-4 py-4",
-                            {
-                              "min-w-[250px]":
-                                cell.column.columnDef.meta?.type !==
-                                  "boolean" &&
-                                cell.column.columnDef.meta?.editable,
-                              "min-w-[50px]":
-                                // @ts-ignore
-                                cell.column.columnDef.meta?.type === "checkbox",
-                            }
-                          )}
+        {!isLoading && (
+          <>
+            <div
+              className={cn(
+                "rounded-lg overflow-y-auto",
+                `${tableClassName} ${enableBackground && "dark:bg-sidebar/10"}`
+              )}
+            >
+              <Table className="w-full caption-bottom text-sm">
+                <TableHeader>
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <TableRow key={headerGroup.id} className="bg-muted/50">
+                      {headerGroup.headers.map((header) => (
+                        <TableHead
+                          key={header.id}
+                          className="bg-background px-4 py-1 overflow-hidden text-ellipsis whitespace-nowrap sticky top-0"
                         >
-                          <div className="truncate">
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext()
-                            )}
-                          </div>
-                        </TableCell>
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(
+                                header.column.columnDef.header,
+                                header.getContext()
+                              )}
+                        </TableHead>
                       ))}
                     </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell
-                      colSpan={columns.length}
-                      className="h-24 text-center"
-                    >
-                      No results.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
-          {pagination && <DataTablePagination table={table} />}
-        </>
-      )}
+                  ))}
+                </TableHeader>
+                <TableBody>
+                  {table.getRowModel().rows?.length ? (
+                    table.getRowModel().rows.map((row) => (
+                      <TableRow
+                        key={row.id}
+                        data-state={row.getIsSelected() && "selected"}
+                        className="cursor-pointer group relative bg-sidebar/90 hover:bg-muted"
+                      >
+                        {row.getVisibleCells().map((cell) => (
+                          <TableCell
+                            key={cell.id}
+                            className="px-4 py-4 overflow-hidden text-ellipsis whitespace-nowrap"
+                          >
+                            <div className="truncate">
+                              {flexRender(
+                                cell.column.columnDef.cell,
+                                cell.getContext()
+                              )}
+                            </div>
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell
+                        colSpan={columns.length}
+                        className="h-24 text-center"
+                      >
+                        No results.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </>
+        )}
+      </div>
+      {pagination && <DataTablePagination table={table} />}
     </div>
   );
 }

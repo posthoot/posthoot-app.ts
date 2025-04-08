@@ -14,6 +14,8 @@ export function Overview() {
   const { team } = useTeam();
 
   useEffect(() => {
+    if (!team?.id) return;
+    
     const fetchMetrics = async () => {
       const startDate = timeframe === 'week' 
         ? subDays(new Date(), 7)
@@ -22,15 +24,27 @@ export function Overview() {
           : subDays(new Date(), 90);
 
       try {
+        // Fetch analytics trends data
         const response = await fetch(
-          `/api/email/track/metrics?teamId=${team?.id}&startDate=${startDate.toISOString()}`
+          `/api/analytics/trends?teamId=${team?.id}&startDate=${startDate.toISOString()}`
         );
-        const data = await response.json();
-        // Sort data by date in ascending order for the chart
-        const sortedData = Array.isArray(data) 
-          ? data.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-          : [data];
-        setMetricsData(sortedData);
+        if (!response.ok) {
+          throw new Error('Failed to fetch analytics trends');
+        }
+        const { data } = await response.json();
+
+        console.log(data, "data trends pain");
+
+        // Data comes pre-transformed from the trends API
+        const transformedData = data.map((point: any) => ({
+          date: point.date,
+          openRate: point.openRate,
+          clickRate: point.clickRate,
+          bounceRate: point.bounceRate,
+          total: point.total
+        })).sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        
+        setMetricsData(transformedData);
       } catch (error) {
         console.error('Failed to fetch metrics:', error);
       }
@@ -140,7 +154,7 @@ export function Overview() {
                                 Open Rate
                               </span>
                               <span className="font-bold text-primary">
-                                {((payload[0].value as number) * 100).toFixed(1)}%
+                                {((payload[0].value as number) * 100).toFixed(1) || 0}%
                               </span>
                             </div>
                             <div className="flex flex-col">
@@ -148,7 +162,7 @@ export function Overview() {
                                 Click Rate
                               </span>
                               <span className="font-bold text-secondary">
-                                {((payload[1].value as number) * 100).toFixed(1)}%
+                                {((payload[1].value as number) * 100).toFixed(1) || 0}%
                               </span>
                             </div>
                             <div className="flex flex-col">
@@ -156,7 +170,7 @@ export function Overview() {
                                 Bounce Rate
                               </span>
                               <span className="font-bold text-destructive">
-                                {((payload[2].value as number) * 100).toFixed(1)}%
+                                {((payload[2].value as number) * 100).toFixed(1) || 0}%
                               </span>
                             </div>
                           </div>

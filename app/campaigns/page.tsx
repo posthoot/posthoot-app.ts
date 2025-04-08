@@ -25,7 +25,7 @@ export default function CampaignsPage() {
         </Link>
       </PageHeader>
 
-      <div className="flex bg-primary/10 p-16 items-center gap-4 justify-between">
+      <div className="flex bg-primary/10 p-8 items-center gap-4 justify-between">
         <div className="flex flex-col w-1/2 gap-2">
           <span className="text-4xl font-semibold">
             Create and manage your email campaigns

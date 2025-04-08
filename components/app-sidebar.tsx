@@ -97,7 +97,15 @@ const navItems: NavItem[] = [
         className="w-6 dark:invert invert-0"
         src="https://img.icons8.com/dotty/80/total-sales-1.png"
       />
-    )
+    ),
+    subItems: [
+      { name: "Overview", href: "/analytics" },
+      { name: "Campaigns", href: "/analytics/campaigns" },
+      { name: "Team Performance", href: "/analytics/team" },
+      { name: "Click Heatmaps", href: "/analytics/heatmap" },
+      { name: "Audience Insights", href: "/analytics/audience" },
+      { name: "Trend Analysis", href: "/analytics/trends" }
+    ],
   },
   {
     name: "Developer",
@@ -137,7 +145,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     "/campaigns": false,
     "/automations": false,
     "/audience": true,
-    "/analytics": false,
+    "/analytics": true,
   });
 
   const toggleExpand = (href: string) => {
