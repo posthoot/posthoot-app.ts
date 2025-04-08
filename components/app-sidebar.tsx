@@ -97,7 +97,7 @@ const navItems: NavItem[] = [
         className="w-6 dark:invert invert-0"
         src="https://img.icons8.com/dotty/80/total-sales-1.png"
       />
-    ),
+    )
   },
   {
     name: "Developer",
@@ -112,6 +112,7 @@ const navItems: NavItem[] = [
       { name: "API Keys", href: "/settings/api-keys" },
       { name: "Webhooks", href: "/developer/webhooks" },
       { name: "Logs", href: "/developer/logs" },
+      { name: "Emails", href: "/developer/logs/emails" },
     ],
   },
   {
@@ -168,7 +169,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <div key={item.href} className="mb-1">
                 <div
                   className={cn(
-                    "flex items-center px-4 py-2 text-sidebar-foreground hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 cursor-pointer",
+                    "flex items-center px-4 py-2 text-sidebar-foreground hover:bg-accent cursor-pointer",
                     isItemActive && !item.subItems && "text-sidebar-foreground font-medium"
                   )}
                   onClick={() => item.subItems && toggleExpand(item.href)}
@@ -199,7 +200,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                           key={subItem.href}
                           href={subItem.href}
                           className={cn(
-                            "flex font-inter items-center px-4 py-2 text-sm text-sidebar-foreground hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 ",
+                            "flex font-inter items-center px-4 py-2 text-sm text-sidebar-foreground hover:bg-accent",
                             isSubActive &&
                               "text-primary bg-gray-100 border-l-2 border-primary -ml-[2px]"
                           )}

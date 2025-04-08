@@ -19,3 +19,28 @@ export interface FormField {
   options?: string[]; // For select fields
   defaultValue?: string;
 } 
+
+export interface Mail {
+  id: string;
+  subject: string;
+  body: string;
+  from: string;
+  to: string[];
+  cc?: string[];
+  bcc?: string[];
+  replyTo?: string;
+  templateId?: string;
+  campaignId?: string;
+  contactId?: string;
+  categoryId: string;
+  smtpConfigId: string;
+  teamId: string;
+  status: 'draft' | 'scheduled' | 'sending' | 'sent' | 'failed';
+  sentAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  isDeleted?: boolean;
+  error?: string;
+  data?: Record<string, any>;
+  test?: boolean;
+}

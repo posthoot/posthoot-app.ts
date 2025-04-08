@@ -120,7 +120,13 @@ export async function POST(
     });
 
     const body = (await request.json()) as SendEmailRequest;
-    let { email, html, provider = undefined, data, test = false } = zodSchema.parse(body);
+    let {
+      email,
+      html,
+      provider = undefined,
+      data,
+      test = false,
+    } = zodSchema.parse(body);
 
     if (isEmpty(html)) {
       logger.warn({
@@ -159,12 +165,16 @@ export async function POST(
       console.error(
         `File name: route.ts, ❌, line no: 10, function name: handler, variable name: error, value: ${error}`
       );
-      return new NextResponse("Failed to send email due to: " + error, { status: 400 });
+      return new NextResponse("Failed to send email due to: " + error, {
+        status: 400,
+      });
     }
   } catch (error) {
     console.error(
       `File name: route.ts, ❌, line no: 10, function name: handler, variable name: error, value: ${error}`
     );
-    return new NextResponse("Failed to send email due to: " + error, { status: 400 });
+    return new NextResponse("Failed to send email due to: " + error, {
+      status: 400,
+    });
   }
 }
