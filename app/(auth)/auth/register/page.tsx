@@ -88,7 +88,7 @@ export default function RegisterPage() {
       <div className="w-full bg-transparent p-8">
         <div className="mb-8 grid gap-4">
           <div className="grid">
-            <h1 className="text-4xl text-center font-normal text-primary-foreground">
+            <h1 className="text-4xl text-center font-normal text-foreground">
               hey 👋🏻, welcome to posthoot
             </h1>
             <div className="text-center">
@@ -234,7 +234,7 @@ export default function RegisterPage() {
                 </form>
               </Form>
               <div className="flex items-center justify-center gap-4 mt-2">
-                <div className="text-right text-primary-foreground w-full">
+                <div className="text-right text-foreground w-full">
                   press ⏎ to confirm
                 </div>
               </div>

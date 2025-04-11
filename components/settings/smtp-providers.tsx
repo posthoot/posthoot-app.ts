@@ -171,9 +171,6 @@ export function SMTPProviders({
                 {...form.register("fromEmail")}
               />
               <p className="text-xs text-muted-foreground">
-                This is the email address that will be used to send emails
-                from this provider.
-                <br />
                 Example: Human from Company &lt;noreply@example.com&gt;
               </p>
             </div>

@@ -83,7 +83,7 @@ export default function TagsPage() {
           </Button>
           <Sheet open={isCreateTagOpen} onOpenChange={setIsCreateTagOpen}>
             <SheetTrigger asChild>
-              <Button className="bg-[#007C89] text-white hover:bg-[#005F6B]">
+              <Button>
                 <Plus className="h-4 w-4 mr-2" />
                 Create new tag
               </Button>
@@ -148,7 +148,7 @@ export default function TagsPage() {
       />
 
       {/* Automate Tagging Card */}
-      <div className="mt-8 bg-card rounded-lg border border-gray-200 p-6">
+      <div className="mt-8 bg-card rounded-lg border border-muted p-6">
         <div className="flex items-start gap-6">
           <div className="h-16 w-16 rounded-lg bg-pink-50 flex items-center justify-center">
             <svg

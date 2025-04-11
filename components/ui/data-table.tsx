@@ -212,7 +212,7 @@ export function DataTable<TData, TValue>({
   return (
     <div className="grid grid-cols-1 gap-4">
       {" "}
-      <div className="bg-card rounded-lg border border-gray-200">
+      <div className="bg-card rounded-lg border border-muted">
         {isLoading && (
           <div className="flex justify-center items-center h-24">
             <Loader2 className="h-4 w-4 animate-spin" />
