@@ -60,11 +60,7 @@ export function WebhookSettings() {
       const data = await response.json();
       setWebhooks(data);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load webhooks",
-        variant: "destructive",
-      });
+      toast.error("Failed to load webhooks");
     } finally {
       setLoading(false);
     }
@@ -85,16 +81,9 @@ export function WebhookSettings() {
       if (!response.ok) throw new Error("Failed to delete webhook");
       
       setWebhooks((prev) => prev.filter((webhook) => webhook.id !== id));
-      toast({
-        title: "Success",
-        description: "Webhook deleted successfully",
-      });
+      toast.success("Webhook deleted successfully");
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete webhook",
-        variant: "destructive",
-      });
+      toast.error("Failed to delete webhook");
     }
   };
 
@@ -116,11 +105,7 @@ export function WebhookSettings() {
         )
       );
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update webhook",
-        variant: "destructive",
-      });
+      toast.error("Failed to update webhook");
     }
   };
 
@@ -266,18 +251,11 @@ function AddWebhookDialog({
 
       if (!response.ok) throw new Error("Failed to create webhook");
 
-      toast({
-        title: "Success",
-        description: "Webhook created successfully",
-      });
+      toast.success("Webhook created successfully");
 
       onSuccess();
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create webhook",
-        variant: "destructive",
-      });
+      toast.error("Failed to create webhook");
     } finally {
       setLoading(false);
     }

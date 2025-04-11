@@ -9,15 +9,11 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { toast } from "sonner";
 import React, { use, useState } from "react";
-import { EyeIcon } from "lucide-react";
-import { EyeOffIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 const resetPasswordSchema = z
@@ -68,16 +64,13 @@ export default function ResetPasswordPage({
         throw new Error("Failed to reset password");
       }
 
-      toast({
-        title: "Password reset successful",
+      toast.success("Password reset successful", {
         description: "Your password has been reset successfully",
       });
 
       router.push("/auth/login");
     } catch (error) {
-      toast({
-        title: "Error resetting password",
-        variant: "destructive",
+      toast.error("Error resetting password", {
         description: "Please try again later",
       });
     }

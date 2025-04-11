@@ -81,11 +81,7 @@ export function WebhookDeliveries({ webhookId }: { webhookId: string }) {
       setDeliveries(data.deliveries);
       setPagination(data.pagination);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load webhook deliveries",
-        variant: "destructive",
-      });
+      toast.error("Failed to load webhook deliveries");
     } finally {
       setLoading(false);
     }

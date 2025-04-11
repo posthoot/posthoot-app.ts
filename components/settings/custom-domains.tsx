@@ -24,7 +24,6 @@ export function CustomDomains() {
   const [isVerifying, setIsVerifying] = useState<string | null>(null);
   const { team, refreshTeam } = useTeam();
 
-
   const addDomain = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newDomain) return;
@@ -46,17 +45,12 @@ export function CustomDomains() {
       const data = await response.json();
       refreshTeam();
       setNewDomain("");
-      toast({
-        title: "Domain added",
+      toast.success("Domain added", {
         description:
           "Please verify your domain by adding the required DNS records.",
       });
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to add domain. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to add domain. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -72,27 +66,20 @@ export function CustomDomains() {
       const data = await response.json();
 
       if (!response.ok) {
-        toast({
-          title: "Verification failed",
+        toast.error("Verification failed", {
           description:
             data.details?.message ||
             "Please check your DNS settings and try again.",
-          variant: "destructive",
         });
         return;
       }
 
       refreshTeam();
-      toast({
-        title: "Domain verified",
+      toast.success("Domain verified", {
         description: "Your domain has been verified successfully.",
       });
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to verify domain. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to verify domain. Please try again.");
     } finally {
       setIsVerifying(null);
     }
@@ -109,16 +96,11 @@ export function CustomDomains() {
       }
 
       refreshTeam();
-      toast({
-        title: "Domain deleted",
+      toast.success("Domain deleted", {
         description: "The domain has been removed successfully.",
       });
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete domain. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to delete domain. Please try again.");
     }
   };
 

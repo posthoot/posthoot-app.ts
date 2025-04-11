@@ -36,17 +36,10 @@ export function CampaignsList() {
 
     if (campaign.ok) {
       refetch();
-      return toast({
-        title: "Success",
-        description: "Campaign deleted successfully",
-      });
+      toast.success("Campaign deleted successfully");
     }
 
-    return toast({
-      title: "Error",
-      description: "Error deleting campaign",
-      variant: "destructive",
-    });
+    toast.error("Error deleting campaign");
   };
 
   const columns: ColumnDef<Campaign>[] = [

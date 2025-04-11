@@ -24,11 +24,7 @@ export default function WebhookDeliveriesPage({
         const data = await response.json();
         setWebhook(data);
       } catch (error) {
-        toast({
-          title: "Error",
-          description: "Failed to load webhook details",
-          variant: "destructive",
-        });
+        toast.error("Failed to load webhook details");
       } finally {
         setLoading(false);
       }
