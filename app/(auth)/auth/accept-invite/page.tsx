@@ -1,54 +1,9 @@
 "use client";
 
-import { Input } from "@/components/ui/input";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { toast } from "@/hooks/use-toast";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 
 export default function AcceptInvitePage() {
-  const teamNameSchema = z.object({
-    name: z.string(),
-  });
-  const form = useForm<z.infer<typeof teamNameSchema>>({
-    defaultValues: {
-      name: "",
-    },
-    mode: "onBlur",
-    resolver: zodResolver(teamNameSchema),
-  });
-
-  const handleTeamName = async (data: z.infer<typeof teamNameSchema>) => {
-    // TODO: Implement forgot password logic
-    console.log("Reset password for:", data.name);
-    try {
-      //   const response = await fetch("/api/auth/forgot-password", {
-      //     method: "POST",
-      //     body: JSON.stringify(data),
-      //   });
-      //   const result = await response.json();
-      //   console.log(result);
-      //   toast({
-      //     title: "Password reset email sent",
-      //     description: "Please check your email for instructions",
-      //   });
-    } catch (error) {
-      //   toast({
-      //     title: "Error sending reset email",
-      //     variant: "destructive",
-      //     description: "Please try again later",
-      //   });
-    }
+  const acceptInvite = async () => {
+    console.log("Accept invite");
   };
 
   return (

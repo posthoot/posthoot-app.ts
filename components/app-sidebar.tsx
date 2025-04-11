@@ -15,9 +15,14 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sidebar } from "./ui/sidebar";
+import { Sheet, SheetContent, SheetHeader, SheetTrigger } from "./ui/sheet";
+import { ComposeEmail } from "./compose-email";
+import { useSession } from "next-auth/react";
+import Intercom from "@intercom/messenger-js-sdk";
+import { toast } from "sonner";
 
 type SubMenuItem = {
   name: string;
@@ -36,7 +41,10 @@ const navItems: NavItem[] = [
     name: "Home",
     href: "/",
     icon: (
-      <img src="https://img.icons8.com/quill/100/home.png" className="w-6 dark:invert invert-0" />
+      <img
+        src="https://img.icons8.com/quill/100/home.png"
+        className="w-6 dark:invert invert-0"
+      />
     ),
   },
   {
@@ -104,7 +112,7 @@ const navItems: NavItem[] = [
       { name: "Team Performance", href: "/analytics/team" },
       { name: "Click Heatmaps", href: "/analytics/heatmap" },
       { name: "Audience Insights", href: "/analytics/audience" },
-      { name: "Trend Analysis", href: "/analytics/trends" }
+      { name: "Trend Analysis", href: "/analytics/trends" },
     ],
   },
   {
@@ -148,6 +156,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     "/analytics": true,
   });
 
+  const { data: session } = useSession();
+
   const toggleExpand = (href: string) => {
     setExpandedItems((prev) => ({
       ...prev,
@@ -163,8 +173,26 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     return pathname === href;
   };
 
+  useEffect(() => {
+    const intercomRequest: any = {
+      app_id: "ts43f4k1",
+    };
+
+    if (session?.user?.id) {
+      intercomRequest.user_id = session?.user?.id ?? "";
+      intercomRequest.name = session?.user?.name ?? "";
+      intercomRequest.email = session?.user?.email ?? "";
+      // @ts-ignore
+      intercomRequest.created_at = session?.user?.createdAt ?? "";
+      // @ts-ignore
+      intercomRequest.user_hash = session?.user?.userHash ?? undefined;
+    }
+
+    Intercom(intercomRequest);
+  }, [session?.user]);
+
   return (
-    <div className="flex border-r border-border h-full flex-col justify-between bg-sidebar w-auto lg:w-[250px]">
+    <div className="flex border-r border-muted h-full flex-col justify-between bg-sidebar w-auto lg:w-[250px]">
       <div>
         {/* Navigation */}
         <nav className="flex-1 pt-2">
@@ -178,7 +206,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <div
                   className={cn(
                     "flex items-center px-4 py-2 text-sidebar-foreground hover:bg-accent cursor-pointer",
-                    isItemActive && !item.subItems && "text-sidebar-foreground font-medium"
+                    isItemActive &&
+                      !item.subItems &&
+                      "text-sidebar-foreground font-medium"
                   )}
                   onClick={() => item.subItems && toggleExpand(item.href)}
                 >
@@ -226,8 +256,37 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </div>
 
       {/* Upgrade button */}
-      <div className="p-4 mt-auto">
-        <Button className="w-full bg-gray-100 hover:bg-gray-200 text-teal-600 font-medium">
+      <div className="p-4 mt-auto grid gap-2">
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="outline" className="w-full font-medium">
+              Compose
+            </Button>
+          </SheetTrigger>
+
+          <SheetContent className="min-w-screen md:min-w-[800px]">
+            <SheetHeader className="flex flex-col gap-2">
+              <span className="text-2xl">Compose Email</span>
+              <p className="text-sm">
+                Write your email below to send it over to anyone
+              </p>
+            </SheetHeader>
+            <ComposeEmail onSend={async (email) => {
+              console.log(email, "email");
+              toast.promise(async () => {
+                await fetch("/api/email", {
+                  method: "POST",
+                  body: JSON.stringify(email),
+                });
+              }, {
+                loading: "Sending email...",
+                success: "Email sent successfully",
+                error: "Failed to send email"
+              })
+            }} />
+          </SheetContent>
+        </Sheet>
+        <Button variant="secondary" className="w-full font-medium">
           Upgrade
         </Button>
       </div>

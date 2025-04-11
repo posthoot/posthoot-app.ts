@@ -54,7 +54,7 @@ export function PageHeader({
     <div
       className={cn(
         "sticky top-0 z-10 bg-sidebar",
-        "border-b py-4 px-8",
+        "border-b border-muted py-4 px-8",
         className
       )}
     >

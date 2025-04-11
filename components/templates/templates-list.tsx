@@ -142,12 +142,12 @@ export function TemplatesList() {
           {templates?.map((template) => (
             <div
               key={template.id}
-              className="flex items-center justify-between p-4 border rounded-lg"
+              className="flex items-center justify-between p-4 border border-muted rounded-lg"
             >
               <div className="flex items-center gap-4">
                 <img
-                  src="https://ouch-cdn2.icons8.com/DYhw0yh0jH700KcuV2utXiWwpp0PT_n00o4U9PDwQDc/rs:fit:486:456/czM6Ly9pY29uczgu/b3VjaC1wcm9kLmFz/c2V0cy9zdmcvNzc0/LzI0ODc0OWJmLTli/NTYtNDMyZC05ZWI3/LTZlMWIzNjQ3ZDIw/Ni5zdmc.png"
-                  className="w-16 h-16"
+                  src="/assets/pixeltrue-icons-browser-window-with-website-code-and-paint-roller.png"
+                  className="h-16"
                 />
                 <div>
                   <h3 className="font-medium">{template.name}</h3>

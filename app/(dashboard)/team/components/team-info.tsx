@@ -28,7 +28,8 @@ import { MoreHorizontal, Shield, User } from "lucide-react";
 interface TeamMember {
   id: string;
   email: string;
-  name: string | null;
+  firstName: string | null;
+  lastName: string | null;
   role: "ADMIN" | "USER";
 }
 
@@ -58,21 +59,23 @@ export function TeamInfo() {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {team.users.map((member: TeamMember) => (
+        {team.users.map((member: any) => (
           <TableRow key={member.id}>
             <TableCell>
               <div className="flex items-center gap-3">
-                <Avatar className="h-8 w-8">
+                <Avatar className="h-8 w-8 bg-secondary">
                   <AvatarImage
-                    src={`https://avatar.vercel.sh/${member.email}`}
-                    alt={member.name || member.email}
+                    src={`https://api.dicebear.com/9.x/lorelei/svg?seed=${member.firstName}`}
+                    alt={member.firstName || member.email}
                   />
                   <AvatarFallback>
-                    {(member.name || member.email).charAt(0).toUpperCase()}
+                    {(member.firstName || member.email).charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="font-medium">{member.name || "Unnamed"}</p>
+                  <p className="font-medium">
+                    {member.firstName || "Unnamed"}
+                  </p>
                   <p className="text-sm text-muted-foreground">
                     {member.email}
                   </p>

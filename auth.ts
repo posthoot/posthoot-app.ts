@@ -2,8 +2,8 @@ import NextAuth, { NextAuthConfig } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { authConfig } from "./auth.config";
 import { logger } from "./app/lib/logger";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
+import GoogleProvider from "next-auth/providers/google";
+export const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
 
 const nextAuthConfig: NextAuthConfig = {
   callbacks: {
@@ -73,12 +73,16 @@ const nextAuthConfig: NextAuthConfig = {
   trustHost: true,
   session: { strategy: "jwt", maxAge: 60 * 60 * 24 }, // 24 hours
   pages: {
-    signIn: "/login",
-    signOut: "/login",
-    error: "/login",
-    newUser: "/",
+    signIn: "/auth/login",
+    signOut: "/auth/login",
+    error: "/auth/login",
+    newUser: "/auth/onboarding",
   },
   providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+    }),
     CredentialsProvider({
       id: "credentials",
       name: "Credentials",

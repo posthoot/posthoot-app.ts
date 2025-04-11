@@ -22,7 +22,6 @@ import {
 } from "./ui/dropdown-menu";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 interface AppHeaderProps {
   heading: string;
@@ -60,10 +59,10 @@ export function AppHeader({
   const { theme, setTheme } = useTheme();
 
   return (
-    <header className="sticky top-0 z-30 w-full border-b border bg-background ">
+    <header className="sticky top-0 z-30 w-full border-b border-muted bg-background ">
       <div className="flex h-16 items-center px-6">
         <img src="https://framerusercontent.com/images/Mj9OOgqyJTaP8t5wDmlauyecVM.png?scale-down-to=512" alt="Posthoot" className="h-10 w-10" />
-        <div className="flex flex-1 items-center gap-x-4">
+        <div className="flex flex-1 items-center gap-x-4 ml-auto">
           <div className="relative w-full max-w-md ml-4">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -74,7 +73,7 @@ export function AppHeader({
           </div>
         </div>
         <div className="flex flex-none items-center gap-x-4">
-          <Button variant="outline" className=" text-muted-foreground">
+          <Button variant="outline" className="text-muted-foreground">
             <HelpCircle className="h-5 w-5" />
             <span>Help</span>
           </Button>
@@ -89,9 +88,9 @@ export function AppHeader({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="relative h-9 w-9">
-                <Avatar className="h-9 w-9">
+                <Avatar className="h-9 w-9 bg-secondary">
                   <AvatarImage
-                    src={`https://api.dicebear.com/9.x/adventurer/svg?seed=${session?.user?.name}`}
+                    src={`https://api.dicebear.com/9.x/lorelei/svg?seed=${session?.user?.name}`}
                     alt="User"
                   />
                   <AvatarFallback></AvatarFallback>

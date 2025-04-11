@@ -86,6 +86,7 @@ const campaignSchema = z.object({
   processed: z.number().default(0),
   batchDelay: z.number().min(1).optional(),
   timezone: z.string().default("America/New_York"),
+  subject: z.string().min(1, "Subject is required"),
   smtpConfigId: z
     .string()
     .uuid("SMTP configuration ID must be a valid UUID")
@@ -161,7 +162,7 @@ function Timeline({
                   isCurrent &&
                     "border-[#E7B75F] shadow-[0_0_0_4px_rgba(231,183,95,0.2)]",
                   isCompleted && "border-[#007C89] bg-[#007C89] text-white",
-                  !isCurrent && !isCompleted && "border-gray-200"
+                  !isCurrent && !isCompleted && "border-muted"
                 )}
               >
                 {isCompleted ? (
@@ -323,7 +324,12 @@ const NewCampaignForm = () => {
                           Choose the list of subscribers for this campaign
                         </FormDescription>
                       </div>
-                      <Button variant="outline" size="sm">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => router.push("/audience/lists")}
+                      >
                         <PlusIcon className="h-4 w-4 mr-2" />
                         Create New List
                       </Button>
@@ -341,7 +347,7 @@ const NewCampaignForm = () => {
                       <SelectContent>
                         {lists.map((list) => (
                           <SelectItem key={list.id} value={list.id}>
-                            <div className="flex items-center justify-between w-full">
+                            <div className="flex gap-2 items-center justify-between w-full">
                               <span>{list.name}</span>
                               <span className="text-sm text-muted-foreground">
                                 {list?._count?.subscribers} subscribers
@@ -360,7 +366,7 @@ const NewCampaignForm = () => {
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
-                  className="pt-4 border-t"
+                  className="pt-4 border-t border-muted"
                 >
                   <div className="flex justify-between items-center">
                     <div>
@@ -369,7 +375,14 @@ const NewCampaignForm = () => {
                         First 5 subscribers in selected list
                       </p>
                     </div>
-                    <Button variant="ghost" size="sm">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() =>
+                        router.push(`/lists/${form.watch("listId")}`)
+                      }
+                    >
                       View All
                     </Button>
                   </div>
@@ -419,7 +432,7 @@ const NewCampaignForm = () => {
                       defaultValue={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger className="w-full border-gray-200 h-11">
+                        <SelectTrigger className="w-full border-muted h-11">
                           <SelectValue placeholder="Select sender email" />
                         </SelectTrigger>
                       </FormControl>
@@ -447,13 +460,13 @@ const NewCampaignForm = () => {
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
-                  className="pt-6 border-t space-y-4"
+                  className="pt-6 border-t border-muted space-y-4"
                 >
                   <div>
                     <h4 className="font-semibold text-sidebar-foreground mb-3">
                       Preview
                     </h4>
-                    <div className="rounded-lg border border-gray-200 p-6 bg-gray-50">
+                    <div className="rounded-lg border border-muted p-6 bg-muted">
                       <div className="space-y-3">
                         <div className="flex items-center gap-3">
                           <span className="text-sm font-medium text-gray-700">
@@ -511,7 +524,7 @@ const NewCampaignForm = () => {
             <div className="space-y-8">
               <FormField
                 control={form.control}
-                name="name"
+                name="subject"
                 render={({ field }) => (
                   <FormItem className="space-y-4">
                     <div>
@@ -527,7 +540,7 @@ const NewCampaignForm = () => {
                       <Input
                         {...field}
                         placeholder="Write your subject line here..."
-                        className="w-full text-lg border-gray-200 h-11"
+                        className="w-full text-lg border-muted h-11"
                       />
                     </FormControl>
                     <FormMessage />
@@ -535,20 +548,20 @@ const NewCampaignForm = () => {
                 )}
               />
 
-              {form.watch("name") && (
+              {form.watch("subject") && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
-                  className="pt-6 border-t space-y-6"
+                  className="pt-6 border-t border-muted space-y-6"
                 >
                   <div>
                     <h4 className="font-semibold text-sidebar-foreground mb-3">
                       Preview
                     </h4>
-                    <div className="rounded-lg border border-gray-200 p-6 bg-gray-50 space-y-4">
+                    <div className="rounded-lg border border-muted p-6 bg-muted space-y-4">
                       <div className="flex items-start gap-3">
-                        <div className="w-10 h-10  bg-[#007C89]/10 flex items-center justify-center flex-shrink-0">
-                          <PersonIcon className="h-5 w-5 text-[#007C89]" />
+                        <div className="w-10 h-10  bg-primary/10 flex items-center justify-center flex-shrink-0">
+                          <PersonIcon className="h-5 w-5 text-primary" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between">
@@ -566,30 +579,30 @@ const NewCampaignForm = () => {
                         </div>
                       </div>
                       <p className="font-medium text-sidebar-foreground">
-                        {form.watch("name")}
+                        {form.watch("subject")}
                       </p>
                     </div>
                   </div>
 
-                  <div className="bg-[#FFFCEE] border border-[#E7B75F]/30 rounded-lg p-6">
+                  <div className="bg-muted border border-muted rounded-lg p-6">
                     <h4 className="font-semibold text-sidebar-foreground mb-3">
                       Subject Line Tips
                     </h4>
                     <ul className="text-sm text-sidebar-foreground space-y-2">
                       <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5  bg-[#E7B75F]" />
+                        <div className="w-1.5 h-1.5  bg-primary" />
                         Keep it short and clear (4-7 words)
                       </li>
                       <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5  bg-[#E7B75F]" />
+                        <div className="w-1.5 h-1.5  bg-primary" />
                         Create a sense of urgency or curiosity
                       </li>
                       <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5  bg-[#E7B75F]" />
+                        <div className="w-1.5 h-1.5  bg-primary" />
                         Avoid spam trigger words
                       </li>
                       <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5  bg-[#E7B75F]" />
+                        <div className="w-1.5 h-1.5  bg-primary" />
                         Personalize when possible
                       </li>
                     </ul>
@@ -612,7 +625,7 @@ const NewCampaignForm = () => {
               <motion.div
                 whileHover={{ scale: 1.02 }}
                 className={cn(
-                  "p-6 border rounded-lg cursor-pointer transition-all",
+                  "p-6 border border-muted rounded-lg cursor-pointer transition-all",
                   !isScheduled && "border-primary bg-primary/5 shadow-sm"
                 )}
                 onClick={() => setIsScheduled(false)}
@@ -628,7 +641,7 @@ const NewCampaignForm = () => {
               <motion.div
                 whileHover={{ scale: 1.02 }}
                 className={cn(
-                  "p-6 border rounded-lg cursor-pointer transition-all",
+                  "p-6 border border-muted rounded-lg cursor-pointer transition-all",
                   isScheduled && "border-primary bg-primary/5 shadow-sm"
                 )}
                 onClick={() => setIsScheduled(true)}
@@ -660,9 +673,10 @@ const NewCampaignForm = () => {
                             <PopoverTrigger asChild>
                               <FormControl>
                                 <Button
+                                  type="button"
                                   variant="outline"
                                   className={cn(
-                                    "w-[240px] pl-3 text-left font-normal border-gray-200",
+                                    "w-[240px] pl-3 text-left font-normal border-muted",
                                     !field.value && "text-gray-500"
                                   )}
                                 >
@@ -689,8 +703,9 @@ const NewCampaignForm = () => {
                                   date < new Date() ||
                                   date < new Date("1900-01-01")
                                 }
+                                hasTime
                                 initialFocus
-                                className="rounded-md border border-gray-200"
+                                className="rounded-md border border-muted"
                               />
                             </PopoverContent>
                           </Popover>
@@ -708,7 +723,7 @@ const NewCampaignForm = () => {
                             defaultValue={field.value}
                           >
                             <FormControl>
-                              <SelectTrigger className="w-[200px] border-gray-200">
+                              <SelectTrigger className="w-[200px] border-muted">
                                 <SelectValue placeholder="Select timezone" />
                               </SelectTrigger>
                             </FormControl>
@@ -720,11 +735,20 @@ const NewCampaignForm = () => {
                               <SelectItem value="America/Chicago">
                                 Central Time
                               </SelectItem>
-                              <SelectItem value="America/Denver">
-                                Mountain Time
-                              </SelectItem>
                               <SelectItem value="America/Los_Angeles">
                                 Pacific Time
+                              </SelectItem>
+                              <SelectItem value="Asia/Tokyo">
+                                Tokyo Time
+                              </SelectItem>
+                              <SelectItem value="Asia/Shanghai">
+                                Shanghai Time
+                              </SelectItem>
+                              <SelectItem value="Europe/London">
+                                London Time
+                              </SelectItem>
+                              <SelectItem value="Asia/Kolkata">
+                                Kolkata Time
                               </SelectItem>
                             </SelectContent>
                           </Select>
@@ -733,7 +757,7 @@ const NewCampaignForm = () => {
                     />
                   </div>
 
-                  <div className="pt-6 border-t">
+                  <div className="pt-6 border-t border-muted">
                     <FormField
                       control={form.control}
                       name="schedule"
@@ -750,7 +774,7 @@ const NewCampaignForm = () => {
                             defaultValue={field.value}
                           >
                             <FormControl>
-                              <SelectTrigger className="w-[200px] border-gray-200">
+                              <SelectTrigger className="w-[200px] border-muted">
                                 <SelectValue placeholder="Select schedule type" />
                               </SelectTrigger>
                             </FormControl>
@@ -784,7 +808,7 @@ const NewCampaignForm = () => {
                               defaultValue={field.value}
                             >
                               <FormControl>
-                                <SelectTrigger className="w-[200px] border-gray-200">
+                                <SelectTrigger className="w-[200px] border-muted">
                                   <SelectValue placeholder="Select recurrence" />
                                 </SelectTrigger>
                               </FormControl>
@@ -820,7 +844,7 @@ const NewCampaignForm = () => {
                               <Input
                                 {...field}
                                 placeholder="* * * * *"
-                                className="w-full border-gray-200"
+                                className="w-full border-muted"
                               />
                             </FormControl>
                           </FormItem>
@@ -862,7 +886,7 @@ const NewCampaignForm = () => {
                       defaultValue={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger className="w-full border-gray-200">
+                        <SelectTrigger className="w-full border-muted">
                           <SelectValue placeholder="Select a template" />
                         </SelectTrigger>
                       </FormControl>
@@ -897,11 +921,15 @@ const NewCampaignForm = () => {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <div className="min-h-screen">
-          <div className="border-b">
+          <div className="border-b border-muted">
             <div className="container mx-auto">
               <div className="flex items-center justify-between py-4 px-4">
                 <div className="flex items-center gap-4">
-                  <Button type="button" variant="ghost" onClick={() => router.back()}>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => router.back()}
+                  >
                     ←
                   </Button>
                   <FormField
@@ -917,7 +945,11 @@ const NewCampaignForm = () => {
                   />
                 </div>
                 <div className="flex gap-3">
-                  <Button type="button" variant="outline" onClick={() => router.back()}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => router.back()}
+                  >
                     Finish later
                   </Button>
                   <Button type="submit" className="text-white shadow-sm">
@@ -940,7 +972,7 @@ const NewCampaignForm = () => {
               >
                 <AccordionItem
                   value="to"
-                  className="border rounded-lg overflow-hidden"
+                  className="border border-muted rounded-lg overflow-hidden"
                 >
                   <AccordionTrigger className="px-6 py-4 hover:no-underline hover:bg-card [&[data-state=open]]:bg-card dark:text-white">
                     <div className="flex items-start text-left gap-4">
@@ -960,14 +992,14 @@ const NewCampaignForm = () => {
                       </div>
                     </div>
                   </AccordionTrigger>
-                  <AccordionContent className="border-t">
+                  <AccordionContent className="border-t border-muted">
                     {renderStepContent("to")}
                   </AccordionContent>
                 </AccordionItem>
 
                 <AccordionItem
                   value="from"
-                  className="border rounded-lg overflow-hidden"
+                  className="border border-muted rounded-lg overflow-hidden"
                 >
                   <AccordionTrigger className="px-6 py-4 hover:no-underline hover:bg-card [&[data-state=open]]:bg-card dark:text-white">
                     <div className="flex items-start text-left gap-4">
@@ -988,14 +1020,14 @@ const NewCampaignForm = () => {
                       </div>
                     </div>
                   </AccordionTrigger>
-                  <AccordionContent className="border-t">
+                  <AccordionContent className="border-t border-muted">
                     {renderStepContent("from")}
                   </AccordionContent>
                 </AccordionItem>
 
                 <AccordionItem
                   value="subject"
-                  className="border rounded-lg overflow-hidden"
+                  className="border border-muted rounded-lg overflow-hidden"
                 >
                   <AccordionTrigger className="px-6 py-4 hover:no-underline hover:bg-card [&[data-state=open]]:bg-card dark:text-white">
                     <div className="flex items-start text-left gap-4">
@@ -1005,19 +1037,19 @@ const NewCampaignForm = () => {
                           Subject
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          {form.watch("name") || "Write your subject line"}
+                          {form.watch("subject") || "Write your subject line"}
                         </div>
                       </div>
                     </div>
                   </AccordionTrigger>
-                  <AccordionContent className="border-t">
+                  <AccordionContent className="border-t border-muted">
                     {renderStepContent("subject")}
                   </AccordionContent>
                 </AccordionItem>
 
                 <AccordionItem
                   value="schedule"
-                  className="border rounded-lg overflow-hidden"
+                  className="border border-muted rounded-lg overflow-hidden"
                 >
                   <AccordionTrigger className="px-6 py-4 hover:no-underline hover:bg-card [&[data-state=open]]:bg-card dark:text-white">
                     <div className="flex items-start text-left gap-4">
@@ -1036,14 +1068,14 @@ const NewCampaignForm = () => {
                       </div>
                     </div>
                   </AccordionTrigger>
-                  <AccordionContent className="border-t">
+                  <AccordionContent className="border-t border-muted">
                     {renderStepContent("schedule")}
                   </AccordionContent>
                 </AccordionItem>
 
                 <AccordionItem
                   value="content"
-                  className="border rounded-lg overflow-hidden"
+                  className="border border-muted rounded-lg overflow-hidden"
                 >
                   <AccordionTrigger className="px-6 py-4 hover:no-underline hover:bg-card [&[data-state=open]]:bg-card dark:text-white">
                     <div className="flex items-start text-left gap-4">
@@ -1064,7 +1096,7 @@ const NewCampaignForm = () => {
                       </div>
                     </div>
                   </AccordionTrigger>
-                  <AccordionContent className="border-t">
+                  <AccordionContent className="border-t border-muted">
                     {renderStepContent("content")}
                   </AccordionContent>
                 </AccordionItem>

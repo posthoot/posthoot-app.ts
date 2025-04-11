@@ -55,6 +55,7 @@ export async function GET(
       include: "Category",
       limit: limit ? parseInt(limit) : 50,
       page: page ? parseInt(page) : 1,
+      exclude: "designJson",
     });
 
     logger.info({

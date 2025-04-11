@@ -2,7 +2,7 @@ import { APIService } from "@/lib/services/api";
 import { logger } from "@/app/lib/logger";
 import { z } from "zod";
 import { NextResponse } from "next/server";
-import { isEmpty } from "@/lib/utils";
+import { isEmpty, removeUndefined } from "@/lib/utils";
 import { auth } from "@/auth";
 import { EmailTemplate } from "@/types";
 
@@ -19,9 +19,10 @@ interface SendEmailRequest {
   html?: string;
   templateId?: string;
   subject: string;
-  provider: string;
-  teamId: string;
+  provider?: string;
   data?: Record<string, any>;
+  cc?: string[];
+  bcc?: string[];
 }
 
 const FILE_NAME = "app/(email)/api/email/route.ts";
@@ -33,6 +34,8 @@ const zodSchema = z.object({
   provider: z.string().optional(),
   data: z.record(z.string(), z.any()).optional(),
   test: z.boolean().optional(),
+  cc: z.array(z.string()).optional(),
+  bcc: z.array(z.string()).optional(),
 });
 
 /**
@@ -124,8 +127,10 @@ export async function POST(
       email,
       html,
       provider = undefined,
-      data,
+      data = {},
       test = false,
+      cc = undefined,
+      bcc = undefined,
     } = zodSchema.parse(body);
 
     if (isEmpty(html)) {
@@ -150,15 +155,17 @@ export async function POST(
     });
 
     try {
-      const result = await apiService.post("", {
-        to: email,
-        html,
-        provider,
-        data,
-        test,
-      });
-      console.log(
-        `File name: route.ts, 📧, line no: 10, function name: handler, variable name: result, value: ${result}`
+      const result = await apiService.post(
+        "",
+        removeUndefined({
+          to: email,
+          html,
+          provider,
+          data,
+          test,
+          cc,
+          bcc,
+        })
       );
       return new NextResponse(JSON.stringify(result), { status: 200 });
     } catch (error) {

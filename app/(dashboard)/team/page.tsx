@@ -26,7 +26,7 @@ export default function TeamPage() {
 
       <div className="flex-1 space-y-4 p-6 pt-4">
         <Tabs defaultValue="members" className="space-y-4">
-          <TabsList className="border-b rounded-none w-full justify-start gap-6 bg-transparent h-auto p-0">
+          <TabsList className="border-b border-muted rounded-none w-full justify-start gap-6 bg-transparent h-auto p-0">
             <TabsTrigger
               value="members"
               className="flex items-center gap-2 data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-12 px-4"
@@ -52,11 +52,11 @@ export default function TeamPage() {
 
           <TabsContent value="members" className="space-y-4">
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
-              <div className="col-span-4 border rounded-lg p-6">
+              <div className="col-span-4 border border-muted rounded-lg p-6">
                 <h3 className="font-semibold mb-4">Current Team Members</h3>
                 <TeamInfo />
               </div>
-              <div className="col-span-3 border rounded-lg p-6">
+              <div className="col-span-3 border border-muted rounded-lg p-6">
                 <h3 className="font-semibold mb-4">Invite New Member</h3>
                 <InviteTeamMember />
               </div>
@@ -64,14 +64,14 @@ export default function TeamPage() {
           </TabsContent>
 
           <TabsContent value="invites" className="space-y-4">
-            <div className="border rounded-lg p-6">
+            <div className="border border-muted rounded-lg p-6">
               <h3 className="font-semibold mb-4">Pending Invites</h3>
               <TeamInvites />
             </div>
           </TabsContent>
 
           <TabsContent value="analytics" className="space-y-4">
-            <div className="border rounded-lg p-6">
+            <div className="border border-muted rounded-lg p-6">
               <TeamAnalytics teamId="current" />
             </div>
           </TabsContent>

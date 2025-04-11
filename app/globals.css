@@ -3,10 +3,6 @@
 @tailwind utilities;
 
 @layer base {
-  * {
-    @apply border-border;
-  }
-
   body {
     @apply bg-background text-foreground;
   }
@@ -115,6 +111,20 @@
     --shadow-offset-x: 4px;
     --shadow-offset-y: 4px;
   }
+
+  .dark .mly-bg-white {
+    background-color: oklch(0.27 0.00 106.64) !important;
+  }
+
+  .dark .mly-bg-white p {
+    color: oklch(1.00 0 0) !important;
+  }
+
+  .dark .mly-bg-white h1 {
+    color: oklch(1.00 0 0) !important;
+  }
+  
+  
 
   @theme inline {
     --color-background: var(--background);

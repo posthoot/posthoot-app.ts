@@ -23,7 +23,7 @@ export default function MailList({ items }: MailListProps) {
           <div
             key={item.id}
             className={cn(
-              "flex flex-col cursor-pointer items-start gap-2 rounded-lg border p-3 text-left text-sm transition-all hover:bg-accent",
+              "flex flex-col cursor-pointer items-start gap-2 rounded-lg border border-muted p-3 text-left text-sm transition-all hover:bg-accent",
               mail?.id === item.id && "bg-muted"
             )}
             onClick={() => {

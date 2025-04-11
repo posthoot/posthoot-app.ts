@@ -42,6 +42,7 @@ import { FormItem, Form } from "@/components/ui/form";
 import { Popover } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import { DataTable } from "@/components/ui/data-table";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -253,10 +254,10 @@ export default function APIKeysPage() {
               <img
                 src="https://ouch-cdn2.icons8.com/zS22SHejvFvfPbRZo2sPhvNt_3z4AZHzT9_bRJKRSEc/rs:fit:541:456/czM6Ly9pY29uczgu/b3VjaC1wcm9kLmFz/c2V0cy9zdmcvNTYy/L2VkZjI2ODRkLWQw/MWEtNDFjYi04MTRk/LTgzNzZkOWVjZDk2/ZS5zdmc.png"
                 alt="API icon"
-                className="w-full h-full"
+                className="w-full h-full dark:invert dark:grayscale"
               />
             </div>
-            <p className="text-gray-600">
+            <p className="text-muted-foreground">
               The Posthoot API makes it easy for programmers to integrate
               Posthoot's features into other applications.
             </p>
@@ -274,13 +275,13 @@ export default function APIKeysPage() {
               <img
                 src="https://ouch-cdn2.icons8.com/7rw3oTP18wQ1-wbXmGrvGUnfU8neYH5YbCJ_kARPDJo/rs:fit:368:435/czM6Ly9pY29uczgu/b3VjaC1wcm9kLmFz/c2V0cy9zdmcvMjk3/LzVjNDFmYzNjLTJj/N2MtNGI3NS1hY2U1/LTdhMjQwMjQyYmI5/NC5zdmc.png"
                 alt="Developer icon"
-                className="w-full h-full"
+                className="w-full h-full dark:invert dark:grayscale"
               />
             </div>
-            <p className="text-gray-600">
+            <p className="text-muted-foreground">
               Writing your own application that requires access to other
               Posthoot users' accounts? Check out our{" "}
-              <Link href="#" className="text-[#007C89] hover:underline">
+              <Link href="#" className="text-primary hover:underline">
                 OAuth2 API documentation
               </Link>
               , then register your app.
@@ -299,10 +300,10 @@ export default function APIKeysPage() {
               <img
                 src="https://ouch-cdn2.icons8.com/JRinq59LHQii7iLIZpLJAAcM3NVFzlK8izhapTSFMyk/rs:fit:368:207/czM6Ly9pY29uczgu/b3VjaC1wcm9kLmFz/c2V0cy9zdmcvNjM1/LzQwMGQxYzA4LWNj/YTEtNDQxOS05ZjU0/LWVlYTAyMTQ3NjIw/Yy5zdmc.png"
                 alt="Security icon"
-                className="w-full h-full"
+                className="w-full h-full dark:invert"
               />
             </div>
-            <p className="text-gray-600">
+            <p className="text-muted-foreground">
               Learn about our security best practices and how to keep your API
               integrations safe.
             </p>
@@ -316,104 +317,47 @@ export default function APIKeysPage() {
       {/* Your API keys section */}
       <div className="space-y-4 p-16">
         <h2 className="text-2xl font-semibold">Your API keys</h2>
-        <p className="text-gray-600">
+        <p className="text-muted-foreground">
           You can review, revoke or generate new API keys below.{" "}
-          <Link href="#" className="text-[#007C89] hover:underline">
+          <Link href="#" className="text-primary hover:underline">
             Learn more about generating, revoking, and accessing API keys here
           </Link>
           .
         </p>
 
-        {/* API Keys Table */}
-        <div className="overflow-hidden mt-4">
-          <Table>
-            <TableHeader className="bg-white">
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Key</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            {apiKeys?.length > 0 ? (
-              <TableBody>
-                {apiKeys?.map((apiKey) => (
-                  <TableRow key={apiKey.id}>
-                    <TableCell>
-                      <div className="space-y-1">
-                        <div>{apiKey.name}</div>
-                        <div className="text-sm text-muted-foreground">
-                          Created {format(new Date(apiKey.createdAt), "PP")}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              onClick={() =>
-                                navigator.clipboard.writeText(apiKey.key)
-                              }
-                            >
-                              {apiKey.key.slice(0, 10)}...
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>Click to copy</TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={apiKey.isDeleted ? "destructive" : "success"}
-                      >
-                        {apiKey.isDeleted ? "Deleted" : "Active"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="space-x-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() =>
-                            router.push(`/settings/api-keys/${apiKey.id}`)
-                          }
-                        >
-                          Stats
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() =>
-                            toggleApiKey(apiKey.id, !apiKey.isDeleted)
-                          }
-                        >
-                          {apiKey.isDeleted ? "Enable" : "Disable"}
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => deleteApiKey(apiKey.id)}
-                        >
-                          Delete
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            ) : (
-              <TableBody>
-                <TableRow>
-                  <TableCell colSpan={4} className="text-center">
-                    No API keys found
-                  </TableCell>
-                </TableRow>
-              </TableBody>
-            )}
-          </Table>
-        </div>
+        <DataTable columns={
+          [
+            {
+              header: "Name",
+              accessorKey: "name",
+            },
+            {
+              header: "Key",
+              accessorKey: "key",
+            },
+            {
+              header: "Status",
+              accessorKey: "isDeleted",
+            },
+            {
+              header: "Actions",
+              accessorKey: "actions",
+              cell: ({ row }) => (
+                <div className="space-x-2">
+                  <Button onClick={() => router.push(`/settings/api-keys/${row.original.id}`)} variant="ghost" size="sm">
+                    Stats
+                  </Button>
+                  <Button onClick={() => toggleApiKey(row.original.id, !row.original.isDeleted)} variant="ghost" size="sm">
+                    Toggle
+                  </Button>
+                  <Button onClick={() => deleteApiKey(row.original.id)} variant="destructive" size="sm">
+                    Delete
+                  </Button>
+                </div>
+              ),
+            },
+          ]
+        } data={apiKeys} />
       </div>
     </div>
   );

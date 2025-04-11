@@ -1,33 +1,17 @@
 "use client";
-import { Logo } from "@/components/logo";
-import { usePathname } from "next/navigation";
+import Intercom from "@intercom/messenger-js-sdk";
 import { useEffect } from "react";
-import { useState } from "react";
-import { Inter as Instrument_Serif } from "next/font/google";
-import { cn } from "@/lib/utils";
-
-const font = Instrument_Serif({
-  subsets: ["latin"],
-  weight: ["400"],
-});
 
 export default function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const images = [
-    "https://openwebui.com/assets/images/adam.jpg",
-    "https://openwebui.com/assets/images/galaxy.jpg",
-    "https://openwebui.com/assets/images/earth.jpg",
-  ];
 
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentImageIndex(Math.floor(Math.random() * images.length));
-    }, 2000);
-    return () => clearInterval(interval);
+    Intercom({
+      app_id: "ts43f4k1",
+    });
   }, []);
 
   return (
@@ -38,8 +22,17 @@ export default function AuthLayout({
     >
       <div className="backdrop-blur-sm w-full h-screen">
         <div className="w-full h-full flex flex-col justify-between">
-          <div className="my-auto">{children}</div>
-          <div className="mb-10 text-5xl text-center font-normal text-primary-foreground">
+          <div className="my-auto">
+            <div className="w-full items-center justify-center flex">
+              <img
+                src="https://framerusercontent.com/images/Mj9OOgqyJTaP8t5wDmlauyecVM.png?scale-down-to=512"
+                alt="logo"
+                className="mx-auto h-10"
+              />
+            </div>
+            {children}
+          </div>
+          <div className="mb-10 text-5xl text-center font-normal text-white">
             send . smart . campaigns{" "}
           </div>
         </div>

@@ -36,7 +36,7 @@ export function Overview() {
         console.log(data, "data trends pain");
 
         // Data comes pre-transformed from the trends API
-        const transformedData = data.map((point: any) => ({
+        const transformedData = data?.map((point: any) => ({
           date: point.date,
           openRate: point.openRate,
           clickRate: point.clickRate,
@@ -53,7 +53,7 @@ export function Overview() {
     fetchMetrics();
   }, [timeframe, team?.id]);
 
-  const chartData = metricsData.map(metric => ({
+  const chartData = metricsData?.map(metric => ({
     date: metric.date,
     openRate: metric.openRate,
     clickRate: metric.clickRate,
