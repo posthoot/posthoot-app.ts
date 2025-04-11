@@ -8,10 +8,10 @@ export const formSchema = z.object({
   port: z.union([z.number(), z.string()]).transform((val) =>
     typeof val === "string" ? parseInt(val) : val
   ),
-  username: z.string(),
+  username: z.string().min(1, "Username is required"),
   requiresAuth: z.boolean().default(true),
-  fromEmail: z.string(),
-  password: z.string(),
+  fromEmail: z.string().min(1, "From Email is required"),
+  password: z.string().min(1, "Password is required"),
   isActive: z.boolean().default(true),
   supportsTls: z.boolean().default(true),
   maxSendRate: z

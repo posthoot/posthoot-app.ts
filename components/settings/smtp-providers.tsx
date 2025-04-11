@@ -6,24 +6,10 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ColumnDef } from "@tanstack/react-table";
-import { Badge } from "@/components/ui/badge";
 import {
-  MoreHorizontal,
-  Pencil,
-  Trash,
-  Settings,
   Eye,
   EyeOff,
 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
 import { formSchema, SMTPConfig } from "@/lib/validations/smtp-provider";
 import {
@@ -42,88 +28,6 @@ import {
   Sheet,
   SheetFooter,
 } from "../ui/sheet";
-
-export const columns: ColumnDef<SMTPConfig>[] = [
-  {
-    accessorKey: "name",
-    header: "Provider",
-    cell: ({ row }) => (
-      <div className="flex flex-col">
-        <span className="font-medium">{row.getValue("name")}</span>
-        <span className="text-sm text-muted-foreground">
-          {row.original.host}:{row.original.port}
-        </span>
-      </div>
-    ),
-  },
-  {
-    accessorKey: "maxSendRate",
-    header: "Send Rate",
-  },
-  {
-    id: "security",
-    header: "Security",
-    cell: ({ row }) => {
-      const provider = row.original;
-      return (
-        <div className="flex gap-2">
-          {provider.requiresAuth && (
-            <Badge variant="secondary">Auth Required</Badge>
-          )}
-          {provider.supportsTls && <Badge variant="secondary">TLS</Badge>}
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => {
-      const status = row.getValue("status") as string;
-      return (
-        <Badge
-          variant={status === "active" ? "success" : "secondary"}
-          className="capitalize"
-        >
-          {status}
-        </Badge>
-      );
-    },
-  },
-  {
-    id: "actions",
-    cell: ({ row }) => {
-      const provider = row.original;
-
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem>
-              <Settings className="mr-2 h-4 w-4" />
-              Configure
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <Pencil className="mr-2 h-4 w-4" />
-              Edit
-            </DropdownMenuItem>
-            <DropdownMenuItem className="text-red-600">
-              <Trash className="mr-2 h-4 w-4" />
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
-    },
-  },
-];
 
 export function SMTPProviders({
   onTestConnection,
@@ -259,13 +163,19 @@ export function SMTPProviders({
               </>
             )}
             <div className="space-y-2">
-              <Label htmlFor="fromEmail">From Email</Label>
+              <Label htmlFor="fromEmail">From Address</Label>
               <Input
                 id="fromEmail"
-                type="email"
+                type="text"
                 placeholder="noreply@example.com"
                 {...form.register("fromEmail")}
               />
+              <p className="text-xs text-muted-foreground">
+                This is the email address that will be used to send emails
+                from this provider.
+                <br />
+                Example: Human from Company &lt;noreply@example.com&gt;
+              </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="maxSendRate">Max Send Rate</Label>
@@ -314,15 +224,6 @@ export function SMTPProviders({
             </span>
           </div>
           <SheetFooter className="flex justify-between sticky bottom-0 p-4 bg-background w-full">
-            {/* <Button
-              type="button"
-              variant="outline"
-              className="!text-sm"
-              onClick={() => setIsDialogOpen(false)}
-            >
-              Cancel
-            </Button> */}
-            {/* <div className="flex items-center space-x-2"> */}
             <Button
               type="button"
               variant="outline"
@@ -334,7 +235,6 @@ export function SMTPProviders({
             <Button variant="default" type="submit" className="!text-sm">
               Save Provider
             </Button>
-            {/* </div> */}
           </SheetFooter>
         </form>
       </SheetContent>
