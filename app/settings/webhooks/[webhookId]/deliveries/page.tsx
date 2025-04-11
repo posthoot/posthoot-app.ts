@@ -6,7 +6,7 @@ import { TeamProvider } from "@/app/providers/team-provider";
 import { useEffect, useState } from "react";
 import { Webhook } from "@/types";
 import { Loader2 } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 export default function WebhookDeliveriesPage({
   params,
 }: {

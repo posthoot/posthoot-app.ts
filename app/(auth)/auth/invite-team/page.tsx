@@ -3,7 +3,7 @@
 import { Input } from "@/components/ui/input";
 import { z } from "zod";
 import { useState } from "react";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 export default function InviteTeamPage() {
   const [emails, setEmails] = useState<string[]>([""]);
@@ -19,27 +19,16 @@ export default function InviteTeamPage() {
     });
 
     if (validEmails.length === 0) {
-      toast({
-        title: "Error",
-        description: "Please enter at least one valid email address",
-        variant: "destructive",
-      });
+      toast.error("Please enter at least one valid email address");
       return;
     }
 
     try {
       // TODO: Implement invite team logic
       console.log("Valid emails:", validEmails);
-      toast({
-        title: "Success",
-        description: "Team invites have been sent",
-      });
+      toast.success("Team invites have been sent");
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to send invites",
-        variant: "destructive",
-      });
+      toast.error("Failed to send invites");
     }
   };
 

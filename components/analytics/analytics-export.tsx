@@ -17,14 +17,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DownloadIcon } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface AnalyticsExportProps {
   teamId?: string;
 }
 
 export function AnalyticsExport({ teamId }: AnalyticsExportProps) {
-  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
 
   const handleExport = async () => {
@@ -59,15 +58,12 @@ export function AnalyticsExport({ teamId }: AnalyticsExportProps) {
       link.click();
       link.remove();
 
-      toast({
-        title: "Export successful",
+      toast.success("Export successful", {
         description: "Your analytics data has been exported successfully.",
       });
     } catch (error) {
-      toast({
-        title: "Export failed",
+      toast.error("Export failed", {
         description: "There was an error exporting your analytics data.",
-        variant: "destructive",
       });
     } finally {
       setLoading(false);

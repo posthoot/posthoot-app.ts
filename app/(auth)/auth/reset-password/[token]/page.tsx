@@ -12,7 +12,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import React, { use, useState } from "react";
 import { EyeIcon } from "lucide-react";
 import { EyeOffIcon } from "lucide-react";

@@ -99,6 +99,7 @@ export default function LoginPage({
                     />
                   </div>
                 </div>
+                <button type='submit'></button>
               </form>
               <div className="flex items-center justify-center gap-4 mt-2">
                 <Link

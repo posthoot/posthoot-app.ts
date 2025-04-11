@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Trash2, RefreshCw, Globe, Check, X } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 const SERVER_IP = process.env.NEXT_PUBLIC_SERVER_IP || "127.0.0.1";

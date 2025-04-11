@@ -14,13 +14,20 @@ import {
 import { useRouter } from "next/navigation";
 import { useTeam } from "@/app/providers/team-provider";
 import { toast } from "sonner";
+import { useSession } from "next-auth/react";
 
 export default function OnboardingPage() {
   const router = useRouter();
 
-  const { team } = useTeam();
+  const {
+    data: user,
+  } = useSession();
 
-  console.log(team);
+  if (!user) {
+    router.push("/auth/login");
+  }
+
+  const { team } = useTeam();
 
   const onboardingSchema = z.object({
     teamName: z.string().min(2, "Team name must be at least 2 characters"),
@@ -108,6 +115,7 @@ export default function OnboardingPage() {
                     </FormItem>
                   )}
                 />
+                <button type='submit'></button>
               </form>
             </Form>
             <div className="flex items-center justify-center w-[300px] mx-auto mt-2">

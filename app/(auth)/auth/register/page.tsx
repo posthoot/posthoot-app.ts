@@ -15,7 +15,7 @@ import {
 import { signIn, useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
 import { Input } from "@/components/ui/input";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import Link from "next/link";
 import { EyeOffIcon, MailIcon } from "lucide-react";
 import { EyeIcon } from "lucide-react";
@@ -66,8 +66,7 @@ export default function RegisterPage() {
       if (!response.ok) {
         throw new Error("Registration failed");
       }
-      toast({
-        title: "Registration successful",
+      toast.success("Registration successful", {
         description: "Please check your email for verification",
       });
       await signIn("credentials", {
@@ -78,9 +77,7 @@ export default function RegisterPage() {
       });
     } catch (error) {
       console.error("Registration error:", error);
-      toast({
-        title: "Registration error",
-        variant: "destructive",
+      toast.error("Registration error", {
         description: "Please try again later",
       });
     }
@@ -233,6 +230,7 @@ export default function RegisterPage() {
                       </FormItem>
                     )}
                   />
+                  <button type="submit"></button>
                 </form>
               </Form>
               <div className="flex items-center justify-center gap-4 mt-2">

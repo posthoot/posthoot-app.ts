@@ -5,7 +5,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "../ui/button";
 import { Edit, Mail, MoreHorizontal, Trash } from "lucide-react";
 import { format } from "date-fns";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useCampaigns } from "@/app/providers/campaigns-provider";
 import { Campaign } from "@/types";
 import {

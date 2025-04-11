@@ -39,7 +39,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { ExternalLink, Loader2, Plus, RefreshCw, Trash } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import Link from "next/link";
 
 interface WebhookWithEvents extends Webhook {
