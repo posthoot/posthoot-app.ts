@@ -69,7 +69,7 @@ export default function OnboardingPage() {
       <div className="w-full bg-transparent p-8">
         <div className="mb-8 grid gap-4">
           <div className="grid">
-            <h1 className="text-4xl text-center font-normal text-foreground">
+            <h1 className="text-4xl text-center font-normal dark:text-foreground text-white">
               hey 👋🏻, welcome to Posthoot
             </h1>
             <Form {...form}>
@@ -119,7 +119,7 @@ export default function OnboardingPage() {
               </form>
             </Form>
             <div className="flex items-center justify-center w-[300px] mx-auto mt-2">
-              <div className="text-right text-foreground w-full">
+              <div className="text-right dark:text-foreground text-white w-full">
                 press ⏎ to confirm
               </div>
             </div>

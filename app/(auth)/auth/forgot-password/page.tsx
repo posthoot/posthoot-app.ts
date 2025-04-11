@@ -54,7 +54,7 @@ export default function ForgotPasswordPage() {
       <div className="w-full bg-transparent p-8">
         <div className="mb-8 grid gap-4">
           <div className="grid">
-            <h1 className="text-4xl text-center font-normal text-foreground">
+            <h1 className="text-4xl text-center font-normal dark:text-foreground text-white">
               Forgot Password 🫡
             </h1>
             <Form {...form}>
@@ -72,7 +72,7 @@ export default function ForgotPasswordPage() {
                           placeholder="Enter your email"
                           type="email"
                           {...field}
-                          className="!rounded-xl text-foreground !border-none"
+                          className="!rounded-xl dark:text-foreground text-white !border-none"
                         />
                       </FormControl>
                       <FormMessage />
@@ -84,12 +84,12 @@ export default function ForgotPasswordPage() {
             </Form>
             <div className="flex items-center justify-center w-[300px] mx-auto gap-4 mt-2">
               <Link
-                className="text-left text-foreground w-full hover:underline"
+                className="text-left dark:text-foreground text-white w-full hover:underline"
                 href={"/auth/login"}
               >
                 login
               </Link>
-              <div className="text-right text-foreground w-full">
+              <div className="text-right dark:text-foreground text-white w-full">
                 press ⏎ to confirm{" "}
               </div>
             </div>

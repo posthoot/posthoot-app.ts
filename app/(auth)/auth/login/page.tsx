@@ -51,7 +51,7 @@ export default function LoginPage({
       <div className="w-full bg-transparent p-8">
         <div className="mb-8 grid gap-4">
           <div className="grid">
-            <h1 className="text-4xl text-center font-normal text-foreground">
+            <h1 className="text-4xl text-center font-normal dark:dark:text-foreground text-white text-white">
               hey 👋🏻, welcome to posthoot
             </h1>
             <div className="text-center">
@@ -75,7 +75,7 @@ export default function LoginPage({
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-1">
                   <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-4 w-4 text-foreground" />
+                    <Mail className="absolute left-3 top-3 h-4 w-4 dark:text-foreground text-white" />
                     <Input
                       id="email"
                       type="email"
@@ -88,7 +88,7 @@ export default function LoginPage({
                 </div>
                 <div className="space-y-1">
                   <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-foreground" />
+                    <Lock className="absolute left-3 top-3 h-4 w-4 dark:text-foreground text-white" />
                     <Input
                       placeholder="password@123"
                       id="password"
@@ -103,17 +103,17 @@ export default function LoginPage({
               </form>
               <div className="flex items-center justify-center gap-4 mt-2">
                 <Link
-                  className="text-left text-foreground w-full hover:underline"
+                  className="text-left dark:text-foreground text-white w-full hover:underline"
                   href="/auth/forgot-password"
                 >
                   forgot password?
                 </Link>
-                <div className="text-right text-foreground w-full">
+                <div className="text-right dark:text-foreground text-white w-full">
                   press ⏎ to confirm
                 </div>
               </div>
               <div className="text-center mt-4">
-                <span className="text-foreground">
+                <span className="dark:text-foreground text-white">
                   Don't have an account?{" "}
                   <Link href="/auth/register" className="hover:underline">
                     Sign up
