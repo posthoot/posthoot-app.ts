@@ -4,7 +4,7 @@ import { useState, useEffect, use } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Mail, Lock, MailIcon } from "lucide-react";
+import { Mail, Lock, MailIcon, Eye, EyeIcon, EyeOffIcon } from "lucide-react";
 import Link from "next/link";
 import { signIn, useSession } from "next-auth/react";
 import { redirect, useRouter } from "next/navigation";
@@ -21,7 +21,7 @@ export default function LoginPage({
   const [showEmailLogin, setShowEmailLogin] = useState(false);
   const router = useRouter();
   const { error, code } = use(searchParams);
-
+  const [showPassword, setShowPassword] = useState(false);
   const { data: session } = useSession();
 
   useEffect(() => {
@@ -57,9 +57,7 @@ export default function LoginPage({
             <div className="text-center">
               <div
                 className="cursor-pointer flex mx-auto justify-center items-center w-[200px] !rounded-xl border border-white bg-primary-foreground gap-2 px-5 py-2 mt-8"
-                onClick={() =>
-                  signIn("google")
-                }
+                onClick={() => signIn("google")}
               >
                 <GoogleIcon />
                 <span>Login with Google</span>
@@ -75,7 +73,7 @@ export default function LoginPage({
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-1">
                   <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-4 w-4 dark:text-foreground text-white" />
+                    <Mail className="absolute left-3 top-3 h-4 w-4 text-foreground" />
                     <Input
                       id="email"
                       type="email"
@@ -88,18 +86,31 @@ export default function LoginPage({
                 </div>
                 <div className="space-y-1">
                   <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 dark:text-foreground text-white" />
+                    <Lock className="absolute left-3 top-3 h-4 w-4 text-foreground" />
                     <Input
                       placeholder="password@123"
                       id="password"
-                      type="password"
+                      type={showPassword ? "text" : "password"}
                       className="pl-9 !rounded-xl !border-none"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                     />
+                    <div
+                      className="absolute right-2 top-3 cursor-pointer"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {!showPassword ? (
+                        <EyeIcon size={20} className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <EyeOffIcon
+                          size={20}
+                          className="h-4 w-4 text-muted-foreground"
+                        />
+                      )}
+                    </div>
                   </div>
                 </div>
-                <button type='submit'></button>
+                <button type="submit"></button>
               </form>
               <div className="flex items-center justify-center gap-4 mt-2">
                 <Link

@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import React, { use, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { EyeIcon, EyeOffIcon } from "lucide-react";
 
 const resetPasswordSchema = z
   .object({
@@ -102,11 +103,26 @@ export default function ResetPasswordPage({
                           className="!rounded-xl !border-none"
                         />
                       </FormControl>
-                      <FormMessage />
+                      <div
+                        className="absolute right-2 top-1 cursor-pointer"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {!showPassword ? (
+                          <EyeIcon
+                            size={20}
+                            className="text-muted-foreground"
+                          />
+                        ) : (
+                          <EyeOffIcon
+                            size={20}
+                            className="text-muted-foreground"
+                          />
+                        )}
+                      </div>
                     </FormItem>
                   )}
                 />
-
+                
                 <FormField
                   control={resetPasswordForm.control}
                   name="confirmPassword"
@@ -121,6 +137,24 @@ export default function ResetPasswordPage({
                         />
                       </FormControl>
                       <FormMessage />
+                      <div
+                        className="absolute right-2 top-1 cursor-pointer"
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
+                      >
+                        {!showConfirmPassword ? (
+                          <EyeIcon
+                            size={20}
+                            className="text-muted-foreground"
+                          />
+                        ) : (
+                          <EyeOffIcon
+                            size={20}
+                            className="text-muted-foreground"
+                          />
+                        )}
+                      </div>
                     </FormItem>
                   )}
                 />
