@@ -11,21 +11,25 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
-import { toast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
+import { useTeam } from "@/app/providers/team-provider";
+import { toast } from "sonner";
 
 export default function OnboardingPage() {
   const router = useRouter();
 
+  const { team } = useTeam();
+
+  console.log(team);
+
   const onboardingSchema = z.object({
     teamName: z.string().min(2, "Team name must be at least 2 characters"),
-    about: z.string().min(10, "Tell us a bit more about what you do"),
+    about: z.string().min(2, "About must be at least 2 characters"),
   });
 
   const form = useForm<z.infer<typeof onboardingSchema>>({
     defaultValues: {
-      teamName: "",
-      about: "",
+      teamName: team?.name || "",
     },
     mode: "onBlur",
     resolver: zodResolver(onboardingSchema),
@@ -33,35 +37,33 @@ export default function OnboardingPage() {
 
   const handleOnboarding = async (data: z.infer<typeof onboardingSchema>) => {
     try {
+      toast.loading("Setting up team...");
       const response = await fetch("/api/team", {
         method: "POST",
         body: JSON.stringify(data),
       });
-      
-      const result = await response.json();
-      
-      toast({
-        title: "Welcome aboard! 🚀",
-        description: "Your team has been set up successfully",
-      });
-      
-      router.push("/dashboard");
+
+      if (!response.ok) {
+        throw new Error("Failed to create team");
+      }
+
+      await response.json();
+
+      toast.success("Welcome aboard! 🚀");
+
+      router.push("/");
     } catch (error) {
-      toast({
-        title: "Error setting up team",
-        variant: "destructive",
-        description: "Please try again later",
-      });
+      toast.error("Error setting up team");
     }
   };
 
   return (
-    <div className="flex items-center justify-center bg-transparent w-1/2 mx-auto">
+    <div className="flex items-center justify-center bg-transparent w-full md:w-1/2 mx-auto">
       <div className="w-full bg-transparent p-8">
         <div className="mb-8 grid gap-4">
           <div className="grid">
             <h1 className="text-4xl text-center font-normal text-primary-foreground">
-              Welcome to Posthoot 🦉
+              hey 👋🏻, welcome to Posthoot
             </h1>
             <Form {...form}>
               <form
@@ -77,6 +79,11 @@ export default function OnboardingPage() {
                         <Input
                           placeholder="Enter your team name"
                           {...field}
+                          onChange={(e) => {
+                            field.onChange(e);
+                            form.setValue("teamName", e.target.value);
+                          }}
+                          value={team?.name}
                           className="!rounded-xl !border-none"
                         />
                       </FormControl>

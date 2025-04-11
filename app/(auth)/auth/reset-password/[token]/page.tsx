@@ -84,7 +84,7 @@ export default function ResetPasswordPage({
   };
 
   return (
-    <div className="flex items-center justify-center bg-transparent w-1/2 mx-auto">
+    <div className="flex items-center justify-center bg-transparent w-full md:w-1/2 mx-auto">
       <div className="w-full bg-transparent p-8">
         <div className="mb-8 grid gap-4">
           <div className="grid">

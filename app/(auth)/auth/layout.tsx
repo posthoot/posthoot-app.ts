@@ -17,10 +17,10 @@ export default function AuthLayout({
   return (
     <div
       className={
-        "min-h-screen bg-[url('/assets/authbg.png')] bg-cover font-instrument bg-center bg-no-repeat flex"
+        "min-h-screen bg-[url('/assets/authbg.webp')] bg-cover font-instrument bg-center bg-no-repeat flex"
       }
     >
-      <div className="backdrop-blur-sm w-full h-screen">
+      <div className="backdrop-blur-[2px] w-full h-screen">
         <div className="w-full h-full flex flex-col justify-between">
           <div className="my-auto">
             <div className="w-full items-center justify-center flex">

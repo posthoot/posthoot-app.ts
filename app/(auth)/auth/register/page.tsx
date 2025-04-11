@@ -87,12 +87,12 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex items-center justify-center bg-transparent w-1/2 mx-auto">
+    <div className="flex items-center justify-center bg-transparent w-full md:w-1/2 mx-auto">
       <div className="w-full bg-transparent p-8">
         <div className="mb-8 grid gap-4">
           <div className="grid">
             <h1 className="text-4xl text-center font-normal text-primary-foreground">
-              hey, welcome to posthoot
+              hey 👋🏻, welcome to posthoot
             </h1>
             <div className="text-center">
               <div

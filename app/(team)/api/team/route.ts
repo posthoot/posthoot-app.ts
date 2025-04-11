@@ -42,7 +42,6 @@ import { Team, User, ApiError } from "@/types";
  */
 interface UpdateTeamRequest {
   name?: string;
-  role?: string;
 }
 
 interface UpdateTeamResponse {
@@ -71,7 +70,6 @@ export async function GET(
     }
 
     const apiServiceTeam = new APIService("teams", session);
-
 
     const team = await apiServiceTeam.get<{
       data: Team[];
@@ -165,7 +163,7 @@ export async function PUT(
     });
 
     const response = await apiService.post<UpdateTeamResponse>(
-      `${userid}/update`,
+      session.user.teamId,
       body
     );
 
