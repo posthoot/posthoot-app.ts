@@ -1,10 +1,7 @@
 # 🌟 Stage 1: Install dependencies and build the application 🌟
 # ============================================================
 
-FROM node:22-alpine AS builder
-
-RUN echo "🔮 ✨ Why did the dependency feel lonely? Because nobody would require it! 😄" && \
-    apk add --no-cache nodejs git build-base python3 make npm
+FROM oven/bun:alpine AS builder
 
 # 📂 Set working directory 📂
 # ==========================
@@ -22,7 +19,7 @@ COPY package.json package-lock.json ./
 # ========================
 
 RUN echo "🎭 ✨ What did npm say to the package? I node you from somewhere! 🤣" && \
-    npm install --legacy-peer-deps
+    bun install
 
 
 # 💫 Copy source code 💫
@@ -35,7 +32,7 @@ COPY . .
 # ======================
 
 RUN echo "🚀 ✨ Why did the Next.js build take so long? It was taking a page break! 😆" && \
-    npm run build
+    bun run build
 
 # 🌠 Stage 2: Production image 🌠
 # ==============================
@@ -72,7 +69,6 @@ COPY --from=builder /app/node_modules/dotenv ./node_modules/dotenv
 # ==================
 
 EXPOSE 3000
-
 
 # 🚀 Launch application 🚀
 # ======================
