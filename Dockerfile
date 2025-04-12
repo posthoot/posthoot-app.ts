@@ -1,7 +1,7 @@
 # 🌟 Stage 1: Install dependencies and build the application 🌟
 # ============================================================
 
-FROM oven/bun:canary-alpine AS builder
+FROM node:22-alpine AS builder
 
 RUN echo "🔮 ✨ Why did the dependency feel lonely? Because nobody would require it! 😄" && \
     apk add --no-cache nodejs git build-base python3 make npm
@@ -22,7 +22,7 @@ COPY package.json package-lock.json ./
 # ========================
 
 RUN echo "🎭 ✨ What did npm say to the package? I node you from somewhere! 🤣" && \
-    bun install
+    npm install --legacy-peer-deps
 
 
 # 💫 Copy source code 💫
@@ -35,14 +35,12 @@ COPY . .
 # ======================
 
 RUN echo "🚀 ✨ Why did the Next.js build take so long? It was taking a page break! 😆" && \
-    bun run build
-
+    npm run build
 
 # 🌠 Stage 2: Production image 🌠
 # ==============================
 
-FROM oven/bun:canary-alpine AS production
-
+FROM oven/bun:alpine AS production
 
 # 📂 Set production directory 📂
 # ============================
@@ -55,18 +53,20 @@ WORKDIR /app
 
 RUN echo "🎪 ✨ Why did the Docker container feel claustrophobic? Because it was packed in production! 🎭"
 
-COPY --from=builder /app/node_modules ./node_modules
 
-COPY --from=builder /app/.next ./.next
+# Copy standalone output which contains minimal production files
+COPY --from=builder /app/.next/standalone ./
 
-COPY --from=builder /app/package.json ./
-
+# Copy static assets and public files which aren't included in standalone by default
 COPY --from=builder /app/public ./public
 
-# Copy Prisma schema and migrations from builder stage 🦆
+COPY --from=builder /app/.next/static ./.next/static
+
+# Copy bcryptjs and dotenv from builder stage 🦆
 # ====================================================
 
-COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/node_modules/bcryptjs ./node_modules/bcryptjs
+COPY --from=builder /app/node_modules/dotenv ./node_modules/dotenv
 
 # 🔌 Configure port 🔌
 # ==================
@@ -77,4 +77,4 @@ EXPOSE 3000
 # 🚀 Launch application 🚀
 # ======================
 
-CMD ["bun", "run", "start"]
+CMD ["bunx", "server.js"]
