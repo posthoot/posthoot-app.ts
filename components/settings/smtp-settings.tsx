@@ -85,12 +85,6 @@ export function SMTPSettings({
   const { team } = useTeam();
   const { configs: smtpConfigs, isLoading, refresh } = useSMTP();
 
-  const openCreateSMTPDialog = () => {
-    setEditConfig(null);
-    form.reset({ provider: SMTPProvider.CUSTOM, isActive: true });
-    setIsDialogOpen(true);
-  };
-
   const form = useForm<SMTPConfig>({
     resolver: zodResolver(formSchema),
     defaultValues: {
