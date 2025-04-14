@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import { ColumnDef } from "@tanstack/react-table";
@@ -21,7 +20,8 @@ import { useTeam } from "@/app/providers/team-provider";
 import { useSMTP } from "@/app/providers/smtp-provider";
 import { SMTPConfig, formSchema } from "@/lib/validations/smtp-provider";
 import { SMTPProviders } from "./smtp-providers";
-import { ApiError, SMTPProvider } from "@/types";
+import { ApiError } from "@/types";
+import { SMTPProvider } from "@/types/index";
 import Link from "next/link";
 import { toast } from "sonner";
 

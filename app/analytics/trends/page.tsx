@@ -21,6 +21,9 @@ import {
   YAxis,
 } from "recharts";
 
+// Fix TypeScript issues with Recharts by providing explicit component types
+import { ComponentProps, ComponentType } from "react";
+
 type TrendData = {
   date: string;
   openRate: number;
@@ -94,6 +97,7 @@ export default function TrendsPage() {
             ) : (
               <ResponsiveContainer width="100%" height={400}>
                 <AreaChart
+                  accessibilityLayer
                   data={trendData}
                   margin={{ top: 20, right: 30, left: 0, bottom: 0 }}
                 >

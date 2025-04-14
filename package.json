@@ -96,7 +96,7 @@
     "react-icons": "^5.0.0",
     "react-letter": "^0.4.0",
     "react-resizable-panels": "^2.1.3",
-    "recharts": "^2.12.7",
+    "recharts": "^2.15.2",
     "sharp": "^0.33.5",
     "sonner": "^1.5.0",
     "tailwind-merge": "^2.5.2",
