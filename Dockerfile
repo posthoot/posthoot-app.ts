@@ -1,7 +1,7 @@
 # 🌟 Stage 1: Install dependencies and build the application 🌟
 # ============================================================
 
-FROM oven/bun:latest AS builder
+FROM node:22-alpine AS builder
 
 # 📂 Set working directory 📂
 # ==========================
@@ -19,7 +19,7 @@ COPY package.json package-lock.json ./
 # ========================
 
 RUN echo "🎭 ✨ What did npm say to the package? I node you from somewhere! 🤣" && \
-    bun install
+    npm install --legacy-peer-deps
 
 
 # 💫 Copy source code 💫
@@ -32,12 +32,12 @@ COPY . .
 # ======================
 
 RUN echo "🚀 ✨ Why did the Next.js build take so long? It was taking a page break! 😆" && \
-    bun run build
+    npm run build
 
 # 🌠 Stage 2: Production image 🌠
 # ==============================
 
-FROM oven/bun:latest AS production
+FROM node:22-alpine AS production
 
 # 📂 Set production directory 📂
 # ============================
@@ -73,4 +73,4 @@ EXPOSE 3000
 # 🚀 Launch application 🚀
 # ======================
 
-CMD ["bunx", "server.js"]
+CMD ["node", "server.js"]
