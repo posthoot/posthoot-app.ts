@@ -24,6 +24,7 @@ const nextConfig = {
       },
     ],
   },
+  output: "standalone",
   webpack: (config, { nextRuntime }) => {
     if (nextRuntime !== "nodejs") return config;
     return {
