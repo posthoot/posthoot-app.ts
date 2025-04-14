@@ -32,6 +32,7 @@ const nextConfig = {
       externals: [...config.externals, "everything-json"],
     };
   },
+  transpilePackages: ["bcryptjs"],
 };
 
 module.exports = nextConfig;

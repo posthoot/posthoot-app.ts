@@ -19,6 +19,7 @@
     "@auth/prisma-adapter": "^2.7.4",
     "@cleotasks/core": "^1.0.0-beta.7",
     "@hookform/resolvers": "^3.9.0",
+    "@intercom/messenger-js-sdk": "^0.0.14",
     "@maily-to/core": "^0.2.8",
     "@maily-to/render": "^0.1.4",
     "@neondatabase/serverless": "^0.10.4",
@@ -61,7 +62,6 @@
     "@vercel/blob": "^0.27.0",
     "@xyflow/react": "^12.0.0",
     "acme-client": "^5.4.0",
-    "@intercom/messenger-js-sdk": "^0.0.14",
     "autoprefixer": "10.4.15",
     "bcrypt-edge": "^0.1.0",
     "bcryptjs": "^2.4.3",
@@ -105,6 +105,7 @@
     "typescript": "5.2.2",
     "vaul": "^0.9.9",
     "winston": "^3.8.0",
+    "yjs": "^13.6.24",
     "zod": "^3.23.8"
   },
   "devDependencies": {
