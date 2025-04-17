@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { logger } from "@/app/lib/logger";
 import { z } from "zod";
-import { SMTPProviderType } from "@/types";
+import { SMTPProviderType } from "@/lib";
 import { APIService } from "@/lib/services/api";
-import { ApiError } from "@/types";
+import { ApiError } from "@/lib";
 
 const FILE_NAME = "app/api/smtp/route.ts";
 

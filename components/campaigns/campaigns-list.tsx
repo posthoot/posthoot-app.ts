@@ -7,7 +7,7 @@ import { Edit, Mail, MoreHorizontal, Trash } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { useCampaigns } from "@/app/providers/campaigns-provider";
-import { Campaign } from "@/types";
+import { Campaign } from "@/lib";
 import {
   DropdownMenu,
   DropdownMenuContent,

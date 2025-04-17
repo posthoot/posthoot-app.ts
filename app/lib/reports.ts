@@ -1,4 +1,4 @@
-import { MetricsData } from "@/types/stats";
+import { MetricsData } from "@/lib/stats";
 import { format } from "date-fns";
 import Papa from "papaparse";
 

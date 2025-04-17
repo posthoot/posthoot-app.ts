@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { APIService } from "@/lib/services/api";
 import { logger } from "@/app/lib/logger";
-import { ApiError } from "@/types";
+import { ApiError } from "@/lib";
 
 interface EmailCategory {
   id: string;

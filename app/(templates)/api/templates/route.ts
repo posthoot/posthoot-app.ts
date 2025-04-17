@@ -3,7 +3,7 @@ import { auth } from "@/auth";
 import { encodeToBase64, extractVariables } from "@/lib/utils";
 import { APIService } from "@/lib/services/api";
 import { logger } from "@/app/lib/logger";
-import { ApiError } from "@/types";
+import { ApiError } from "@/lib";
 
 const FILE_NAME = "app/(templates)/api/templates/route.ts";
 

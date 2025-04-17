@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { logger } from "@/app/lib/logger";
 import { z } from "zod";
 import { APIService } from '@/lib/services/api';
-import { ApiError } from "@/types";
+import { ApiError } from "@/lib";
 
 // 🔒 Schema for forgot password request validation
 const ForgotPasswordSchema = z.object({

@@ -4,7 +4,7 @@ import { WebhookDeliveries } from "@/components/settings/webhook-deliveries";
 import { PageHeader } from "@/components/page-header";
 import { TeamProvider } from "@/app/providers/team-provider";
 import { useEffect, useState } from "react";
-import { Webhook } from "@/types";
+import { Webhook } from "@/lib";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 export default function WebhookDeliveriesPage({

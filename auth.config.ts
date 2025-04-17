@@ -1,6 +1,6 @@
 import type { NextAuthConfig, Session } from "next-auth";
 import type { JWT } from "next-auth/jwt";
-import { User } from "./types";
+import { User } from "./lib";
 import { APIService } from "./lib/services";
 import { API_URL } from "./auth";
 export const authConfig = {

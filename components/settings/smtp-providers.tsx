@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { SMTPProviderType } from "@/types";
+import { SMTPProviderType } from "@/lib";
 import {
   SheetContent,
   SheetDescription,

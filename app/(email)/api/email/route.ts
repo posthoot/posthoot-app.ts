@@ -4,7 +4,7 @@ import { z } from "zod";
 import { NextResponse } from "next/server";
 import { isEmpty, removeUndefined } from "@/lib/utils";
 import { auth } from "@/auth";
-import { EmailTemplate } from "@/types";
+import { EmailTemplate } from "@/lib";
 
 // Response interfaces
 interface SendEmailResponse {

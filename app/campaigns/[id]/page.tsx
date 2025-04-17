@@ -6,7 +6,7 @@ import {
   CampaignsProvider,
   useCampaigns,
 } from "@/app/providers/campaigns-provider";
-import { Campaign } from "@/types";
+import { Campaign } from "@/lib";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";

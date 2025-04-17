@@ -1,4 +1,4 @@
-import { ApiError } from "@/types";
+import { ApiError } from "@/lib";
 import axios from "axios";
 
 export class APIService {

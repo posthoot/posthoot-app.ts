@@ -1,4 +1,4 @@
-import { SMTPProviderType } from "@/types";
+import { SMTPProviderType } from "@/lib";
 import { z } from "zod";
 
 export const formSchema = z.object({

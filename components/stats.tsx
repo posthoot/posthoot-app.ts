@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Users, Mail, MousePointerClick, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
-import { MetricsData } from "@/types/stats";
+import { MetricsData } from "@/lib/stats";
 import { useTeam } from "@/app/providers/team-provider";
 
 export function Stats() {

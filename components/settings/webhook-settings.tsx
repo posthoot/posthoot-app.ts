@@ -26,8 +26,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { WebhookEventType } from "@/types";
-import { Webhook } from "@/types";
+import { WebhookEventType } from "@/lib";
+import { Webhook } from "@/lib";
 import {
   Table,
   TableBody,

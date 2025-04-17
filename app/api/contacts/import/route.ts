@@ -4,7 +4,7 @@ import { APIService } from "@/lib/services/api";
 import { logger } from "@/app/lib/logger";
 import { parse } from "papaparse";
 import { z } from "zod";
-import { ApiError, Contact } from "@/types";
+import { ApiError, Contact } from "@/lib";
 
 /**
  * @openapi

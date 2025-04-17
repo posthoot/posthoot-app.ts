@@ -3,7 +3,7 @@ import { auth } from "@/auth";
 import { APIService } from "@/lib/services/api";
 import { isEmpty, removeUndefined } from "@/lib/utils";
 import { logger } from "@/app/lib/logger";
-import { ApiError } from "@/types";
+import { ApiError } from "@/lib";
 
 // Response interfaces
 interface CampaignResponse {

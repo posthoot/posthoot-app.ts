@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { WebhookEventType } from "@/types";
+import { WebhookEventType } from "@/lib";
 import {
   Dialog,
   DialogContent,

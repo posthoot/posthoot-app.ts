@@ -2,7 +2,7 @@ import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 import { logger } from "@/app/lib/logger";
 import { APIService } from "@/lib/services/api";
-import { ApiError } from "@/types";
+import { ApiError } from "@/lib";
 import { randomUUID } from "crypto";
 
 const FILE_NAME = "api/blobs/route.ts";

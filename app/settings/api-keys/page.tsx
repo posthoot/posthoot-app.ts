@@ -26,7 +26,7 @@ import { Calendar } from "@/components/ui/calendar";
 import Link from "next/link";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/page-header";
-import { APIKey } from "@/types";
+import { APIKey } from "@/lib";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";

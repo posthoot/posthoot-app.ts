@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { APIService } from "@/lib/services/api";
 import { logger } from "@/app/lib/logger";
-import { Team, User, ApiError } from "@/types";
+import { Team, User, ApiError } from "@/lib";
 
 /**
  * @swagger

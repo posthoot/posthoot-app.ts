@@ -6,7 +6,7 @@ import EmailEditor, { EditorRef, EmailEditorProps } from "react-email-editor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { EmailCategory, EmailTemplate, TemplateEditorProps } from "@/types";
+import { EmailCategory, EmailTemplate, TemplateEditorProps } from "@/lib";
 import { useTeam } from "@/app/providers/team-provider";
 import {
   Select,

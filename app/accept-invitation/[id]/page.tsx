@@ -16,7 +16,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { signIn, useSession } from "next-auth/react";
-import { Team, TeamInvite, User } from "@/types";
+import { Team, TeamInvite, User } from "@/lib";
 import { toast } from "sonner";
 
 const acceptInviteSchema = z

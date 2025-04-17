@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { MailingList } from "@/types";
+import { MailingList } from "@/lib";
 import { useTeam } from "./team-provider";
 
 type MailingListContextType = {

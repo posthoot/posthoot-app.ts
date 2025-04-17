@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { logger } from "@/app/lib/logger";
 import { APIService } from "@/lib/services/api";
-import { ApiError } from "@/types";
+import { ApiError } from "@/lib";
 import { auth } from "@/auth";
-import { EmailTemplate } from "@/types";
+import { EmailTemplate } from "@/lib";
 import { encodeToBase64 } from "@/lib/utils";
 const FILE_NAME = "app/(templates)/api/templates/[id]/route.ts";
 

@@ -25,7 +25,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { EmailTemplate } from "@/types";
+import { EmailTemplate } from "@/lib";
 import { useQuery } from "@tanstack/react-query";
 import { Pagination } from "../ui/pagination";
 import { Input } from "../ui/input";

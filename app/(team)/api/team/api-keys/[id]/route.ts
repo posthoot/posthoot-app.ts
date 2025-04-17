@@ -2,7 +2,7 @@ import { APIService } from "@/lib/services/api";
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 import { logger } from "@/app/lib/logger";
-import { ApiError } from "@/types";
+import { ApiError } from "@/lib";
 
 const FILE_NAME = "app/(team)/api/team/api-keys/[id]/route.ts";
 

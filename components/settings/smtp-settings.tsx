@@ -20,7 +20,7 @@ import { useTeam } from "@/app/providers/team-provider";
 import { useSMTP } from "@/app/providers/smtp-provider";
 import { SMTPConfig, formSchema } from "@/lib/validations/smtp-provider";
 import { SMTPProviders } from "./smtp-providers";
-import { ApiError, SMTPProviderType } from "@/types";
+import { ApiError, SMTPProviderType } from "@/lib";
 import Link from "next/link";
 import { toast } from "sonner";
 

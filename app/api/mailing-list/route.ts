@@ -5,7 +5,7 @@ import { auth } from "@/auth";
 import { logger } from "@/app/lib/logger";
 import { z } from "zod";
 import { APIService } from "@/lib/services/api";
-import { MailingList, ApiError } from "@/types";
+import { MailingList, ApiError } from "@/lib";
 
 const mailingListSchema = z.object({
   name: z.string().min(1, "Name is required"),

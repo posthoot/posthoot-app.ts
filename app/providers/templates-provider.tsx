@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { EmailTemplate } from "@/types";
+import { EmailTemplate } from "@/lib";
 import { useTeam } from "./team-provider";
 
 type TemplatesContextType = {

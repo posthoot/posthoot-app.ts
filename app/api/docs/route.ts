@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { ApiError } from "@/types";
+import { ApiError } from "@/lib";
 import { getApiDocs } from "@/lib/swagger";
 import { auth } from "@/auth";
 import { logger } from "@/app/lib/logger";

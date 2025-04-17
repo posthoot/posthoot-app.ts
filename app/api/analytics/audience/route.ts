@@ -3,7 +3,7 @@ import { auth } from "@/auth";
 import { logger } from "@/app/lib/logger";
 import { z } from "zod";
 import { APIService } from "@/lib/services/api";
-import { ApiError } from "@/types";
+import { ApiError } from "@/lib";
 
 const FILE_NAME = "app/api/analytics/audience/route.ts";
 

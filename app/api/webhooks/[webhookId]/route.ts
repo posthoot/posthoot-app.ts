@@ -3,7 +3,7 @@ import { auth } from "@/auth";
 import { z } from "zod";
 import { APIService } from "@/lib/services/api";
 import { logger } from "@/app/lib/logger";
-import { ApiError, WebhookEventType } from "@/types";
+import { ApiError, WebhookEventType } from "@/lib";
 
 const FILE_NAME = "app/api/webhooks/[webhookId]/route.ts";
 

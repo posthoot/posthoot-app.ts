@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { APIService } from "@/lib/services/api";
-import { ApiError, APIKeyResponse } from "@/types";
+import { ApiError, APIKeyResponse } from "@/lib";
 import { logger } from "@/app/lib/logger";
 
 // Response interfaces

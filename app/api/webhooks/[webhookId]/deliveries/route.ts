@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { APIService } from "@/lib/services/api";
 import { logger } from "@/app/lib/logger";
-import { ApiError, Webhook } from "@/types";
+import { ApiError, Webhook } from "@/lib";
 
 const FILE_NAME = "app/api/webhooks/[webhookId]/deliveries/route.ts";
 

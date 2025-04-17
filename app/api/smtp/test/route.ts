@@ -6,7 +6,7 @@ import { logger } from "@/app/lib/logger";
 import nodemailer from "nodemailer";
 import { APIService } from "@/lib/services/api";
 import { z } from "zod";
-import { ApiError } from "@/types";
+import { ApiError } from "@/lib";
 
 /**
  * @openapi

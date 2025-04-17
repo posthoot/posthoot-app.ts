@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEffect, useState } from "react";
 import { addDays, format, subDays } from "date-fns";
 import { useTeam } from "@/app/providers/team-provider";
-import { MetricsData } from "@/types/stats";
+import { MetricsData } from "@/lib/stats";
 
 export function Overview() {
   const [metricsData, setMetricsData] = useState<MetricsData[]>([]);

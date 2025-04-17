@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { APIService } from "@/lib/services/api";
 import { logger } from "@/app/lib/logger";
-import { ApiError, DomainResponse } from "@/types";
+import { ApiError, DomainResponse } from "@/lib";
 import { auth } from "@/auth";
 
 const FILE_NAME = "app/api/domains/route.ts";

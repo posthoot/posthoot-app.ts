@@ -5,7 +5,7 @@ import { auth } from "@/auth";
 import { logger } from "@/app/lib/logger";
 import { z } from "zod";
 import { APIService } from "@/lib/services/api";
-import { Contact, ApiError, MailingList } from "@/types";
+import { Contact, ApiError, MailingList } from "@/lib";
 
 // Response interfaces
 interface CreateContactsResponse {
