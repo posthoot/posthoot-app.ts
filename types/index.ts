@@ -1,4 +1,4 @@
-export enum SMTPProvider {
+export enum SMTPProviderType {
   GMAIL = "GMAIL",
   CUSTOM = "CUSTOM",
   OUTLOOK = "OUTLOOK",
@@ -85,7 +85,7 @@ export interface DomainResponse {
 
 export interface SMTPConfig {
   id: string;
-  provider: SMTPProvider;
+  provider: SMTPProviderType;
   host: string;
   port: number;
   username: string;

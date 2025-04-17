@@ -37,8 +37,6 @@ export function ComposeEmail({ onSend }: ComposeEmailProps) {
 
     const html = await maily.render();
 
-    console.log(html, "html");
-
     if (onSend) {
       onSend({
         email: to,

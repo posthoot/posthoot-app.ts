@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { SMTPProvider } from "@/types";
+import { SMTPProviderType } from "@/types";
 import {
   SheetContent,
   SheetDescription,
@@ -42,8 +42,8 @@ export function SMTPProviders({
   onSaveProvider: (data: z.infer<typeof formSchema>) => void;
   isDialogOpen: boolean;
   setIsDialogOpen: (open: boolean) => void;
-  providers: Record<SMTPProvider, SMTPConfig>;
-  onProviderChange: (provider: SMTPProvider) => void;
+  providers: Record<SMTPProviderType, SMTPConfig>;
+  onProviderChange: (provider: SMTPProviderType) => void;
   form: UseFormReturn<z.infer<typeof formSchema>>;
 }) {
   const [showPassword, setShowPassword] = useState(false);
@@ -62,8 +62,8 @@ export function SMTPProviders({
               <Label htmlFor="provider">Provider Type</Label>
               <Select
                 onValueChange={(value) => {
-                  const provider = providers[value as SMTPProvider];
-                  onProviderChange(provider.provider as SMTPProvider);
+                  const provider = providers[value as SMTPProviderType];
+                  onProviderChange(provider.provider as SMTPProviderType);
                 }}
                 defaultValue={Object.keys(providers)[0]}
               >

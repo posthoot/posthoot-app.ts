@@ -1,9 +1,9 @@
-import { SMTPProvider } from "@/types";
+import { SMTPProviderType } from "@/types";
 import { z } from "zod";
 
 export const formSchema = z.object({
   id: z.string().optional(),
-  provider: z.nativeEnum(SMTPProvider),
+  provider: z.nativeEnum(SMTPProviderType),
   host: z.string().min(1, "Host is required"),
   port: z.union([z.number(), z.string()]).transform((val) =>
     typeof val === "string" ? parseInt(val) : val

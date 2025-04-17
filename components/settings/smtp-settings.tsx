@@ -20,14 +20,13 @@ import { useTeam } from "@/app/providers/team-provider";
 import { useSMTP } from "@/app/providers/smtp-provider";
 import { SMTPConfig, formSchema } from "@/lib/validations/smtp-provider";
 import { SMTPProviders } from "./smtp-providers";
-import { ApiError } from "@/types";
-import { SMTPProvider } from "@/types/index";
+import { ApiError, SMTPProviderType } from "@/types";
 import Link from "next/link";
 import { toast } from "sonner";
 
-const DEFAULT_PROVIDERS: Record<SMTPProvider, SMTPConfig> = {
-  [SMTPProvider.CUSTOM]: {
-    provider: SMTPProvider.CUSTOM,
+const DEFAULT_PROVIDERS: Record<SMTPProviderType, SMTPConfig> = {
+  [SMTPProviderType.CUSTOM]: {
+    provider: SMTPProviderType.CUSTOM,
     host: "",
     port: 587,
     username: "",
@@ -37,8 +36,8 @@ const DEFAULT_PROVIDERS: Record<SMTPProvider, SMTPConfig> = {
     maxSendRate: 14,
     documentation: "",
   },
-  [SMTPProvider.GMAIL]: {
-    provider: SMTPProvider.GMAIL,
+  [SMTPProviderType.GMAIL]: {
+    provider: SMTPProviderType.GMAIL,
     host: "smtp.gmail.com",
     port: 587,
     username: "",
@@ -48,8 +47,8 @@ const DEFAULT_PROVIDERS: Record<SMTPProvider, SMTPConfig> = {
     maxSendRate: 14,
     documentation: "https://support.google.com/mail/answer/7126229?hl=en",
   },
-  [SMTPProvider.OUTLOOK]: {
-    provider: SMTPProvider.OUTLOOK,
+  [SMTPProviderType.OUTLOOK]: {
+    provider: SMTPProviderType.OUTLOOK,
     host: "smtp.office365.com",
     port: 587,
     username: "",
@@ -60,8 +59,8 @@ const DEFAULT_PROVIDERS: Record<SMTPProvider, SMTPConfig> = {
     documentation:
       "https://support.microsoft.com/en-us/office/set-up-a-connection-to-an-smtp-server-for-outlook-com-d088d509-d54c-4036-a5c3-21d483f2f017",
   },
-  [SMTPProvider.AMAZON]: {
-    provider: SMTPProvider.AMAZON,
+  [SMTPProviderType.AMAZON]: {
+    provider: SMTPProviderType.AMAZON,
     host: "email-smtp.us-east-1.amazonaws.com",
     port: 587,
     username: "",
@@ -89,7 +88,7 @@ export function SMTPSettings({
     resolver: zodResolver(formSchema),
     defaultValues: {
       id: null,
-      provider: SMTPProvider.CUSTOM,
+      provider: SMTPProviderType.CUSTOM,
       isActive: true,
       maxSendRate: 14,
     },
@@ -100,20 +99,23 @@ export function SMTPSettings({
       // first test the configuration
       await testConfiguration(data);
 
-      const response = await fetch(data.id ? `/api/smtp/${data.id}` : "/api/smtp", {
-        method: data.id ? "PUT" : "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          smtpConfigs: [
-            {
-              ...data,
-              port: Number(data.port),
-              maxSendRate: Number(data.maxSendRate),
-            },
-          ],
-          teamId: team.id,
-        }),
-      });
+      const response = await fetch(
+        data.id ? `/api/smtp/${data.id}` : "/api/smtp",
+        {
+          method: data.id ? "PUT" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            smtpConfigs: [
+              {
+                ...data,
+                port: Number(data.port),
+                maxSendRate: Number(data.maxSendRate),
+              },
+            ],
+            teamId: team.id,
+          }),
+        }
+      );
 
       if (!response.ok) {
         const apiError = (await response.json()) as ApiError;
@@ -163,9 +165,9 @@ export function SMTPSettings({
     }
   };
 
-  const onProviderChange = (value: SMTPProvider) => {
+  const onProviderChange = (value: SMTPProviderType) => {
     form.setValue("provider", value);
-    if (value !== SMTPProvider.CUSTOM) {
+    if (value !== SMTPProviderType.CUSTOM) {
       const provider = DEFAULT_PROVIDERS[value];
       form.setValue("host", provider.host);
       form.setValue("port", provider.port);
@@ -192,7 +194,9 @@ export function SMTPSettings({
             {row.getValue("provider")}
           </Badge>
           <Badge variant="outline" className="text-sm w-max">
-            {row.original.host}:{row.original.port}
+            {row.original.port
+              ? `${row.original.host}:${row.original.port}`
+              : row.original.host}
           </Badge>
         </div>
       ),
@@ -226,7 +230,8 @@ export function SMTPSettings({
           <Link
             href={
               documentation ||
-              DEFAULT_PROVIDERS[row.original.provider].documentation
+              DEFAULT_PROVIDERS[row.original.provider as SMTPProviderType]
+                .documentation
             }
             className="text-sm  bg-muted-foreground/10 px-2 py-1 text-blue-500 hover:text-blue-600"
             target="_blank"
@@ -301,7 +306,7 @@ export function SMTPSettings({
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="text-red-600"
-                onClick={() => removeSMTPConfig(config.id!)}
+                onClick={() => removeSMTPConfig(config.id as string)}
               >
                 <Trash className="mr-2 h-4 w-4" />
                 Delete

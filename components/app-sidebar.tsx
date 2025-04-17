@@ -264,7 +264,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </Button>
           </SheetTrigger>
 
-          <SheetContent className="min-w-screen md:min-w-[800px]">
+          <SheetContent className="min-w-screen md:min-w-[800px] h-[calc(100vh-100px)] max-h-[calc(100vh-100px)] overflow-y-auto">
             <SheetHeader className="flex flex-col gap-2">
               <span className="text-2xl">Compose Email</span>
               <p className="text-sm">

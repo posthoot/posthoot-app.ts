@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { logger } from "@/app/lib/logger";
 import { z } from "zod";
-import { SMTPProvider } from "@/types";
+import { SMTPProviderType } from "@/types";
 import { APIService } from "@/lib/services/api";
 import { ApiError } from "@/types";
 
@@ -27,7 +27,7 @@ interface SMTPConfigResponse {
 
 interface SMTPConfig {
   id?: string;
-  provider: SMTPProvider;
+  provider: SMTPProviderType;
   host: string;
   port: number;
   username: string;
@@ -42,7 +42,7 @@ interface SMTPConfig {
 
 const smtpConfigSchema = z.object({
   id: z.string().optional(),
-  provider: z.nativeEnum(SMTPProvider),
+  provider: z.nativeEnum(SMTPProviderType),
   host: z.string().min(1),
   port: z.number().min(1),
   username: z.string().min(1),

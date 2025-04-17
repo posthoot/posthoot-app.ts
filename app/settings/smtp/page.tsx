@@ -1,6 +1,6 @@
 "use client";
 
-import { SMTPProvider } from "@/app/providers/smtp-provider";
+import { SMTPProvider as SmtpContextProvider } from "@/app/providers/smtp-provider";
 import { PageHeader } from "@/components/page-header";
 import { SMTPSettings } from "@/components/settings/smtp-settings";
 import { Button } from "@/components/ui/button";
@@ -22,12 +22,12 @@ export default function SMTPPage() {
         <Button onClick={openCreateSMTPDialog}>Add SMTP Server</Button>
       </PageHeader>
       <div className="p-4 mx-auto">
-        <SMTPProvider>
+        <SmtpContextProvider>
           <SMTPSettings
             isDialogOpen={isDialogOpen}
             setIsDialogOpen={setIsDialogOpen}
           />
-        </SMTPProvider>
+        </SmtpContextProvider>
       </div>
     </div>
   );
