@@ -40,8 +40,8 @@ import {
 } from "@/components/ui/tooltip";
 import { Mail } from "@/app/types";
 import { useQuery } from "@tanstack/react-query";
-import { Letter } from 'react-letter';
-import { extract } from 'letterparser';
+import { extract } from "letterparser";
+import { Letter } from "react-letter";
 interface MailDisplayProps {
   mail: Mail | null;
 }
@@ -52,9 +52,22 @@ export default function MailDisplay({ mail }: MailDisplayProps) {
   const getMail = async (id: string) => {
     const response = await fetch(`/api/emails?id=${id}`);
     const data = await response.json();
-    const decodedBody = atob(data.data?.[0].body);
-    const { html } = extract(decodedBody);
-    return { ...data.data?.[0], body: html };
+    return { ...data.data?.[0] };
+  };
+
+  const getParsedMail = (email: { body: string }) => {
+    const decodedBody = email?.body ? atob(email.body) : "";
+    const { html } = extract(`Date: Wed, 01 Apr 2020 00:00:00 -0000
+From: A <a@example.com>
+To: B <b@example.com>
+Subject: Hello world!
+Mime-Version: 1.0
+Content-Type: text/html; charset=utf-8 
+
+${decodedBody}
+`);
+
+    return html;
   };
 
   const { data: fetchedMail } = useQuery({
@@ -62,8 +75,6 @@ export default function MailDisplay({ mail }: MailDisplayProps) {
     queryFn: () => getMail(mail?.id),
     enabled: !!mail?.id,
   });
-
-  console.log(fetchedMail);
 
   return (
     <div className="flex h-full flex-col">
@@ -218,9 +229,12 @@ export default function MailDisplay({ mail }: MailDisplayProps) {
               </Avatar>
               <div className="grid gap-1">
                 <div className="font-semibold">{fetchedMail?.from}</div>
-                <div className="line-clamp-1 text-xs">{fetchedMail?.subject}</div>
                 <div className="line-clamp-1 text-xs">
-                  <span className="font-medium">Reply-To:</span> {fetchedMail?.replyTo}
+                  {fetchedMail?.subject}
+                </div>
+                <div className="line-clamp-1 text-xs">
+                  <span className="font-medium">Reply-To:</span>{" "}
+                  {fetchedMail?.replyTo}
                 </div>
               </div>
             </div>
@@ -231,7 +245,7 @@ export default function MailDisplay({ mail }: MailDisplayProps) {
             )}
           </div>
           <Separator />
-          <Letter html={fetchedMail?.body} />
+          <Letter html={getParsedMail(fetchedMail)} />
           <Separator className="mt-auto" />
           <div className="p-4">
             <form>

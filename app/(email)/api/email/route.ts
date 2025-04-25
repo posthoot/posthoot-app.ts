@@ -34,8 +34,8 @@ const zodSchema = z.object({
   provider: z.string().optional(),
   data: z.record(z.string(), z.any()).optional(),
   test: z.boolean().optional(),
-  cc: z.array(z.string()).optional(),
-  bcc: z.array(z.string()).optional(),
+  cc: z.array(z.string().optional()).optional(),
+  bcc: z.array(z.string().optional()).optional(),
 });
 
 /**
@@ -123,6 +123,9 @@ export async function POST(
     });
 
     const body = (await request.json()) as SendEmailRequest;
+
+    console.log("🔍", "Body", body);
+
     let {
       email,
       html,

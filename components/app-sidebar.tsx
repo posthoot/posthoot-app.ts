@@ -272,7 +272,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               </p>
             </SheetHeader>
             <ComposeEmail onSend={async (email) => {
-              console.log(email, "email");
               toast.promise(async () => {
                 await fetch("/api/email", {
                   method: "POST",

@@ -42,8 +42,8 @@ export function ComposeEmail({ onSend }: ComposeEmailProps) {
         email: to,
         subject,
         html: html,
-        cc: cc.split(","),
-        bcc: bcc.split(","),
+        cc: cc.trim().split(",").filter(Boolean),
+        bcc: bcc.trim().split(",").filter(Boolean),
       });
     }
 

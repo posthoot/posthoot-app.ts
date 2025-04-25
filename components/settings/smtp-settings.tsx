@@ -99,23 +99,20 @@ export function SMTPSettings({
       // first test the configuration
       await testConfiguration(data);
 
-      const response = await fetch(
-        data.id ? `/api/smtp/${data.id}` : "/api/smtp",
-        {
-          method: data.id ? "PUT" : "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            smtpConfigs: [
-              {
-                ...data,
-                port: Number(data.port),
-                maxSendRate: Number(data.maxSendRate),
-              },
-            ],
-            teamId: team.id,
-          }),
-        }
-      );
+      const response = await fetch(data.id ? `/api/smtp` : "/api/smtp", {
+        method: data.id ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          smtpConfigs: [
+            {
+              ...data,
+              port: Number(data.port),
+              maxSendRate: Number(data.maxSendRate),
+            },
+          ],
+          teamId: team.id,
+        }),
+      });
 
       if (!response.ok) {
         const apiError = (await response.json()) as ApiError;
