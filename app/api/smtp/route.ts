@@ -41,7 +41,7 @@ interface SMTPConfig {
 }
 
 const smtpConfigSchema = z.object({
-  id: z.string().optional(),
+  id: z.any().optional(),
   provider: z.nativeEnum(SMTPProviderType),
   host: z.string().min(1),
   port: z.number().min(1),

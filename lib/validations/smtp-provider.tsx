@@ -2,12 +2,12 @@ import { SMTPProviderType } from "@/lib";
 import { z } from "zod";
 
 export const formSchema = z.object({
-  id: z.string().optional(),
+  id: z.any().optional(),
   provider: z.nativeEnum(SMTPProviderType),
   host: z.string().min(1, "Host is required"),
-  port: z.union([z.number(), z.string()]).transform((val) =>
-    typeof val === "string" ? parseInt(val) : val
-  ),
+  port: z
+    .union([z.number(), z.string()])
+    .transform((val) => (typeof val === "string" ? parseInt(val) : val)),
   username: z.string().min(1, "Username is required"),
   requiresAuth: z.boolean().default(true),
   fromEmail: z.string().min(1, "From Email is required"),
