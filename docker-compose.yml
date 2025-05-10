@@ -2,8 +2,6 @@ services:
   app:
     env_file:
       - .env
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ghcr.io/posthoot/posthoot-app.ts:latest
     ports:
       - "3000:3000"
