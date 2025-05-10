@@ -1,8 +1,6 @@
 import { ApiError } from "@/lib";
 import axios from "axios";
 
-require('dotenv').config();
-
 export class APIService {
   private readonly baseUrl: string;
   private readonly accessToken: any;

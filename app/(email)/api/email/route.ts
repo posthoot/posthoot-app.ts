@@ -124,8 +124,6 @@ export async function POST(
 
     const body = (await request.json()) as SendEmailRequest;
 
-    console.log("🔍", "Body", body);
-
     let {
       email,
       html,
