@@ -33,6 +33,7 @@ interface SMTPConfig {
   username: string;
   password: string;
   isActive: boolean;
+  isDeleted?: boolean;
   supportsTls?: boolean;
   requiresAuth?: boolean;
   supportsStartTLS?: boolean;
@@ -55,6 +56,7 @@ const smtpConfigSchema = z.object({
   maxSendRate: z.number().min(1).optional(),
   documentation: z.string().url().optional(),
   fromEmail: z.string().optional(),
+  isDeleted: z.boolean().optional().default(false),
 });
 
 export async function GET(
@@ -226,7 +228,7 @@ export async function DELETE(
     }
 
     const apiService = new APIService("smtp", session);
-    await apiService.post<void>("delete", { id });
+    await apiService.delete<void>(id);
 
     logger.info({
       fileName: FILE_NAME,

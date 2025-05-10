@@ -202,7 +202,7 @@ export async function DELETE(
 
     const body = await request.json();
     const apiService = new APIService("email-category", session);
-    await apiService.post<void>(`${body.id}/delete`, {});
+    await apiService.delete<void>(body.id);
 
     logger.info({
       fileName: FILE_NAME,
