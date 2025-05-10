@@ -12,8 +12,6 @@ import { QueryProvider } from "./providers/query-provider";
 import { AppHeader } from "@/components/app-header";
 
 export const metadata: Metadata = {
-  title: "Posthoot ❇",
-  description: "A powerful email automation and management platform",
   keywords: [
     "email",
     "automation",
@@ -25,12 +23,6 @@ export const metadata: Metadata = {
   authors: [{ name: "Harsh Vardhan Goswami" }],
   viewport: "width=device-width, initial-scale=1",
   robots: "index, follow",
-  openGraph: {
-    type: "website",
-    title: "Posthoot ❇",
-    description: "A powerful email automation and management platform",
-    siteName: "Posthoot ❇",
-  },
 };
 
 // Move MainLayout to a client component file
@@ -64,6 +56,41 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <title>
+          Posthoot: AI-Powered Email Marketing for Effortless Engagement
+        </title>
+        <meta
+          name="description"
+          content="Posthoot is the AI-powered email marketing platform that simplifies your workflow and boosts engagement. Create smarter campaigns and automate your marketing with AI. Start your free trial today!"
+        />
+
+        <meta property="og:url" content="https://posthoot.com" />
+        <meta property="og:type" content="website" />
+        <meta
+          property="og:title"
+          content="Posthoot: AI-Powered Email Marketing for Effortless Engagement"
+        />
+        <meta
+          property="og:description"
+          content="Posthoot is the AI-powered email marketing platform that simplifies your workflow and boosts engagement. Create smarter campaigns and automate your marketing with AI. Start your free trial today!"
+        />
+        <meta
+          property="og:image"
+          content="https://framerusercontent.com/images/BIW4segud1fRHZGJB3wIGXKg9DQ.png"
+        />
+
+        {/* Twitter Meta Tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta property="twitter:domain" content="posthoot.com" />
+        <meta property="twitter:url" content="https://posthoot.com" />
+        <meta
+          name="twitter:title"
+          content="Posthoot: AI-Powered Email Marketing for Effortless Engagement"
+        />
+        <meta
+          name="twitter:description"
+          content="Posthoot is the AI-powered email marketing platform that simplifies your workflow and boosts engagement. Create smarter campaigns and automate your marketing with AI. Start your free trial today!"
+        />
         <meta
           name="format-detection"
           content="telephone=no, date=no, email=no, address=no"
@@ -82,13 +109,41 @@ export default async function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Instrument+Serif&display=swap"
           rel="stylesheet"
         ></link>
+        {/* publoic manifest */}
+        <link rel="manifest" href="/site.webmanifest" />
+        {/* publoic icons */}
+        <link
+          rel="apple-touch-icon"
+          sizes="180x180"
+          href="/apple-touch-icon.png"
+        />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="32x32"
+          href="/favicon-32x32.png"
+        />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="16x16"
+          href="/favicon-16x16.png"
+        />
+        {/* favicon */}
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico" />
+        {/* theme color */}
+        <meta name="theme-color" content="#0065FD" />
       </head>
       <body
         className={cn(
           "antialiased bg-background text-foreground font-sentient text-base lg:text-lg"
         )}
       >
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={true}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem={true}
+        >
           <NextAuthProvider>
             <QueryProvider>
               <TeamProvider>
