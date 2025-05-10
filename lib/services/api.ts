@@ -1,13 +1,15 @@
 import { ApiError } from "@/lib";
 import axios from "axios";
 
-require('dotenv').config();
-
 export class APIService {
   private readonly baseUrl: string;
   private readonly accessToken: any;
 
   constructor(endpoint: string, session?: any) {
+    if (process.env.NEXT_RUNTIME === "nodejs") {
+      require("dotenv").config();
+    }
+
     this.baseUrl = `${process.env.NEXT_PUBLIC_API_URL}/${endpoint}`;
     this.accessToken = session?.accessToken;
   }
@@ -41,14 +43,17 @@ export class APIService {
 
   async post<T>(extraUrl: string, data: Record<string, any>): Promise<T> {
     try {
-      const response = await fetch(`${this.baseUrl}${extraUrl ? `/${extraUrl}` : ""}`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${this.accessToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
+      const response = await fetch(
+        `${this.baseUrl}${extraUrl ? `/${extraUrl}` : ""}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${this.accessToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        }
+      );
       return this.handleResponse<T>(response);
     } catch (error) {
       throw this.formatError(error);

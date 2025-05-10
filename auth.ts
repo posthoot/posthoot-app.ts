@@ -4,9 +4,12 @@ import { authConfig } from "./auth.config";
 import { logger } from "./app/lib/logger";
 import GoogleProvider from "next-auth/providers/google";
 
-require('dotenv').config();
+if (process.env.NEXT_RUNTIME === "nodejs") {
+  require("dotenv").config();
+}
 
-export const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
+export const API_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
 
 const nextAuthConfig: NextAuthConfig = {
   callbacks: {
@@ -113,6 +116,7 @@ const nextAuthConfig: NextAuthConfig = {
           const data = await response.json();
 
           if (!response.ok) {
+            console.log("Failed to authenticate", data);
             throw new Error(data.error || "Failed to authenticate");
           }
 
@@ -139,6 +143,7 @@ const nextAuthConfig: NextAuthConfig = {
             refreshToken: data.refresh_token,
           };
         } catch (error) {
+          console.log("Error", error);
           logger.error({
             fileName: "auth.ts",
             action: "authorize",
