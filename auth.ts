@@ -3,6 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { authConfig } from "./auth.config";
 import { logger } from "./app/lib/logger";
 import GoogleProvider from "next-auth/providers/google";
+import axios from "axios";
 
 if (process.env.NEXT_RUNTIME === "nodejs") {
   require("dotenv").config();
@@ -13,7 +14,7 @@ export const API_URL =
 
 const nextAuthConfig: NextAuthConfig = {
   callbacks: {
-    ...authConfig.callbacks as any,
+    ...(authConfig.callbacks as any),
     async jwt({ token, user, account }) {
       if (account && user) {
         return {
@@ -26,32 +27,28 @@ const nextAuthConfig: NextAuthConfig = {
       }
 
       // Return previous token if the access token has not expired yet
-      if (Date.now() < (token.exp as number * 1000)) {
+      if (Date.now() < (token.exp as number) * 1000) {
         return token;
       }
 
       // Access token has expired, try to refresh it
       try {
-        const response = await fetch(`${API_URL}/auth/refresh`, {
-          method: "POST",
+        const {
+          data: { token: accessToken, refresh_token: refreshToken, exp },
+        } = await axios.post(`${API_URL}/auth/refresh`, {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
+          data: {
             refresh_token: token.refreshToken,
-          }),
+          },
         });
-
-        const refreshedTokens = await response.json();
-
-        if (!response.ok) {
-          throw refreshedTokens;
-        }
 
         return {
           ...token,
-          accessToken: refreshedTokens.token,
-          exp: refreshedTokens.exp,
+          accessToken,
+          refreshToken,
+          exp,
         };
       } catch (error) {
         logger.error({
@@ -102,46 +99,12 @@ const nextAuthConfig: NextAuthConfig = {
             return null;
           }
 
-          const response = await fetch(`${API_URL}/auth/login`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              email: credentials.email,
-              password: credentials.password,
-            }),
+          const { data } = await axios.post(`${API_URL}/auth/login`, {
+            email: credentials.email,
+            password: credentials.password,
           });
 
-          const data = await response.json();
-
-          if (!response.ok) {
-            console.log("Failed to authenticate", data);
-            throw new Error(data.error || "Failed to authenticate");
-          }
-
-          // Get user details from our backend
-          const userResponse = await fetch(`${API_URL}/users/me`, {
-            headers: {
-              Authorization: `Bearer ${data.token}`,
-            },
-          });
-
-          const userData = await userResponse.json();
-
-          if (!userResponse.ok) {
-            throw new Error("Failed to get user details");
-          }
-
-          return {
-            id: userData.id,
-            email: userData.email,
-            name: `${userData.firstName} ${userData.lastName}`,
-            role: userData.role,
-            teamId: userData.teamId,
-            accessToken: data.token,
-            refreshToken: data.refresh_token,
-          };
+          return data;
         } catch (error) {
           console.log("Error", error);
           logger.error({

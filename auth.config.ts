@@ -3,11 +3,17 @@ import type { JWT } from "next-auth/jwt";
 import { User } from "./lib";
 import { APIService } from "./lib/services";
 import { API_URL } from "./auth";
+import axios from "axios";
+
 export const authConfig = {
   callbacks: {
     async signIn({ user, account, profile }) {
       // Check if the provider is Google and if email is verified
-      if (account?.provider === "google" && profile?.email && profile?.email_verified) {
+      if (
+        account?.provider === "google" &&
+        profile?.email &&
+        profile?.email_verified
+      ) {
         const authService = new APIService("auth", {
           accessToken: account.access_token,
         });
@@ -18,17 +24,11 @@ export const authConfig = {
         }>("google/callback");
 
         // Get user details from our backend
-        const userResponse = await fetch(`${API_URL}/users/me`, {
+        const { data: userData } = await axios.get(`${API_URL}/users/me`, {
           headers: {
             Authorization: `Bearer ${response.token}`,
           },
         });
-
-        const userData = await userResponse.json();
-
-        if (!userResponse.ok) {
-          throw new Error("Failed to get user details");
-        }
 
         user.id = userData.id;
         user.email = userData.email;
