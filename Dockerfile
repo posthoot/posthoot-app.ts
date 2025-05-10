@@ -1,7 +1,7 @@
 # 🌟 Stage 1: Install dependencies and build the application 🌟
 # ============================================================
 
-FROM oven/bun:latest AS builder
+FROM oven/bun:alpine AS builder
 
 # 📂 Set working directory 📂
 # ==========================
@@ -19,7 +19,7 @@ COPY package.json bun.lockb ./
 # ========================
 
 RUN echo "🎭 ✨ What did npm say to the package? I node you from somewhere! 🤣" && \
-    bun install
+    bun install --frozen-lockfile
 
 
 # 💫 Copy source code 💫
@@ -37,7 +37,7 @@ RUN echo "🚀 ✨ Why did the Next.js build take so long? It was taking a page 
 # 🌠 Stage 2: Production image 🌠
 # ==============================
 
-FROM oven/bun:latest AS production
+FROM builder AS runner
 
 # 📂 Set production directory 📂
 # ============================
@@ -50,6 +50,7 @@ WORKDIR /app
 
 RUN echo "🎪 ✨ Why did the Docker container feel claustrophobic? Because it was packed in production! 🎭"
 
+ENV NEXT_TELEMETRY_DISABLED 1
 
 # Copy standalone output which contains minimal production files
 COPY --from=builder /app/.next/standalone ./
