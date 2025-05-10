@@ -1,9 +1,11 @@
 import { ApiError } from "@/lib";
 import axios from "axios";
 
+require('dotenv').config();
+
 export class APIService {
-  private readonly baseUrl;
-  private readonly accessToken;
+  private readonly baseUrl: string;
+  private readonly accessToken: any;
 
   constructor(endpoint: string, session?: any) {
     this.baseUrl = `${process.env.NEXT_PUBLIC_API_URL}/${endpoint}`;

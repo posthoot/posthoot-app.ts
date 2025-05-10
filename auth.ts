@@ -3,6 +3,9 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { authConfig } from "./auth.config";
 import { logger } from "./app/lib/logger";
 import GoogleProvider from "next-auth/providers/google";
+
+require('dotenv').config();
+
 export const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
 
 const nextAuthConfig: NextAuthConfig = {

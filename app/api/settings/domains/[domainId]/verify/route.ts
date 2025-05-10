@@ -1,12 +1,9 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { APIService } from "@/lib/services/api";
-import dns from "dns/promises";
 import { logger } from "@/app/lib/logger";
-import { type Session } from "next-auth";
 
 const FILE_NAME = "app/api/settings/domains/[domainId]/verify/route.ts";
-const EXPECTED_IP = process.env.SERVER_IP || "127.0.0.1";
 
 interface VerifyDomainRequest {
   domainId: string;
