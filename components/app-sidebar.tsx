@@ -140,6 +140,10 @@ const navItems: NavItem[] = [
         name: "SMTP",
         href: "/settings/smtp",
       },
+      {
+        name: "IMAP",
+        href: "/settings/imap",
+      },
       { name: "Account", href: "/settings" },
       { name: "Team", href: "/team" },
       { name: "Billing", href: "/settings/billing" },

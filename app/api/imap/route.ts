@@ -37,11 +37,11 @@ interface IMAPConfig {
 
 const imapConfigSchema = z.object({
   id: z.any().optional(),
-  host: z.string().min(1),
-  port: z.number().min(1),
-  username: z.string().min(1),
-  password: z.string().min(1),
-  isActive: z.boolean(),
+  host: z.string().min(1, { message: "Host is required" }),
+  port: z.number().min(1, { message: "Port is required" }),
+  username: z.string().min(1, { message: "Username is required" }),
+  password: z.string().min(1, { message: "Password is required" }),
+  isActive: z.boolean().optional().default(true),
   isDeleted: z.boolean().optional().default(false),
 });
 

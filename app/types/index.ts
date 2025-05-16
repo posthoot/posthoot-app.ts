@@ -6,19 +6,25 @@ export interface Form {
   updatedAt: Date;
   mailingListId?: string;
   teamId: string;
-  status: 'draft' | 'active' | 'archived';
+  status: "draft" | "active" | "archived";
   fields: FormField[];
 }
 
 export interface FormField {
   id: string;
   label: string;
-  type: 'text' | 'email' | 'number' | 'textarea' | 'select' | 'checkbox';
+  type: "text" | "email" | "number" | "textarea" | "select" | "checkbox";
   required: boolean;
   placeholder?: string;
   options?: string[]; // For select fields
   defaultValue?: string;
-} 
+}
+
+export interface Attachment {
+  id?: string;
+  name: string;
+  data: string;
+}
 
 export interface Mail {
   id: string;
@@ -35,7 +41,7 @@ export interface Mail {
   categoryId: string;
   smtpConfigId: string;
   teamId: string;
-  status: 'draft' | 'scheduled' | 'sending' | 'sent' | 'failed';
+  status: "draft" | "scheduled" | "sending" | "sent" | "failed";
   sentAt?: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -43,4 +49,5 @@ export interface Mail {
   error?: string;
   data?: Record<string, any>;
   test?: boolean;
+  attachments?: Attachment[];
 }

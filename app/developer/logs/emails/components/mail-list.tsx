@@ -1,10 +1,8 @@
 "use client";
 
-import { ComponentProps } from "react";
 import { formatDistanceToNow } from "date-fns";
 
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Mail } from "@/app/types";
 import { useMail } from "@/hooks/use-mail";
@@ -73,18 +71,4 @@ export default function MailList({ items }: MailListProps) {
       </div>
     </ScrollArea>
   );
-}
-
-function getBadgeVariantFromLabel(
-  label: string
-): ComponentProps<typeof Badge>["variant"] {
-  if (["work"].includes(label.toLowerCase())) {
-    return "default";
-  }
-
-  if (["personal"].includes(label.toLowerCase())) {
-    return "outline";
-  }
-
-  return "secondary";
 }

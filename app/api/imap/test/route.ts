@@ -90,20 +90,20 @@ export async function POST(
         fileName: FILE_NAME,
         emoji: "🚫",
         action: "authenticate",
-        label: "smtp-test",
+        label: "imap-test",
         value: { userId: null },
-        message: "Unauthorized access attempt to SMTP test endpoint",
+        message: "Unauthorized access attempt to IMAP test endpoint",
       });
       return NextResponse.json(
         {
           error: "Unauthorized",
-          message: "Unauthorized access attempt to SMTP test endpoint",
+          message: "Unauthorized access attempt to IMAP test endpoint",
         },
         { status: 401 }
       );
     }
 
-    const apiService = new APIService("smtp", session);
+    const apiService = new APIService("imap", session);
 
     const rawConfig: IMAPTestRequest = await request.json();
     const parseResult = IMAPConfigSchema.safeParse(rawConfig);
