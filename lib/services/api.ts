@@ -1,24 +1,16 @@
-import { signOut } from "@/auth";
 import { ApiError } from "@/lib";
 import axios from "axios";
 export class APIService {
   private readonly baseUrl: string;
   private readonly accessToken: any;
-  private readonly refreshToken: any;
   constructor(endpoint: string, session?: any) {
     this.baseUrl = `${process.env.NEXT_PUBLIC_API_URL}/${endpoint}`;
     this.accessToken = session?.accessToken;
-    this.refreshToken = session?.refreshToken;
   }
 
   private async handleResponse<T>(response: Response): Promise<T> {
     if (!response.ok) {
       const error = await response.json();
-      if (error.code === 401) {
-        signOut();
-        throw new Error("Unauthorized");
-      }
-
       throw new Error(error.error || "API request failed");
     }
     return response.json();
