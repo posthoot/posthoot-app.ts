@@ -1,18 +1,24 @@
+import { signOut } from "@/auth";
 import { ApiError } from "@/lib";
 import axios from "axios";
-
 export class APIService {
   private readonly baseUrl: string;
   private readonly accessToken: any;
-
+  private readonly refreshToken: any;
   constructor(endpoint: string, session?: any) {
     this.baseUrl = `${process.env.NEXT_PUBLIC_API_URL}/${endpoint}`;
     this.accessToken = session?.accessToken;
+    this.refreshToken = session?.refreshToken;
   }
 
   private async handleResponse<T>(response: Response): Promise<T> {
     if (!response.ok) {
       const error = await response.json();
+      if (error.code === 401) {
+        signOut();
+        throw new Error("Unauthorized");
+      }
+
       throw new Error(error.error || "API request failed");
     }
     return response.json();
@@ -39,14 +45,17 @@ export class APIService {
 
   async post<T>(extraUrl: string, data: Record<string, any>): Promise<T> {
     try {
-      const response = await fetch(`${this.baseUrl}${extraUrl ? `/${extraUrl}` : ""}`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${this.accessToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
+      const response = await fetch(
+        `${this.baseUrl}${extraUrl ? `/${extraUrl}` : ""}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${this.accessToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        }
+      );
       return this.handleResponse<T>(response);
     } catch (error) {
       throw this.formatError(error);

@@ -3,13 +3,64 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { authConfig } from "./auth.config";
 import { logger } from "./app/lib/logger";
 import GoogleProvider from "next-auth/providers/google";
+import { isJwtExpired } from "./lib/utils";
 
-export const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
+export const API_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
 
 const nextAuthConfig: NextAuthConfig = {
   callbacks: {
-    ...authConfig.callbacks as any,
+    ...(authConfig.callbacks as any),
     async jwt({ token, user, account }) {
+      if (token && token.accessToken && isJwtExpired(token.accessToken)) {
+        // Access token has expired, try to refresh it
+        try {
+          const response = await fetch(`${API_URL}/auth/refresh`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              refresh_token: token.refreshToken,
+            }),
+          });
+
+          const refreshedTokens = await response.json();
+
+          if (!response.ok) {
+            throw refreshedTokens;
+          }
+
+          return {
+            ...token,
+            accessToken: refreshedTokens.token,
+            refreshToken: token.refreshToken,
+            exp: refreshedTokens.exp,
+            role: token.role,
+            teamId: token.teamId,
+          };
+        } catch (error) {
+          logger.error({
+            fileName: "auth.ts",
+            action: "refresh-token",
+            label: "error",
+            value: error,
+            emoji: "❌",
+            message: "Failed to refresh token",
+          });
+          if (typeof window !== "undefined") {
+            signOut({
+              redirectTo: "/auth/login",
+              redirect: true,
+            });
+          }
+
+          if (typeof window === "undefined") {
+            return { ...token, error: "RefreshAccessTokenError" };
+          }
+        }
+      }
+
       if (account && user) {
         return {
           ...token,
@@ -21,44 +72,8 @@ const nextAuthConfig: NextAuthConfig = {
       }
 
       // Return previous token if the access token has not expired yet
-      if (Date.now() < (token.exp as number * 1000)) {
+      if (Date.now() < (token.exp as number) * 1000) {
         return token;
-      }
-
-      // Access token has expired, try to refresh it
-      try {
-        const response = await fetch(`${API_URL}/auth/refresh`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            refresh_token: token.refreshToken,
-          }),
-        });
-
-        const refreshedTokens = await response.json();
-
-        if (!response.ok) {
-          throw refreshedTokens;
-        }
-
-        return {
-          ...token,
-          accessToken: refreshedTokens.token,
-          exp: refreshedTokens.exp,
-        };
-      } catch (error) {
-        logger.error({
-          fileName: "auth.ts",
-          action: "refresh-token",
-          label: "error",
-          value: error,
-          emoji: "❌",
-          message: "Failed to refresh token",
-        });
-
-        return { ...token, error: "RefreshAccessTokenError" };
       }
     },
     async session({ session, token }) {
