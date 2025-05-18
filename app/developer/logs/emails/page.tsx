@@ -1,22 +1,9 @@
 "use client";
 
 import * as React from "react";
-import {
-  AlertCircle,
-  Archive,
-  ArchiveX,
-  File,
-  Inbox,
-  MessagesSquare,
-  Search,
-  Send,
-  ShoppingCart,
-  Trash2,
-  Users2,
-} from "lucide-react";
+import { Search } from "lucide-react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
-import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import {
   ResizableHandle,
@@ -48,24 +35,30 @@ async function fetchEmails({ pageParam = 0, filter = "SENT" }) {
 }
 
 export default function Mail() {
-  const defaultLayout = [265, 440, 655]
+  const defaultLayout = [265, 440, 655];
   const { mail } = useMail();
   const [activeTab, setActiveTab] = React.useState("SENT");
   const [search, setSearch] = React.useState("");
   const [searchTimeout, setSearchTimeout] =
     React.useState<NodeJS.Timeout | null>(null);
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status, isLoading } =
-    useInfiniteQuery({
-      queryKey: ["emails", activeTab],
-      queryFn: ({ pageParam }) => fetchEmails({ pageParam, filter: activeTab }),
-      getNextPageParam: (lastPage, pages) => {
-        return lastPage.offset + PAGE_SIZE < lastPage.total
-          ? pages.length + 1
-          : undefined;
-      },
-      initialPageParam: 0,
-    });
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    status,
+    isLoading,
+  } = useInfiniteQuery({
+    queryKey: ["emails", activeTab],
+    queryFn: ({ pageParam }) => fetchEmails({ pageParam, filter: activeTab }),
+    getNextPageParam: (lastPage, pages) => {
+      return lastPage.offset + PAGE_SIZE < lastPage.total
+        ? pages.length + 1
+        : undefined;
+    },
+    initialPageParam: 0,
+  });
 
   const emails = data?.pages.flatMap((page) => page.results) || [];
 
@@ -98,7 +91,7 @@ export default function Mail() {
             sizes
           )}`;
         }}
-        className="!h-[calc(100vh-100px)] !max-h-[calc(100vh-100px)] overflow-hidden items-stretch"
+        className="!h-[calc(100vh-70px)] !max-h-[calc(100vh-70px)] overflow-hidden items-stretch"
       >
         <ResizableHandle withHandle />
         <ResizablePanel defaultSize={defaultLayout[1]} minSize={30}>
@@ -120,6 +113,13 @@ export default function Mail() {
                 >
                   Pending
                 </TabsTrigger>
+                <TabsTrigger
+                  onClick={() => setActiveTab("FAILED")}
+                  value="FAILED"
+                  className="text-zinc-600 dark:text-zinc-200"
+                >
+                  Failed
+                </TabsTrigger>
               </TabsList>
             </div>
             <Separator />
@@ -140,26 +140,33 @@ export default function Mail() {
               {isLoading ? (
                 <div className="text-center p-4">Loading...</div>
               ) : (
-                <>
-                  <MailList items={emails} />
-                  <div ref={observerTarget} className="h-4" />
-                  {isFetchingNextPage && (
-                    <div className="text-center p-4">Loading more...</div>
-                  )}
-                </>
+                <MailList
+                  items={emails}
+                  isFetchingNextPage={isFetchingNextPage}
+                  observerTarget={observerTarget}
+                />
               )}
             </TabsContent>
             <TabsContent value="PENDING" className="m-0">
               {isLoading ? (
                 <div className="text-center p-4">Loading...</div>
               ) : (
-                <>
-                  <MailList items={emails} />
-                  <div ref={observerTarget} className="h-4" />
-                  {isFetchingNextPage && (
-                    <div className="text-center p-4">Loading more...</div>
-                  )}
-                </>
+                <MailList
+                  items={emails}
+                  isFetchingNextPage={isFetchingNextPage}
+                  observerTarget={observerTarget}
+                />
+              )}
+            </TabsContent>
+            <TabsContent value="FAILED" className="m-0">
+              {isLoading ? (
+                <div className="text-center p-4">Loading...</div>
+              ) : (
+                <MailList
+                  items={emails}
+                  isFetchingNextPage={isFetchingNextPage}
+                  observerTarget={observerTarget}
+                />
               )}
             </TabsContent>
           </Tabs>
@@ -169,7 +176,7 @@ export default function Mail() {
           {isLoading ? (
             <div className="text-center p-4">Loading...</div>
           ) : (
-            <MailDisplay mail={mail} />
+            <MailDisplay fetchMail={true} mail={mail} />
           )}
         </ResizablePanel>
       </ResizablePanelGroup>

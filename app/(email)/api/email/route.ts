@@ -29,6 +29,7 @@ const FILE_NAME = "app/(email)/api/email/route.ts";
 
 const zodSchema = z.object({
   email: z.string().email(),
+  subject: z.string().optional(),
   html: z.string().optional(),
   templateId: z.string().optional(),
   provider: z.string().optional(),
@@ -130,6 +131,7 @@ export async function POST(
       provider = undefined,
       data = {},
       test = false,
+      subject,
       cc = undefined,
       bcc = undefined,
     } = zodSchema.parse(body);
@@ -164,8 +166,9 @@ export async function POST(
           provider,
           data,
           test,
-          cc,
-          bcc,
+          subject,
+          cc: cc?.join(","),
+          bcc: bcc?.join(","),
         })
       );
       return new NextResponse(JSON.stringify(result), { status: 200 });

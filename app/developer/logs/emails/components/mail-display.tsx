@@ -42,14 +42,21 @@ import { Mail } from "@/app/types";
 import { useQuery } from "@tanstack/react-query";
 import { extract } from "letterparser";
 import { Letter } from "react-letter";
+import { IMAPEmail } from "@/app/api/imap/emails/route";
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
 
 interface MailDisplayProps {
-  mail: Mail | null;
+  mail: IMAPEmail | Mail | null;
+  fetchMail?: boolean;
 }
 
-export default function MailDisplay({ mail }: MailDisplayProps) {
+export default function MailDisplay({
+  mail,
+  fetchMail = true,
+}: MailDisplayProps) {
   const today = new Date();
-
+  const [reply, setReply] = useState("");
   const getMail = async (id: string) => {
     const response = await fetch(`/api/emails?id=${id}`);
     const data = await response.json();
@@ -71,150 +78,205 @@ ${decodedBody}
     return html;
   };
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    let email = extractEmail(mailToRender?.replyTo ?? mailToRender?.from);
+    const response = await fetch(`/api/email`, {
+      method: "POST",
+      body: JSON.stringify({
+        email,
+        html: `
+        ${reply}
+        <div style="padding: 20px; border-left: 2px solid #ccc; margin: 10px 0;">
+          <div style="color: #666; margin-bottom: 10px;">On ${format(new Date(mailToRender?.createdAt ?? mailToRender?.date), "PPpp")}, ${mailToRender?.from} wrote:</div>
+          ${getParsedMail(mailToRender)}
+        </div>
+        `,
+        cc: mailToRender?.cc
+          ?.split(",")
+          .filter((cc) => cc !== email && cc !== "N/A"),
+        bcc: mailToRender?.bcc
+          ?.split(",")
+          .filter((bcc) => bcc !== email && bcc !== "N/A"),
+        subject: mailToRender?.subject ?? "Reply to email",
+      }),
+    });
+    if (!response.ok) {
+      toast.error("Failed to send email");
+      return;
+    }
+    toast.success("Email sent successfully");
+    setReply("");
+  };
+
   const { data: fetchedMail } = useQuery({
     queryKey: ["mail", mail?.id],
     queryFn: () => getMail(mail?.id),
-    enabled: !!mail?.id,
+    enabled: !!mail?.id && fetchMail,
   });
+
+  const extractEmail = (email: string) => {
+    const emailRegex = /<([^>]+)>/;
+    const match = email.match(emailRegex);
+    console.log("match", match);
+    return match ? match[1] : email;
+  };
+
+  const mailToRender = useMemo(() => {
+    if (fetchMail) {
+      return fetchedMail;
+    }
+    return mail;
+  }, [mail, fetchedMail, fetchMail]);
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center p-2">
-        <div className="flex items-center gap-2">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" disabled={!fetchedMail}>
-                <Archive className="h-4 w-4" />
-                <span className="sr-only">Archive</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Archive</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" disabled={!fetchedMail}>
-                <ArchiveX className="h-4 w-4" />
-                <span className="sr-only">Move to junk</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Move to junk</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" disabled={!fetchedMail}>
-                <Trash2 className="h-4 w-4" />
-                <span className="sr-only">Move to trash</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Move to trash</TooltipContent>
-          </Tooltip>
-          <Separator orientation="vertical" className="mx-1 h-6" />
-          <Tooltip>
-            <Popover>
-              <PopoverTrigger asChild>
+      {!fetchMail && (
+        <>
+          <div className="flex items-center p-2">
+            <div className="flex items-center gap-2">
+              <Tooltip>
                 <TooltipTrigger asChild>
                   <Button variant="ghost" size="icon" disabled={!fetchedMail}>
-                    <Clock className="h-4 w-4" />
-                    <span className="sr-only">Snooze</span>
+                    <Archive className="h-4 w-4" />
+                    <span className="sr-only">Archive</span>
                   </Button>
                 </TooltipTrigger>
-              </PopoverTrigger>
-              <PopoverContent className="flex w-[535px] p-0">
-                <div className="flex flex-col gap-2 border-r px-2 py-4">
-                  <div className="px-4 text-sm font-medium">Snooze until</div>
-                  <div className="grid min-w-[250px] gap-1">
-                    <Button
-                      variant="ghost"
-                      className="justify-start font-normal"
-                    >
-                      Later today{" "}
-                      <span className="ml-auto text-muted-foreground">
-                        {format(addHours(today, 4), "E, h:m b")}
-                      </span>
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="justify-start font-normal"
-                    >
-                      Tomorrow
-                      <span className="ml-auto text-muted-foreground">
-                        {format(addDays(today, 1), "E, h:m b")}
-                      </span>
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="justify-start font-normal"
-                    >
-                      This weekend
-                      <span className="ml-auto text-muted-foreground">
-                        {format(nextSaturday(today), "E, h:m b")}
-                      </span>
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="justify-start font-normal"
-                    >
-                      Next week
-                      <span className="ml-auto text-muted-foreground">
-                        {format(addDays(today, 7), "E, h:m b")}
-                      </span>
-                    </Button>
-                  </div>
-                </div>
-                <div className="p-2">
-                  <Calendar />
-                </div>
-              </PopoverContent>
-            </Popover>
-            <TooltipContent>Snooze</TooltipContent>
-          </Tooltip>
-        </div>
-        <div className="ml-auto flex items-center gap-2">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" disabled={!fetchedMail}>
-                <Reply className="h-4 w-4" />
-                <span className="sr-only">Reply</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Reply</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" disabled={!fetchedMail}>
-                <ReplyAll className="h-4 w-4" />
-                <span className="sr-only">Reply all</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Reply all</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" disabled={!fetchedMail}>
-                <Forward className="h-4 w-4" />
-                <span className="sr-only">Forward</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Forward</TooltipContent>
-          </Tooltip>
-        </div>
-        <Separator orientation="vertical" className="mx-2 h-6" />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" disabled={!fetchedMail}>
-              <MoreVertical className="h-4 w-4" />
-              <span className="sr-only">More</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem>Mark as unread</DropdownMenuItem>
-            <DropdownMenuItem>Star thread</DropdownMenuItem>
-            <DropdownMenuItem>Add label</DropdownMenuItem>
-            <DropdownMenuItem>Mute thread</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-      <Separator />
+                <TooltipContent>Archive</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" disabled={!fetchedMail}>
+                    <ArchiveX className="h-4 w-4" />
+                    <span className="sr-only">Move to junk</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Move to junk</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" disabled={!fetchedMail}>
+                    <Trash2 className="h-4 w-4" />
+                    <span className="sr-only">Move to trash</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Move to trash</TooltipContent>
+              </Tooltip>
+              <Separator orientation="vertical" className="mx-1 h-6" />
+              <Tooltip>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        disabled={!fetchedMail}
+                      >
+                        <Clock className="h-4 w-4" />
+                        <span className="sr-only">Snooze</span>
+                      </Button>
+                    </TooltipTrigger>
+                  </PopoverTrigger>
+                  <PopoverContent className="flex w-[535px] p-0">
+                    <div className="flex flex-col gap-2 border-r px-2 py-4">
+                      <div className="px-4 text-sm font-medium">
+                        Snooze until
+                      </div>
+                      <div className="grid min-w-[250px] gap-1">
+                        <Button
+                          variant="ghost"
+                          className="justify-start font-normal"
+                        >
+                          Later today{" "}
+                          <span className="ml-auto text-muted-foreground">
+                            {format(addHours(today, 4), "E, h:m b")}
+                          </span>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          className="justify-start font-normal"
+                        >
+                          Tomorrow
+                          <span className="ml-auto text-muted-foreground">
+                            {format(addDays(today, 1), "E, h:m b")}
+                          </span>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          className="justify-start font-normal"
+                        >
+                          This weekend
+                          <span className="ml-auto text-muted-foreground">
+                            {format(nextSaturday(today), "E, h:m b")}
+                          </span>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          className="justify-start font-normal"
+                        >
+                          Next week
+                          <span className="ml-auto text-muted-foreground">
+                            {format(addDays(today, 7), "E, h:m b")}
+                          </span>
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="p-2">
+                      <Calendar />
+                    </div>
+                  </PopoverContent>
+                </Popover>
+                <TooltipContent>Snooze</TooltipContent>
+              </Tooltip>
+            </div>
+            <div className="ml-auto flex items-center gap-2">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" disabled={!mailToRender}>
+                    <Reply className="h-4 w-4" />
+                    <span className="sr-only">Reply</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Reply</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" disabled={!mailToRender}>
+                    <ReplyAll className="h-4 w-4" />
+                    <span className="sr-only">Reply all</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Reply all</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" disabled={!mailToRender}>
+                    <Forward className="h-4 w-4" />
+                    <span className="sr-only">Forward</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Forward</TooltipContent>
+              </Tooltip>
+            </div>
+            <Separator orientation="vertical" className="mx-2 h-6" />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" disabled={!mailToRender}>
+                  <MoreVertical className="h-4 w-4" />
+                  <span className="sr-only">More</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem>Mark as unread</DropdownMenuItem>
+                <DropdownMenuItem>Star thread</DropdownMenuItem>
+                <DropdownMenuItem>Add label</DropdownMenuItem>
+                <DropdownMenuItem>Mute thread</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+          <Separator />
+        </>
+      )}
       {mail ? (
         <div className="flex flex-1 flex-col">
           <div className="flex items-start p-4">
@@ -222,58 +284,63 @@ ${decodedBody}
               <Avatar>
                 <AvatarImage alt={mail.from} />
                 <AvatarFallback>
-                  {fetchedMail?.from
-                    .split(" ")
+                  {mailToRender?.from
+                    ?.split(" ")
                     .map((chunk) => chunk[0])
                     .join("")}
                 </AvatarFallback>
               </Avatar>
               <div className="grid gap-1">
-                <div className="font-semibold">{fetchedMail?.from}</div>
+                <div className="font-semibold">{mailToRender?.from}</div>
                 <div className="line-clamp-1 text-xs">
-                  {fetchedMail?.subject}
+                  {mailToRender?.subject}
                 </div>
                 <div className="line-clamp-1 text-xs">
                   <span className="font-medium">Reply-To:</span>{" "}
-                  {fetchedMail?.replyTo}
+                  {mailToRender?.replyTo}
                 </div>
               </div>
             </div>
-            {fetchedMail?.createdAt && (
+            {(mailToRender?.createdAt || mailToRender?.date) && (
               <div className="ml-auto text-xs text-muted-foreground">
-                {format(new Date(fetchedMail.createdAt), "PPpp")}
+                {format(
+                  new Date(mailToRender.createdAt ?? mailToRender.date),
+                  "PPpp"
+                )}
               </div>
             )}
           </div>
           <Separator />
-          <Letter html={getParsedMail(fetchedMail)} />
+          <Letter html={getParsedMail(mailToRender)} />
           <Separator className="mt-auto" />
-          <div className="p-4">
-            <form>
-              <div className="grid gap-4">
-                <Textarea
-                  className="p-4"
-                  placeholder={`Reply ${fetchedMail?.from}...`}
-                />
-                <div className="flex items-center">
-                  <Label
-                    htmlFor="mute"
-                    className="flex items-center gap-2 text-xs font-normal"
-                  >
-                    <Switch id="mute" aria-label="Mute thread" /> Mute this
-                    thread
-                  </Label>
-                  <Button
-                    onClick={(e) => e.preventDefault()}
-                    size="sm"
-                    className="ml-auto"
-                  >
-                    Send
-                  </Button>
+          {!fetchMail && (
+            <div className="p-4">
+              <form onSubmit={handleSubmit}>
+                <div className="grid gap-4">
+                  <Textarea
+                    className="p-4"
+                    name="reply"
+                    onChange={(e) => {
+                      setReply(e.target.value);
+                    }}
+                    placeholder={`Reply ${mailToRender?.from}...`}
+                  />
+                  <div className="flex items-center">
+                    <Label
+                      htmlFor="mute"
+                      className="flex items-center gap-2 text-xs font-normal"
+                    >
+                      <Switch id="mute" aria-label="Mute thread" /> Mute this
+                      thread
+                    </Label>
+                    <Button type="submit" size="sm" className="ml-auto">
+                      Send
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            </form>
-          </div>
+              </form>
+            </div>
+          )}
         </div>
       ) : (
         <div className="p-8 text-center text-muted-foreground">

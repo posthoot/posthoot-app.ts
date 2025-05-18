@@ -3,8 +3,8 @@ import { NextResponse } from "next/server";
 import { APIService } from "@/lib/services/api";
 import { removeUndefined } from "@/lib/utils";
 
-interface IMAPEmail {
-  id: string;
+export interface IMAPEmail {
+  id?: string;
   subject: string;
   from: string;
   to: string;
@@ -20,8 +20,8 @@ interface IMAPEmail {
   }[];
 }
 
-interface IMAPEmailResponse {
-  data: IMAPEmail[];
+export interface IMAPEmailResponse {
+  emails: IMAPEmail[];
   total_emails: number;
   limit: number;
   offset: number;

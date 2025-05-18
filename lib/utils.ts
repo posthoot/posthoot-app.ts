@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import jwt, { JwtPayload } from "jsonwebtoken";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -59,4 +60,21 @@ export function encodeToBase64(str: string) {
 
 export function decodeFromBase64(str: string) {
   return Buffer.from(str, "base64").toString("utf-8");
+}
+
+function jwtDecode(jwtToken: string): JwtPayload {
+  const decoded = jwt.decode(jwtToken);
+  return decoded as JwtPayload;
+}
+
+export function isJwtExpired(jwtToken: string) {
+  const decoded = jwtDecode(jwtToken);
+  return decoded.exp < Date.now() / 1000;
+}
+
+export function generateKey() {
+  const key = "23uj429u49uyhh28h4rj23ijri23jruh23hrio34jr34r34r";
+  // we need to jumble the key
+  const jumble = key.split("").sort(() => Math.random() - 0.5).join("");
+  return jumble;
 }

@@ -2,24 +2,31 @@
 
 import { formatDistanceToNow } from "date-fns";
 
-import { cn } from "@/lib/utils";
+import { cn, generateKey } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Mail } from "@/app/types";
 import { useMail } from "@/hooks/use-mail";
+import { IMAPEmail } from "@/app/api/imap/emails/route";
 
 interface MailListProps {
-  items: Mail[];
+  items: Mail[] | IMAPEmail[];
+  isFetchingNextPage: boolean;
+  observerTarget: React.RefObject<HTMLDivElement>;
 }
 
-export default function MailList({ items }: MailListProps) {
+export default function MailList({
+  items,
+  isFetchingNextPage,
+  observerTarget,
+}: MailListProps) {
   const { mail, setMail } = useMail();
 
   return (
-    <ScrollArea className="h-screen">
-      <div className="flex flex-col gap-2 p-4 pt-0">
+    <ScrollArea className="h-[calc(100vh-200px)]">
+      <div className="flex flex-col gap-2 pb-8 p-4 pt-0">
         {items.map((item) => (
           <div
-            key={item.id}
+            key={generateKey()}
             className={cn(
               "flex flex-col cursor-pointer items-start gap-2 rounded-lg border border-muted p-3 text-left text-sm transition-all hover:bg-accent",
               mail?.id === item.id && "bg-muted"
@@ -47,15 +54,22 @@ export default function MailList({ items }: MailListProps) {
                       : "text-muted-foreground"
                   )}
                 >
-                  {formatDistanceToNow(new Date(item.createdAt), {
-                    addSuffix: true,
-                  })}
+                  {item.date || item.createdAt
+                    ? formatDistanceToNow(
+                        new Date(item.date ?? item.createdAt),
+                        {
+                          addSuffix: true,
+                        }
+                      )
+                    : formatDistanceToNow(new Date(), {
+                        addSuffix: true,
+                      })}
                 </div>
               </div>
               <div className="text-xs font-medium">{item.subject}</div>
             </div>
             <div className="line-clamp-2 text-xs text-muted-foreground">
-              Here is the body of the email
+              {item.body.slice(0, 100)}
             </div>
             {/* {item.labels.length ? (
               <div className="flex items-center gap-2">
@@ -68,6 +82,15 @@ export default function MailList({ items }: MailListProps) {
             ) : null} */}
           </div>
         ))}
+        {
+          items.length === 0 && (
+            <div className="text-center p-4">No emails found</div>
+          )
+        }
+        <div ref={observerTarget} className="h-4" />
+        {isFetchingNextPage && (
+          <div className="text-center p-4">Loading more...</div>
+        )}
       </div>
     </ScrollArea>
   );

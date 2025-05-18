@@ -48,6 +48,26 @@ const navItems: NavItem[] = [
     ),
   },
   {
+    name: "Inbox",
+    href: "/inbox",
+    icon: (
+      <img
+        src="https://img.icons8.com/quill/100/inbox.png"
+        className="w-6 dark:invert invert-0"
+      />
+    ),
+  },
+  {
+    name: "Outbox",
+    href: "/developer/logs/emails",
+    icon: (
+      <img
+        src="https://img.icons8.com/quill/100/filled-sent.png"
+        className="w-6 dark:invert invert-0"
+      />
+    ),
+  },
+  {
     name: "Campaigns",
     href: "/campaigns",
     icon: (
@@ -128,7 +148,6 @@ const navItems: NavItem[] = [
       { name: "API Keys", href: "/settings/api-keys" },
       { name: "Webhooks", href: "/developer/webhooks" },
       { name: "Logs", href: "/developer/logs" },
-      { name: "Emails", href: "/developer/logs/emails" },
     ],
   },
   {
@@ -275,18 +294,23 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 Write your email below to send it over to anyone
               </p>
             </SheetHeader>
-            <ComposeEmail onSend={async (email) => {
-              toast.promise(async () => {
-                await fetch("/api/email", {
-                  method: "POST",
-                  body: JSON.stringify(email),
-                });
-              }, {
-                loading: "Sending email...",
-                success: "Email sent successfully",
-                error: "Failed to send email"
-              })
-            }} />
+            <ComposeEmail
+              onSend={async (email) => {
+                toast.promise(
+                  async () => {
+                    await fetch("/api/email", {
+                      method: "POST",
+                      body: JSON.stringify(email),
+                    });
+                  },
+                  {
+                    loading: "Sending email...",
+                    success: "Email sent successfully",
+                    error: "Failed to send email",
+                  }
+                );
+              }}
+            />
           </SheetContent>
         </Sheet>
         <Button variant="secondary" className="w-full font-medium">
