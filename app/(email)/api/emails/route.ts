@@ -18,7 +18,9 @@ export async function GET(request: Request) {
   const apiService = new APIService("emails", session);
   const status = searchParams.get("filter") || "SENT";
 
-  const emails = await apiService.get(
+  const emails = await apiService.get<{
+    data: any[];
+  }>(
     "",
     removeUndefined({
       page,
@@ -30,6 +32,11 @@ export async function GET(request: Request) {
       exclude: id ? undefined : "body",
     })
   );
+
+  if (id) {
+    const email = emails.data?.[0];
+    emails.data[0].body = Buffer.from(email.body, "base64").toString("utf-8");
+  }
 
   return NextResponse.json(emails);
 }

@@ -45,6 +45,7 @@ import { Letter } from "react-letter";
 import { IMAPEmail } from "@/app/api/imap/emails/route";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { parsedMailFrom } from "../utils";
 
 interface MailDisplayProps {
   mail: IMAPEmail | Mail | null;
@@ -64,8 +65,8 @@ export default function MailDisplay({
   };
 
   const getParsedMail = (email: { body: string }) => {
-    const decodedBody = email?.body ? atob(email.body) : "";
-    const { html } = extract(`Date: Wed, 01 Apr 2020 00:00:00 -0000
+    const decodedBody = email?.body;
+    const { html, text } = extract(`Date: Wed, 01 Apr 2020 00:00:00 -0000
 From: A <a@example.com>
 To: B <b@example.com>
 Subject: Hello world!
@@ -75,7 +76,7 @@ Content-Type: text/html; charset=utf-8
 ${decodedBody}
 `);
 
-    return html;
+    return { html, text };
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -282,16 +283,18 @@ ${decodedBody}
           <div className="flex items-start p-4">
             <div className="flex items-start gap-4 text-sm">
               <Avatar>
-                <AvatarImage alt={mail.from} />
+                <AvatarImage alt={parsedMailFrom(mailToRender)} />
                 <AvatarFallback>
-                  {mailToRender?.from
+                  {parsedMailFrom(mailToRender)
                     ?.split(" ")
                     .map((chunk) => chunk[0])
                     .join("")}
                 </AvatarFallback>
               </Avatar>
               <div className="grid gap-1">
-                <div className="font-semibold">{mailToRender?.from}</div>
+                <div className="font-semibold">
+                  {parsedMailFrom(mailToRender)}
+                </div>
                 <div className="line-clamp-1 text-xs">
                   {mailToRender?.subject}
                 </div>
@@ -311,7 +314,7 @@ ${decodedBody}
             )}
           </div>
           <Separator />
-          <Letter html={getParsedMail(mailToRender)} />
+          <Letter html={getParsedMail(mailToRender).html} />
           <Separator className="mt-auto" />
           {!fetchMail && (
             <div className="p-4">

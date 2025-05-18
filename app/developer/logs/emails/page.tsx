@@ -18,10 +18,11 @@ import MailDisplay from "@/app/developer/logs/emails/components/mail-display";
 import MailList from "@/app/developer/logs/emails/components/mail-list";
 import { type Mail } from "@/app/types";
 import { useMail } from "@/hooks/use-mail";
+import { useMemo } from "react";
 
 const PAGE_SIZE = 20;
 
-async function fetchEmails({ pageParam = 0, filter = "SENT" }) {
+async function fetchEmails({ pageParam = 0, filter = "SENT"}) {
   // Replace with your actual API endpoint
   const response = await fetch(
     `/api/emails?page=${pageParam}&filter=${filter}&limit=${PAGE_SIZE}`
@@ -60,7 +61,10 @@ export default function Mail() {
     initialPageParam: 0,
   });
 
-  const emails = data?.pages.flatMap((page) => page.results) || [];
+  const emails = useMemo(
+    () => data?.pages.flatMap((page) => page.results) || [],
+    [data]
+  );
 
   // Intersection Observer for infinite scroll
   const observerTarget = React.useRef<HTMLDivElement>(null);
@@ -68,7 +72,12 @@ export default function Mail() {
   React.useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+        if (
+          entries[0].isIntersecting &&
+          hasNextPage &&
+          !isFetchingNextPage &&
+          !isLoading
+        ) {
           fetchNextPage();
         }
       },

@@ -30,6 +30,7 @@ import { useMail } from "@/hooks/use-mail";
 import { cn } from "@/lib/utils";
 import { Nav } from "./components/nav";
 import { IMAPEmail, IMAPEmailResponse } from "../api/imap/emails/route";
+import { useMemo } from "react";
 
 const PAGE_SIZE = 20;
 
@@ -48,9 +49,9 @@ async function fetchFolders() {
   return sortedFolders;
 }
 
-async function fetchEmails({ pageParam = 1, folder = "INBOX" }) {
+async function fetchEmails({ pageParam = 1, folder = "INBOX", search = "" }) {
   const response = await fetch(
-    `/api/imap/emails?page=${pageParam}&folder=${folder}&limit=${PAGE_SIZE}`
+    `/api/imap/emails?page=${pageParam}&folder=${folder}&limit=${PAGE_SIZE}&subject=${search}&body=${search}`
   );
   const data: IMAPEmailResponse = await response.json();
   return {
@@ -79,8 +80,9 @@ export default function Mail() {
     status,
     isLoading,
   } = useInfiniteQuery({
-    queryKey: ["emails", activeTab],
-    queryFn: ({ pageParam }) => fetchEmails({ pageParam, folder: activeTab }),
+    queryKey: ["emails", activeTab, search],
+    queryFn: ({ pageParam }) =>
+      fetchEmails({ pageParam, folder: activeTab, search }),
     getNextPageParam: (lastPage, pages) => {
       return lastPage.offset + PAGE_SIZE < lastPage.total
         ? pages.length + 1
@@ -94,7 +96,10 @@ export default function Mail() {
     queryFn: fetchFolders,
   });
 
-  const emails = data?.pages.flatMap((page) => page.results) || [];
+  const emails = useMemo(
+    () => data?.pages.flatMap((page) => page.results) || [],
+    [data]
+  );
 
   // Intersection Observer for infinite scroll
   const observerTarget = React.useRef<HTMLDivElement>(null);
@@ -102,7 +107,12 @@ export default function Mail() {
   React.useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+        if (
+          entries[0].isIntersecting &&
+          hasNextPage &&
+          !isFetchingNextPage &&
+          !isLoading
+        ) {
           fetchNextPage();
         }
       },
@@ -204,12 +214,25 @@ export default function Mail() {
             </div>
             <Separator />
             <div className="bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-              <form>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const formData = new FormData(e.target as HTMLFormElement);
+                  const search = formData.get("search") as string;
+                  if (searchTimeout) {
+                    clearTimeout(searchTimeout);
+                  }
+                  setSearchTimeout(
+                    setTimeout(() => {
+                      setSearch(search);
+                    }, 300)
+                  );
+                }}
+              >
                 <div className="relative">
                   <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
+                    name="search"
                     placeholder="Search"
                     className="pl-8"
                   />
