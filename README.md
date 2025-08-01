@@ -5,8 +5,6 @@
   <p><em>First-class email automation for modern enterprises</em></p>
 </div>
 
-![kori Demo](public/preview.png)
-
 ## Overview
 
 Posthoot is an enterprise-grade email orchestration platform that helps businesses automate their email workflows, manage contact lists, and deliver personalized communications at scale. Built with modern technologies and designed for performance.
