@@ -33,3 +33,4 @@ nginx/ssl
 nginx/auto-ssl
 nginx/logs
 postgres_data
+.env
