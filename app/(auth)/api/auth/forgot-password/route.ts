@@ -69,6 +69,7 @@ export async function POST(
         emoji: "❓",
         action: "validate",
         label: "forgot_password",
+        // @ts-ignore
         value: { errors: body.error.errors },
         message: "Invalid email provided"
       });

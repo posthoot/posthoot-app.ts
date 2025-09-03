@@ -14,8 +14,10 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar"
 import { ChevronDownIcon, PlusIcon } from "@radix-ui/react-icons"
+import Image from "next/image"
 export function TeamSwitcher({
   teams,
 }: {
@@ -26,44 +28,20 @@ export function TeamSwitcher({
   }[]
 }) {
   const [activeTeam, setActiveTeam] = React.useState(teams[0])
-
+  const {open}=useSidebar()
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <SidebarMenuButton className="w-fit px-1.5">
-              <div className="flex aspect-square size-5 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground">
-                <activeTeam.logo className="size-3" />
+            {/* <SidebarMenuButton className="w-fit px-1.5"> */}
+              <div className="flex  items-center gap-x-4  rounded-md">
+                <Image
+                alt="Logo"
+                height={40}
+                width={40}
+                src={"https://framerusercontent.com/images/Mj9OOgqyJTaP8t5wDmlauyecVM.png?scale-down-to=512"}
+                />
+              {open && <span className="truncate font-semibold">{activeTeam.name}</span>}
               </div>
-              <span className="truncate font-semibold">{activeTeam.name}</span>
-              <ChevronDownIcon className="opacity-50" />
-            </SidebarMenuButton>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            className="w-64 rounded-lg"
-            align="start"
-            side="bottom"
-            sideOffset={4}
-          >
-            <DropdownMenuLabel className="text-xs text-muted-foreground">
-              Teams
-            </DropdownMenuLabel>
-            {teams.map((team, index) => (
-              <DropdownMenuItem
-                key={team.name}
-                onClick={() => setActiveTeam(team)}
-                className="gap-2 p-2"
-              >
-                <div className="flex size-6 items-center justify-center rounded-sm border">
-                  <team.logo className="size-4 shrink-0" />
-                </div>
-                {team.name}
-                <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut>
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
   )

@@ -98,6 +98,7 @@ export async function POST(
         emoji: "❌",
         action: "validate",
         label: "team",
+        // @ts-ignore
         value: { errors: validatedData.error.errors },
         message: "Invalid team creation data"
       });

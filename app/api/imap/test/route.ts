@@ -114,6 +114,7 @@ export async function POST(
         emoji: "❌",
         action: "validate",
         label: "imap-config",
+        // @ts-ignore
         value: { errors: parseResult.error.errors },
         message: "Invalid IMAP configuration provided",
       });

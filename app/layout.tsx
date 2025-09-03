@@ -7,9 +7,10 @@ import { TeamProvider } from "@/app/providers/team-provider";
 import { Toaster } from "sonner";
 import { cn } from "@/lib/utils";
 import { AppSidebar } from "@/components/app-sidebar";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { QueryProvider } from "./providers/query-provider";
 import { AppHeader } from "@/components/app-header";
+import { SiteHeader } from "@/components/site-header";
 
 export const metadata: Metadata = {
   keywords: [
@@ -34,16 +35,23 @@ async function MainLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <SidebarProvider className="flex flex-col min-h-screen">
-      <AppHeader heading="Posthoot ❇" className="shrink-0" />
-      <div className="flex flex-col lg:flex-row flex-1 w-full bg-sidebar relative">
-        <div className="lg:fixed lg:left-0 lg:top-[64px] lg:bottom-0 lg:w-64 overflow-y-auto overflow-x-hidden">
-          <AppSidebar className="h-full w-full" />
+    <SidebarProvider>
+      <AppSidebar variant="inset" />
+      <SidebarInset>
+        <SiteHeader />
+        <div className="flex flex-1 flex-col">
+          <div className="@container/main flex flex-1 flex-col gap-2">
+            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+              {/* <SectionCards />
+              <div className="px-4 lg:px-6">
+                <ChartAreaInteractive />
+              </div>
+              <DataTable data={data} /> */}
+              {children}
+            </div>
+          </div>
         </div>
-        <main className="flex-1 overflow-y-auto w-full lg:ml-64 max-h-svh">
-          {children}
-        </main>
-      </div>
+      </SidebarInset>
     </SidebarProvider>
   );
 }

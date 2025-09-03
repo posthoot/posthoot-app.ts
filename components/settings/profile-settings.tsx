@@ -82,7 +82,7 @@ export function ProfileSettings() {
               <FormItem>
                 <FormLabel>Bio</FormLabel>
                 <FormControl>
-                  <Textarea {...field} />
+                  <Textarea {...field} className="resize-none"/>
                 </FormControl>
                 <FormMessage />
               </FormItem>

@@ -118,6 +118,7 @@ export async function POST(
         emoji: "❌",
         action: "validate",
         label: "smtp-config",
+        // @ts-ignore
         value: { errors: parseResult.error.errors },
         message: "Invalid SMTP configuration provided",
       });

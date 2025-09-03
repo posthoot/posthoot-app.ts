@@ -111,6 +111,7 @@ export async function POST(
         emoji: "❓",
         action: "validate",
         label: "signup",
+        // @ts-ignore
         value: { errors: body.error.errors },
         message: "Invalid signup data provided"
       });

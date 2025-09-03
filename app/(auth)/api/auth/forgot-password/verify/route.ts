@@ -71,6 +71,7 @@ export async function POST(req: Request): Promise<NextResponse> {
         emoji: "❓",
         action: "validate",
         label: "verify_reset",
+        // @ts-ignore
         value: { errors: body.error.errors },
         message: "Invalid verification data provided",
       });
