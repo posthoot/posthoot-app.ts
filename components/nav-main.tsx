@@ -87,9 +87,9 @@ export function NavMain({
           {items.map((item) => (
             <SidebarMenuItem className={open ? "!w-fit" : "!w-full"}>
               <SidebarMenuButton tooltip={item.title}>
-                <a href={item.url} className="w-full">
+                <Link href={item.url} className="w-full">
                   {item.icon && item.icon}
-                </a>
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
